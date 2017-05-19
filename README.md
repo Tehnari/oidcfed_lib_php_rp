@@ -14,4 +14,8 @@ Este în elaborare și la moment nu este recomandat pentru a fi utilizat în pro
 
 
 ---
+Some requirements:
+    #	https://github.com/nov/jose-php
+    #	https://github.com/krisrandall/OpenID-Connect-PHP
+
 P.S.: An other idea is to use / continue: https://github.com/ritou/php-Akita_OpenIDConnect
