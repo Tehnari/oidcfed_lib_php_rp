@@ -1,15 +1,15 @@
 {
     "name": "tehnari/oidcfed_lib_php_rp",
-    "description": "This project is an attempt to create Relying Party (RP) using the OIDCFED (OpenID Connect Federation) specification, developed as a PHP language / platform library. 
-    It is in development and is currently not recommended for use in production.",
+    "description": "This project is an attempt to create Relying Party (RP) using the OIDCFED (OpenID Connect Federation) specification, developed as a PHP language / platform library. It is in development and is currently not recommended for use in production.",
     "type": "library",
     "require": {
-        "jumbojett/openid-connect-php": "^0.3.0"
+        "jumbojett/openid-connect-php": "^0.3.0",
+        "gree/jose": "dev-master"
     },
     "license": "MIT",
     "authors": [
         {
-            "name": "It is in development and is currently not recommended for use in production.Constantin Sclifos",
+            "name": "Constantin Sclifos",
             "email": "sclifcon@vle.ase.md"
         }
     ],
