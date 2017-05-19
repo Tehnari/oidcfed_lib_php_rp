@@ -14,4 +14,4 @@ Este în elaborare și la moment nu este recomandat pentru a fi utilizat în pro
 
 
 ---
-P.S.: An other idea is to use / contiunue: https://github.com/ritou/php-Akita_OpenIDConnect
+P.S.: An other idea is to use / continue: https://github.com/ritou/php-Akita_OpenIDConnect
