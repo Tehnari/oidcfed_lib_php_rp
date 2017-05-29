@@ -1,7 +1,7 @@
 <?php
 require 'protected/vendor/autoload.php'; 
 
-$issuer = 'https://rp.certification.openid.net:8080';
+$issuer = 'https://rp.certification.openid.net:8080/oidcfed_php_rp/rp-response_type-code/token';
 $oidc->register();
 $oidc = new OpenIDConnectClient($issuer); 
 $cid = $oidc->getClientID();
