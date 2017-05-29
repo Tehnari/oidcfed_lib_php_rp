@@ -25,3 +25,7 @@ P.S.: An other idea is to use / continue:
         OR
         #   https://bitbucket.org/PEOFIAMP/phpoidc/overview
 
+Some examples: 
+
+
+
