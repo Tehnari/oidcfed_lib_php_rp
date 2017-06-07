@@ -2,10 +2,10 @@
 require 'vendor/autoload.php';
 // First testing
 $issuer = 'https://rp.certification.openid.net:8080/oidcfed_lib_php_rp/rp-response_type-code';
-$oidc = new OpenIDConnectClient($issuer);
-$oidc->register();
-$cid = $oidc->getClientID();
-$secret = $oidc->getClientSecret();
+$oidc_dyn = new OpenIDConnectClient($issuer);
+$oidc_dyn->register();
+$cid = $oidc_dyn->getClientID();
+$secret = $oidc_dyn->getClientSecret();
 //----------
 $curl = curl_init('https://rp.certification.openid.net:8080/oidcfed_php_rp/rp-response_type-code/.well-known/openid-configuration');
 curl_setopt($curl, CURLOPT_FAILONERROR, true);
