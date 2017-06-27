@@ -45,7 +45,7 @@ class configure {
         "organizationalUnitName" => 'Whatever',
         "commonName" => 'mySelf',
         "emailAddress" => 'user@domain.com',
-        "privkeypass" => '1234',
+        "privkeypass" => '',
         "numberofdays" => 365,
         "path_data" => "",
         "path_keys" => "/keys",

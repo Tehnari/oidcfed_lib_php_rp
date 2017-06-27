@@ -46,6 +46,7 @@ class security_keys {
         'RS512' => ['openssl', 'SHA512'],
     ];
 
+    //=========================================================================
     /*
       if (empty(static::$supported_algs[$alg])) {
       throw new DomainException('Algorithm not supported');
@@ -55,7 +56,7 @@ class security_keys {
     public static function generate_private_key($key = '', $passphrase = "") {
         $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
         if ($check00 === true) {
-            $key_contents = self::get_file_contents($key);
+            $key_contents = self::get_filekey_contents($key);
         }
         else {
             $key_contents = $key;
@@ -64,26 +65,11 @@ class security_keys {
         return $private_key; // We generating private key, but not saving (in this function) !!!
     }
 
-    public static function generate_public_key($dn = [], $ndays = 365) {
-//        $dn = array();  // use defaults
-        $str_cert = ""; // Here we will save public key
-        $res_privkey = \openssl_pkey_new();
-        $check01 = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
-                > 0);
-        if ($check01 === false) {
-            return false;
-        }
-        $res_csr = self::generate_csr($dn, $res_privkey);
-        $res_cert = \openssl_csr_sign($res_csr, null, $res_privkey, $ndays);
-        \openssl_x509_export($res_cert, $str_cert);
-        $res_pubkey = openssl_pkey_get_public($str_cert);
-        return $res_pubkey; // We generating public key, but not saving (in this function) !!!
-    }
-
+    //=========================================================================
     /**
      * This will help to generate certificate
      */
-    public static function generate_csr($dn, $res_privkey) {
+    public static function generate_csr($dn, $res_privkey, $ndays = false) {
         $check00 = (\is_array($dn) === true && \count($dn) > 0);
         $check01 = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
                 > 0);
@@ -93,29 +79,94 @@ class security_keys {
         else {
             $res_csr = false;
         }
-        return $res_csr;
-    }
-
-    public static function get_private_key($key = '') {
-        $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
-        if ($check00 === true) {
-            $key_contents = self::get_file_contents($key);
+        if ($res_csr !== false && ($ndays !== false && \is_numeric($ndays) === true)) {
+            $res_cert = \openssl_csr_sign($res_csr, null, $res_privkey, $ndays);
+            return $res_cert;
         }
         else {
+            return $res_csr;
+        }
+    }
+
+    //=========================================================================
+    public static function generate_public_key($dn = [], $ndays = 365) {
+//        $dn = array();  // use defaults
+        $str_cert = ""; // Here we will save public key
+        $res_privkey = \openssl_pkey_new();
+        $check01 = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
+                > 0);
+        if ($check01 === false) {
+            return false;
+        }
+        $res_cert = self::generate_csr($dn, $res_privkey, $ndays);
+        \openssl_x509_export($res_cert, $str_cert);
+        $res_pubkey = openssl_pkey_get_public($str_cert);
+        return $res_pubkey; // We generating public key, but not saving (in this function) !!!
+    }
+
+    //=========================================================================
+    public static function get_private_key($key = '', $passphrase = '',
+                                           $path_save_key = '') {
+        $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
+        $check01 = (\is_string($passphrase) === true || \is_numeric($passphrase) === true);
+        $check02 = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
+                > 0);
+        $path_parts = \pathinfo($key);
+        $check03 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+        $path_parts_sk = \pathinfo($path_save_key);
+        $check04 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+        if (($check00 === true && $check01 === true) && $check03 === true) {
+            $key_contents = self::get_filekey_contents($key);
+        }
+        else if ($check00 === true && $check03 === false) {
             $key_contents = $key;
         }
+        else {
+            return false;
+        }
+        if ($check02 === true && $check03 === false && $check04 === true) {
+            self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
+        }
+        //Here we should try to check key and passphrase
+        $private_key_check = self::generate_private_key($key_contents, $passphrase);
+        //TODO Need to check if it's key here
+        return $private_key_check;
+    }
+
+    //=========================================================================
+    public static function get_csr($key = false, $dn = [], $res_privkey = false,
+                                   $ndays = 365, $path_save_key = '') {
+        $check00 = (\is_string($key) === true && \mb_strlen($key) > 0 && ($res_privkey !== false));
+        $check01 = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
+                > 0);
+        $path_parts = \pathinfo($key);
+        $check02 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+        $path_parts_sk = \pathinfo($path_save_key);
+        $check03 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+        if ($check00 === true) {
+            $key_contents = self::get_filekey_contents($key);
+        }
+        else if ($check00 === true) {
+            $key_contents = $key;
+        }
+        else {
+            $key_contents = self::generate_csr($dn, $res_privkey, $ndays);
+        }
+        if ($check01 === true && $check02 === false && $check03 === true) {
+            self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
+        }
+        //TODO Need to check if it's key here
         return $key_contents;
     }
 
-    public static function get_public_key($path = false) {
+    //=========================================================================
+    public static function get_public_key($path = false, $dn = [], $ndays = 365, $path_save_key = '') {
+        //TODO Need to check if it's key here
         //TODO Need to think...
     }
 
-    public static function get_csr($path = false) {
-        //TODO Need to think...
-    }
-
-    public static function get_file_contents($filename = false) {
+    //=========================================================================
+    public static function get_filekey_contents($filename = false) {
         $check00 = (\is_string($filename) === true && \mb_strlen($filename) > 0);
         if ($check00 === true) {
             $path_parts = \pathinfo($filename);
@@ -134,6 +185,26 @@ class security_keys {
             $file_contents = $filename;
         }
         return $file_contents;
+    }
+
+    //=========================================================================
+    public static function save_filekey_contents($filename = false,
+                                                 $data = false) {
+        $check00 = (\is_string($filename) === true && \mb_strlen($filename) > 0);
+        if ($check00 === true) {
+            $path_parts = \pathinfo($filename);
+        }
+        else {
+            $path_parts = false;
+        }
+        $check01 = ($check00 === true && \is_array($path_parts) === true && \count($path_parts) >= 3);
+        $check02 = ($check01 === true && \is_readable($filename) === true);
+        $check03 = (\is_string($data) === true && \mb_strlen($data) > 0);
+        if ($check02 === false || $check03 === false) {
+            return false;
+        }
+        \file_put_contents($filename, $data);
+        return true;
     }
 
 }
