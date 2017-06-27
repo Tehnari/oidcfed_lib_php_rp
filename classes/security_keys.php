@@ -31,7 +31,8 @@
 namespace oidcfed;
 
 /**
- * Description of security_keys
+ * This class security_keys should help on generating new keys
+ * or on getting existing one...
  *
  * @author constantin
  */
