@@ -129,7 +129,8 @@ class security_keys {
             self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
         }
         //Here we should try to check key and passphrase
-        $private_key_check = self::generate_private_key($key_contents, $passphrase);
+        $private_key_check = self::generate_private_key($key_contents,
+                                                        $passphrase);
         //TODO Need to check if it's key here
         return $private_key_check;
     }
@@ -161,9 +162,29 @@ class security_keys {
     }
 
     //=========================================================================
-    public static function get_public_key($path = false, $dn = [], $ndays = 365, $path_save_key = '') {
+    public static function get_public_key($key = false, $dn = [], $ndays = 365,
+                                          $path_save_key = '') {
+        $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
+        $path_parts = \pathinfo($key);
+        $check01 = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
+                > 0);
+        $check02 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+        $path_parts_sk = \pathinfo($path_save_key);
+        $check03 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+        if ($check00 === true) {
+            $key_contents = self::get_filekey_contents($key);
+        }
+        else if ($check00 === true) {
+            $key_contents = $key;
+        }
+        else {
+            $key_contents = self::generate_public_key($dn, $ndays);
+        }
+        if ($check01 === true && $check02 === false && $check03 === true) {
+            self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
+        }
         //TODO Need to check if it's key here
-        //TODO Need to think...
+        return $key_contents;
     }
 
     //=========================================================================
@@ -207,5 +228,7 @@ class security_keys {
         \file_put_contents($filename, $data);
         return true;
     }
+    //=========================================================================
 
+    
 }
