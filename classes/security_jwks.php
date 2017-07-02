@@ -35,7 +35,7 @@ namespace oidcfed;
  *
  * @author constantin
  */
-class security_jwa {
+class security_jwks {
 
     
     //put your code here
