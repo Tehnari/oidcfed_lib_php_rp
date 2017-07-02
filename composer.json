@@ -4,7 +4,7 @@
     "type": "library",
     "require": {
         "jumbojett/openid-connect-php": "^0.3.0",
-        "gree/jose": "dev-master"
+        "spomky-labs/jose": "^6.1@dev"
     },
     "license": "MIT",
     "authors": [
