@@ -61,15 +61,30 @@ class security_keys {
         "private_key_type" => OPENSSL_KEYTYPE_RSA,
         "encrypt_key" => '1234'
     ]) {
+        $privateKey = "";
         $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
-        if ($check00 === true) {
+        $path_parts = \pathinfo($key);
+        $check01 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+        if ($check00 === true && $check01 === true) {
             $key_contents = self::get_filekey_contents($key);
         }
         else {
             $key_contents = \openssl_pkey_new($configargs);
         }
-        $private_key = \openssl_pkey_get_private($key_contents, $passphrase); //TODO But where is generating part???
-        return $private_key; // We generating private key, but not saving (in this function) !!!
+        if ($key_contents === false) {
+//            die('Failed to generate key pair.' . "\n");
+//            throw new Exception('Failed to generate key pair.');
+            return false;
+        }
+//    if (!openssl_pkey_export($keys, $privateKey)) die('Failed to retrieve private key.'."\n");
+        if (!openssl_pkey_export($key_contents, $privateKey, $passphrase,
+                                 $configargs)) {
+//            die('Failed to retrieve private key.' . "\n");
+//            throw new Exception('Failed to retrieve private key.');
+            return false;
+        }
+//        $private_key = \openssl_pkey_get_private($key_contents, $passphrase); //TODO But where is generating part???
+        return $privateKey; // We generating private key, but not saving (in this function) !!!
     }
 
     //=========================================================================
@@ -122,23 +137,43 @@ class security_keys {
         $check03 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
         $path_parts_sk = \pathinfo($path_save_key);
         $check04 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+        $check05 = ($check02 === true && $check03 === true );
+        $check06 = ($check00 === true && $check03 === false); //TODO Need to check if it's a key !!!
         if (($check00 === true && $check01 === true) && $check03 === true) {
             $key_contents = self::get_filekey_contents($key);
         }
-        else if ($check00 === true && $check03 === false) {
+        else if ($check06 === false) {
             $key_contents = $key;
         }
         else {
             return false;
         }
-        if ($check02 === true && $check03 === false && $check04 === true) {
-            self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
+        //If we have privateKey on file or as parameter (should be string!!!)
+        if ($check05 === true && $check04 === true) {
+            self::save_filekey_contents($path_save_key, $key_contents); 
         }
         //Here we should try to check key and passphrase
-        $private_key_check = self::generate_private_key($key_contents,
-                                                        $passphrase);
+        $private_key_pem_string = self::generate_private_key($key_contents,
+                                                             $passphrase);
         //TODO Need to check if it's key here
-        return $private_key_check;
+        if ($private_key_pem_string !== false && \is_string($private_key_pem_string) === true
+                && \mb_strlen($private_key_pem_string) > 0) {
+            //Saving private key to file...
+            if (\is_dir($path_save_key) === true) {
+                $pk_filename = $path_save_key . '/privateKey.pem';
+            }
+            else if (\is_file($path_save_key) === true && \is_readable($path_save_key) === true) {
+                $pk_filename = $path_save_key;
+            }
+            else {
+                $pk_filename = false;
+            }
+
+            if ($check06 === true && $check04 === true && $pk_filename !== false) {
+                self::save_filekey_contents($path_save_key, $private_key_pem_string);
+            }
+        }
+        return $private_key_pem_string;
     }
 
     //=========================================================================
@@ -210,7 +245,8 @@ class security_keys {
             $file_contents = \file_get_contents($filename);
         }
         else {
-            $file_contents = $filename;
+//            $file_contents = $filename;
+            return false;
         }
         return $file_contents;
     }

@@ -32,7 +32,7 @@
 require 'vendor/autoload.php';
 require 'classes/autoloader.php';
 //Loading classes
-autoloader::init();
+\oidcfed\autoloader::init();
 
 // First testing dynaming registration ...
 //$issuer = 'https://rp.certification.openid.net:8080/oidcfed_lib_php_rp/rp-response_type-code';
@@ -42,5 +42,21 @@ autoloader::init();
 //echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
 
 //---------------------->>>>>
-$priv_key = \oidcfed\security_keys::get_private_key();
-var_dump($priv_key);
+$path_dataDir = __DIR__.'/../oidcfed_data';
+$path_dataDir_real = realpath($path_dataDir);
+try {
+    mkdir($path_dataDir_real, 0777, true);
+}
+catch (Exception $exc) {
+    echo $exc->getTraceAsString();
+}
+try {
+    mkdir($path_dataDir_real.'/keys', 0777, true);
+}
+catch (Exception $exc) {
+    echo $exc->getTraceAsString();
+}
+$priv_key = \oidcfed\security_keys::get_private_key($path_dataDir_real.'/keys', '1234', $path_dataDir_real);
+echo "<br><b>Private key</b>:::===>>><br><pre>";
+print_r($priv_key);
+echo "</pre><br><<<===:::End of <b>Private key</b><br>";
