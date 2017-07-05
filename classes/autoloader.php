@@ -31,9 +31,12 @@
 namespace oidcfed;
 
 /**
- * Description of autoload
+ * Autoloader for classes
+ * Based on sources from:
+ * https://stackoverflow.com/questions/38663356/php-autoload-classes-from-different-directories
  *
- * @author constantin
+ * @author Alko
+ * @author Constantin Sclifos
  */
 
 //define('PATH', realpath(dirname(__file__)) . '/classes') . '/';
@@ -41,26 +44,6 @@ define('PATH', realpath(dirname(__file__))) . '/';
 define('DS', DIRECTORY_SEPARATOR);
 
 class autoloader {
-    /* public static function init() {
-      spl_autoload_extensions(".php"); // comma-separated list
-      spl_autoload_register();
-      }
-
-      function __autoload($class) {
-      if (class_exists($class, false) || interface_exists($class, false)) {
-      return;
-      }
-      try {
-      @require_once('path/to/' . $class . '.php');
-      if (!class_exists($class, false) || !interface_exists($class, false)) {
-      throw new Exception('Class ' . $class . ' not found');
-      }
-      }
-      catch (Exception $e) {
-
-      myExceptionHandler($e);
-      }
-      } */
 
     private static $__loader;
 
