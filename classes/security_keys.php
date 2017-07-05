@@ -54,15 +54,21 @@ class security_keys {
       }
      */
 
-    public static function generate_private_key($key = '', $passphrase = "") {
+    public static function generate_private_key(
+    $key = '', $passphrase = "1234",
+    $configargs = ["digest_alg" => "sha512",
+        "private_key_bits" => 4096,
+        "private_key_type" => OPENSSL_KEYTYPE_RSA,
+        "encrypt_key" => '1234'
+    ]) {
         $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
         if ($check00 === true) {
             $key_contents = self::get_filekey_contents($key);
         }
         else {
-            $key_contents = $key;
+            $key_contents = \openssl_pkey_new($configargs);
         }
-        $private_key = \openssl_pkey_get_private($key_contents, $passphrase);
+        $private_key = \openssl_pkey_get_private($key_contents, $passphrase); //TODO But where is generating part???
         return $private_key; // We generating private key, but not saving (in this function) !!!
     }
 
@@ -106,7 +112,7 @@ class security_keys {
     }
 
     //=========================================================================
-    public static function get_private_key($key = '', $passphrase = '',
+    public static function get_private_key($key = '', $passphrase = '1234',
                                            $path_save_key = '') {
         $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
         $check01 = (\is_string($passphrase) === true || \is_numeric($passphrase) === true);
@@ -228,7 +234,6 @@ class security_keys {
         \file_put_contents($filename, $data);
         return true;
     }
-    //=========================================================================
 
-    
+    //=========================================================================
 }

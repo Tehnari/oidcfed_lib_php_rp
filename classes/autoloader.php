@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  *
  * @author Constantin Sclifos
@@ -9,14 +8,14 @@
  *
  * Copyright MIT <2017> Constantin Sclifos <sclifcon@gmail.com>
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy of
+  Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
 
-    - The above copyright notice and this permission notice shall be included
+  - The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -29,16 +28,90 @@
  *
  */
 
+namespace oidcfed;
+
 /**
  * Description of autoload
  *
  * @author constantin
  */
-class autoloader {
 
-    public static function init() {
-        spl_autoload_extensions(".php"); // comma-separated list
-        spl_autoload_register();
+//define('PATH', realpath(dirname(__file__)) . '/classes') . '/';
+define('PATH', realpath(dirname(__file__))) . '/';
+define('DS', DIRECTORY_SEPARATOR);
+
+class autoloader {
+    /* public static function init() {
+      spl_autoload_extensions(".php"); // comma-separated list
+      spl_autoload_register();
+      }
+
+      function __autoload($class) {
+      if (class_exists($class, false) || interface_exists($class, false)) {
+      return;
+      }
+      try {
+      @require_once('path/to/' . $class . '.php');
+      if (!class_exists($class, false) || !interface_exists($class, false)) {
+      throw new Exception('Class ' . $class . ' not found');
+      }
+      }
+      catch (Exception $e) {
+
+      myExceptionHandler($e);
+      }
+      } */
+
+    private static $__loader;
+
+    private function __construct() {
+        \spl_autoload_register([$this, 'autoLoad']);
     }
 
+    public static function init() {
+        if (self::$__loader == null) {
+            self::$__loader = new self();
+        }
+
+        return self::$__loader;
+    }
+
+    public function autoLoad($class) {
+//        $exts = ['.class.php'];
+        $exts = ['.php'];
+
+        \spl_autoload_extensions("'" . \implode(',', $exts) . "'");
+        \set_include_path(\get_include_path() . \PATH_SEPARATOR . \PATH);
+
+        foreach ($exts as $ext) {
+            if (\is_readable($path = BASE . \strtolower($class . $ext))) {
+                require_once $path;
+                return true;
+            }
+        }
+        self::recursiveAutoLoad($class, \PATH);
+    }
+
+    private static function recursiveAutoLoad($class, $path) {
+        if (\is_dir($path) === false) {
+            return false;
+        }
+        if (($handle = \opendir($path)) === false) {
+            return false;
+        }
+        //Searching for files in specified directory ...
+        while (($resource = \readdir($handle)) !== false) {
+            if (($resource == '..') or ( $resource == '.')) {
+                continue;
+            }
+            if (\is_dir($dir = $path . \DS . $resource)) {
+                continue;
+            }
+            else
+            if (\is_readable($file = $path . \DS . $resource)) {
+                require_once $file;
+            }
+        }
+        closedir($handle);
+    }
 }

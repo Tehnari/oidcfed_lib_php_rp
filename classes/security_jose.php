@@ -31,12 +31,12 @@
 namespace oidcfed;
 
 /**
- * Description of security_jwa
+ * Description of security_jose (JSON Object Signing and Encryption)`
  *
  * @author constantin
  */
-class security_jwks {
+class security_jose {
 
-    
+
     //put your code here
 }
