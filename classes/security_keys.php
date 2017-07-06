@@ -111,14 +111,16 @@ class security_keys {
     }
 
     //=========================================================================
-    public static function generate_public_key($dn = [], $ndays = 365) {
+    public static function generate_public_key($dn = [], $ndays = 365,
+                                               $res_privkey = false) {
 //        $dn = array();  // use defaults
         $str_cert = ""; // Here we will save public key
-        $res_privkey = \openssl_pkey_new();
+//        $res_privkey = \openssl_pkey_new();
         $check01 = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
                 > 0);
         if ($check01 === false) {
-            return false;
+            throw new Exception('Failed to retrieve private key.');
+//            return false;
         }
         $res_cert = self::generate_csr($dn, $res_privkey, $ndays);
         \openssl_x509_export($res_cert, $str_cert);
@@ -150,7 +152,7 @@ class security_keys {
         }
         //If we have privateKey on file or as parameter (should be string!!!)
         if ($check05 === true && $check04 === true) {
-            self::save_filekey_contents($path_save_key, $key_contents); 
+            self::save_filekey_contents($path_save_key, $key_contents);
         }
         //Here we should try to check key and passphrase
         $private_key_pem_string = self::generate_private_key($key_contents,
@@ -170,7 +172,8 @@ class security_keys {
             }
 
             if ($check06 === true && $check04 === true && $pk_filename !== false) {
-                self::save_filekey_contents($path_save_key, $private_key_pem_string);
+                self::save_filekey_contents($path_save_key,
+                                            $private_key_pem_string);
             }
         }
         return $private_key_pem_string;
@@ -204,7 +207,11 @@ class security_keys {
 
     //=========================================================================
     public static function get_public_key($key = false, $dn = [], $ndays = 365,
+                                          $res_privkey = false,
                                           $path_save_key = '') {
+        if ($res_privkey === false) {
+            return false;
+        }
         $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
         $path_parts = \pathinfo($key);
         $check01 = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
@@ -219,7 +226,7 @@ class security_keys {
             $key_contents = $key;
         }
         else {
-            $key_contents = self::generate_public_key($dn, $ndays);
+            $key_contents = self::generate_public_key($dn, $ndays, $res_privkey);
         }
         if ($check01 === true && $check02 === false && $check03 === true) {
             self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
