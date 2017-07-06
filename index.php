@@ -63,5 +63,5 @@ echo "</pre><br><<<===:::End of <b>Private key</b><br>";
 //=============================================================================
 $public_key = \oidcfed\security_keys::get_public_key($path_dataDir_real.'/keys', $dn=[], $ndays=365, $path_dataDir_real);
 echo "<br><b>Private key</b>:::===>>><br><pre>";
-print_r($priv_key);
+print_r($public_key);
 echo "</pre><br><<<===:::End of <b>Private key</b><br>";

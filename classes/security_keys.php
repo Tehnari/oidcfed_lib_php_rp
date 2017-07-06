@@ -219,7 +219,7 @@ class security_keys {
         $check02 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
         $path_parts_sk = \pathinfo($path_save_key);
         $check03 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
-        if ($check00 === true) {
+        if ($check00 === true && $check03 ===true) {
             $key_contents = self::get_filekey_contents($key);
         }
         else if ($check00 === true) {
