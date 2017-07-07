@@ -91,7 +91,7 @@ class security_keys {
     /**
      * This will help to generate certificate
      */
-    public static function generate_csr($dn=[], $res_privkey, $ndays = false) {
+    public static function generate_csr($dn = [], $res_privkey, $ndays = false) {
         $check00 = (\is_array($dn) === true);
         $check01 = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
                 > 0);
@@ -153,7 +153,7 @@ class security_keys {
             return false;
         }
         //If we have privateKey on file or as parameter (should be string!!!)
-        if ($check05 === true && $check04 === true) {
+        if ($check05 === true && $check04 === true && \count($path_parts) > 3 && $key_contents !== false) {
             self::save_filekey_contents($path_save_key, $key_contents);
         }
         //Here we should try to check key and passphrase
@@ -173,8 +173,8 @@ class security_keys {
                 $pk_filename = false;
             }
 
-            if ($check06 === true && $check04 === true && $pk_filename !== false) {
-                self::save_filekey_contents($path_save_key,
+            if ($check04 === true && $pk_filename !== false) {
+                self::save_filekey_contents($pk_filename,
                                             $private_key_pem_string);
             }
         }
@@ -215,27 +215,45 @@ class security_keys {
             return false;
         }
         $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
-        $path_parts = \pathinfo($key);
         $check01 = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
                 > 0);
-        $check02 = ((\is_array($path_parts) === true && \count($path_parts) === 4));
+
+        $path_parts = \pathinfo($key);
+        $check02 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+
         $path_parts_sk = \pathinfo($path_save_key);
         $check03 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+
         $check04 = ((\is_array($path_parts) === false));
         $check05 = ($check00 === true && $check04 === true);
-        if ($check00 === true && $check02 === true && $check03 === true) {
+        if ($check00 === true && $check02 === true && ( \count($path_parts) > 3) && $check03 === true) {
             $key_contents = self::get_filekey_contents($key);
         }
         else if ($check05 === true) {
             $key_contents = $key;
         }
         else {
-            $pubKey_details = self::generate_public_key($dn, $ndays, $res_privkey);
+            $pubKey_details = self::generate_public_key($dn, $ndays,
+                                                        $res_privkey);
             $key_contents = $pubKey_details['key'];
         }
 
-        if ($check01 === true && $check02 === false && $check03 === true && $key_contents !== false) {
-            self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
+        if ($check01 === true && $check03 === true && $key_contents !== false) {
+            //Saving private key to file...
+            if (\is_dir($path_save_key) === true) {
+                $pubk_filename = $path_save_key . '/publicKey.pem';
+            }
+            else if (\is_file($path_save_key) === true && \is_readable($path_save_key) === true) {
+                $pubk_filename = $path_save_key;
+            }
+            else {
+                $pubk_filename = false;
+            }
+
+            if ($check03 === true && $pubk_filename !== false) {
+                self::save_filekey_contents($pubk_filename, $key_contents);
+            }
+//            self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
         }
         //TODO Need to check if it's key here
         return $key_contents;
@@ -275,7 +293,7 @@ class security_keys {
             $path_parts = false;
         }
         $check01 = ($check00 === true && \is_array($path_parts) === true && \count($path_parts) >= 3);
-        $check02 = ($check01 === true && \is_readable($filename) === true);
+        $check02 = ($check01 === true && ( \is_writable($filename) === true || \is_writable($path_parts['dirname']) === true));
         $check03 = (\is_string($data) === true && \mb_strlen($data) > 0);
         if ($check02 === false || $check03 === false) {
             return false;
