@@ -91,8 +91,8 @@ class security_keys {
     /**
      * This will help to generate certificate
      */
-    public static function generate_csr($dn, $res_privkey, $ndays = false) {
-        $check00 = (\is_array($dn) === true && \count($dn) > 0);
+    public static function generate_csr($dn=[], $res_privkey, $ndays = false) {
+        $check00 = (\is_array($dn) === true);
         $check01 = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
                 > 0);
         if ($check00 === true && $check01 === true) {
@@ -125,7 +125,9 @@ class security_keys {
         $res_cert = self::generate_csr($dn, $res_privkey, $ndays);
         \openssl_x509_export($res_cert, $str_cert);
         $res_pubkey = openssl_pkey_get_public($str_cert);
-        return $res_pubkey; // We generating public key, but not saving (in this function) !!!
+        $pubKey_details = openssl_pkey_get_details($res_pubkey);
+//        return $res_pubkey; // We generating public key, but not saving (in this function) !!!
+        return $pubKey_details; // We generating public key (returning all in one object), but not saving (in this function) !!!
     }
 
     //=========================================================================
@@ -216,19 +218,23 @@ class security_keys {
         $path_parts = \pathinfo($key);
         $check01 = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
                 > 0);
-        $check02 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+        $check02 = ((\is_array($path_parts) === true && \count($path_parts) === 4));
         $path_parts_sk = \pathinfo($path_save_key);
         $check03 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
-        if ($check00 === true && $check03 ===true) {
+        $check04 = ((\is_array($path_parts) === false));
+        $check05 = ($check00 === true && $check04 === true);
+        if ($check00 === true && $check02 === true && $check03 === true) {
             $key_contents = self::get_filekey_contents($key);
         }
-        else if ($check00 === true) {
+        else if ($check05 === true) {
             $key_contents = $key;
         }
         else {
-            $key_contents = self::generate_public_key($dn, $ndays, $res_privkey);
+            $pubKey_details = self::generate_public_key($dn, $ndays, $res_privkey);
+            $key_contents = $pubKey_details['key'];
         }
-        if ($check01 === true && $check02 === false && $check03 === true) {
+
+        if ($check01 === true && $check02 === false && $check03 === true && $key_contents !== false) {
             self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
         }
         //TODO Need to check if it's key here
