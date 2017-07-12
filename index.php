@@ -52,6 +52,13 @@ $configargs = ["digest_alg" => "sha512",
     "private_key_type" => OPENSSL_KEYTYPE_RSA,
 //        "encrypt_key" => ''
 ];
+var_dump($_SERVER);
+var_dump($_ENV);
+$kid = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'];
+print_r($kid);
+echo "<br>---------------------------------------<br>";
+print_r(parse_url($kid));
+$jwk_pub_json = "";
 //=============================================================================
 try {
     mkdir($path_dataDir_real, 0777, true);
@@ -95,7 +102,8 @@ catch (Exception $exc) {
 // Should be without passphrase !!!
 $private_key_toCheck = $priv_key_woPass;
 $public_key = \oidcfed\security_keys::get_public_key($public_key_path, $dn = [],
-                                                     $ndays = 365, $private_key_toCheck,
+                                                     $ndays = 365,
+                                                     $private_key_toCheck,
                                                      $path_dataDir_real . '/keys');
 echo "<br><b>Public key</b>:::===>>><br><pre>";
 print_r($public_key);
@@ -106,20 +114,48 @@ echo "</pre><br><<<===:::End of <b>Public key</b><br>";
 //=============================================================================
 //Generate JOSE/JWK for Private Key
 echo "<pre>";
+
 use Jose\Factory\JWKFactory;
-$jwk_priv = JWKFactory::createFromKey($priv_key_woPass, $passphrase);
-echo "JWK (Private KEY): <br>";
-print_r($jwk_priv);
-$jwk_priv_json = json_encode($jwk_priv, JSON_PARTIAL_OUTPUT_ON_ERROR);
-print_r($jwk_priv_json);
+use Jose\Object\JWK;
+
+/*
+  $jwk_priv = JWKFactory::createFromKey($priv_key_woPass, $passphrase);
+  echo "JWK (Private KEY): <br>";
+  print_r($jwk_priv);
+  $jwk_priv_json = json_encode($jwk_priv, JSON_PARTIAL_OUTPUT_ON_ERROR);
+  print_r($jwk_priv_json);
+ */
+echo "<br>";
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
 echo "<br>";
 //=============================================================================
 //Generate JOSE/JWK for Public Key
 $jwk_pub = JWKFactory::createFromKey($public_key);
-echo "JWK (Public KEY): <br>";
-print_r($jwk_pub);
-$jwk_pub_json = json_encode($jwk_pub, JSON_PARTIAL_OUTPUT_ON_ERROR);
+$jwk_elements = $jwk_pub->getAll();
+if ($jwk_pub->has('kid') === false && is_array($jwk_elements) === true) {
+    $jwk_elements['kid'] = $kid;
+}
+if (is_array($jwk_elements)) {
+    $jwk_out = new JWK($jwk_elements);
+}
+else {
+    $jwk_out = false;
+}
+echo "JWK (Public KEY, resource array/object): <br>";
+echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
+echo "<br>";
+//print_r($jwk_pub);
+print_r($jwk_out);
+if (is_array($jwk_out) === true || is_object($jwk_out) === true) {
+    $jwk_pub_json = json_encode($jwk_out, JSON_PARTIAL_OUTPUT_ON_ERROR);
+}
+echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
+echo "<br>";
+echo "JWK (Public KEY, JSON format): <br>";
+echo "<br>";
 print_r($jwk_pub_json);
 echo "<br>";
-
+echo "<br>";
+echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
+echo "<br>";
 echo "</pre>";
