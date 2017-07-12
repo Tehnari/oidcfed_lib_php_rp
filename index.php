@@ -52,9 +52,11 @@ $configargs = ["digest_alg" => "sha512",
     "private_key_type" => OPENSSL_KEYTYPE_RSA,
 //        "encrypt_key" => ''
 ];
-var_dump($_SERVER);
-var_dump($_ENV);
-$kid = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'];
+//var_dump($_SERVER);
+//var_dump(filter_input($_SERVER));
+//var_dump($_ENV);
+$server_filtered = filter_input_array(INPUT_SERVER);
+$kid = $server_filtered['REQUEST_SCHEME'] . "://" . $server_filtered['SERVER_NAME'] . $server_filtered['SCRIPT_NAME'];
 print_r($kid);
 echo "<br>---------------------------------------<br>";
 print_r(parse_url($kid));
