@@ -107,19 +107,31 @@ echo "</pre><br><<<===:::End of <b>Public key</b><br>";
 //Generate JOSE/JWK for Private Key
 echo "<pre>";
 use Jose\Factory\JWKFactory;
+/*
 $jwk_priv = JWKFactory::createFromKey($priv_key_woPass, $passphrase);
 echo "JWK (Private KEY): <br>";
 print_r($jwk_priv);
 $jwk_priv_json = json_encode($jwk_priv, JSON_PARTIAL_OUTPUT_ON_ERROR);
 print_r($jwk_priv_json);
+*/
+echo "<br>";
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
 echo "<br>";
 //=============================================================================
 //Generate JOSE/JWK for Public Key
 $jwk_pub = JWKFactory::createFromKey($public_key);
-echo "JWK (Public KEY): <br>";
+echo "JWK (Public KEY, resource array/object): <br>";
+echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
+echo "<br>";
 print_r($jwk_pub);
 $jwk_pub_json = json_encode($jwk_pub, JSON_PARTIAL_OUTPUT_ON_ERROR);
+echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
+echo "<br>";
+echo "JWK (Public KEY, JSON format): <br>";
+echo "<br>";
 print_r($jwk_pub_json);
 echo "<br>";
-
+echo "<br>";
+echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
+echo "<br>";
 echo "</pre>";
