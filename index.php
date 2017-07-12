@@ -41,8 +41,18 @@ require 'classes/autoloader.php';
 //---------------------->>>>>
 $path_dataDir = __DIR__ . '/../oidcfed_data';
 $path_dataDir_real = realpath($path_dataDir);
-//$pass_phrase = '1234';
-$pass_phrase = '';
+$privateKeyName = "privateKey.pem";
+$private_key_path = $path_dataDir_real . '/keys/' . $privateKeyName;
+$publicKeyName = "publicKey.pem";
+$public_key_path = $path_dataDir_real . '/keys/' . $publicKeyName;
+$passphrase = '1234';
+//$pass_phrase = '';
+$configargs = ["digest_alg" => "sha512",
+    "private_key_bits" => 4096,
+    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+//        "encrypt_key" => ''
+];
+//=============================================================================
 try {
     mkdir($path_dataDir_real, 0777, true);
 }
@@ -55,44 +65,61 @@ try {
 catch (Exception $exc) {
     echo $exc->getTraceAsString();
 }
-$private_key = \oidcfed\security_keys::get_private_key($path_dataDir_real . '/keys',
-                                                       $pass_phrase,
+$private_key = \oidcfed\security_keys::get_private_key($private_key_path,
+                                                       $passphrase, $configargs,
                                                        $path_dataDir_real . '/keys');
 echo "<br><b>Private key</b>:::===>>><br><pre>";
 print_r($private_key);
 echo "</pre><br><<<===:::End of <b>Private key</b><br>";
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+try {
+    $priv_key_res = \oidcfed\security_keys::get_private_key_resource($private_key,
+                                                                     $passphrase);
+}
+catch (Exception $exc) {
+    echo $exc->getTraceAsString();
+}
+$priv_key_details = openssl_pkey_get_details($priv_key_res);
+//Getting private key without passphrase
+openssl_pkey_export($priv_key_res, $priv_key_woPass);
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+try {
+    $priv_key_res_woPass = \oidcfed\security_keys::get_private_key_resource($priv_key_woPass);
+}
+catch (Exception $exc) {
+    echo $exc->getTraceAsString();
+}
+//$priv_key_details = openssl_pkey_get_details($private_key);
 //=============================================================================
-$public_key = \oidcfed\security_keys::get_public_key($path_dataDir_real . '/keys',
-                                                     $dn = [], $ndays = 365,
-                                                     $private_key,
+// $private_key_toCheck can be resource or Private Key content (PEM format)
+// Should be without passphrase !!!
+$private_key_toCheck = $priv_key_woPass;
+$public_key = \oidcfed\security_keys::get_public_key($public_key_path, $dn = [],
+                                                     $ndays = 365, $private_key_toCheck,
                                                      $path_dataDir_real . '/keys');
 echo "<br><b>Public key</b>:::===>>><br><pre>";
 print_r($public_key);
 echo "</pre><br><<<===:::End of <b>Public key</b><br>";
+
 //=============================================================================
 // TODO Work on/with JOSE should be rewrited !!!
 //=============================================================================
 //Generate JOSE/JWK for Private Key
-//$private_key_JWK = new phpseclib\Crypt\RSA();
-//if (is_string($pass_phrase) === true && mb_strlen($pass_phrase) > 0) {
-//    $private_key_JWK->setPassword($pass_phrase);
-//} # skip if not encrypted
-//$private_key_JWK->loadKey($private_key);
-//try {
-//    $jose_jwk_private = JOSE_JWK::encode($private_key_JWK);
-//    print_r($jose_jwk_private);
-//}
-//catch (Exception $exc) {
-//    echo $exc->getTraceAsString();
-//}
+echo "<pre>";
+use Jose\Factory\JWKFactory;
+$jwk_priv = JWKFactory::createFromKey($priv_key_woPass, $passphrase);
+echo "JWK (Private KEY): <br>";
+print_r($jwk_priv);
+$jwk_priv_json = json_encode($jwk_priv, JSON_PARTIAL_OUTPUT_ON_ERROR);
+print_r($jwk_priv_json);
+echo "<br>";
 //=============================================================================
 //Generate JOSE/JWK for Public Key
-//$public_key_JWK = new phpseclib\Crypt\RSA();
-//$public_key_JWK->loadKey($public_key);
-//try {
-//    $jose_jwk_public = JOSE_JWK::encode($public_key_JWK);
-//    print_r($jose_jwk_public);
-//}
-//catch (Exception $exc) {
-//    echo $exc->getTraceAsString();
-//}
+$jwk_pub = JWKFactory::createFromKey($public_key);
+echo "JWK (Public KEY): <br>";
+print_r($jwk_pub);
+$jwk_pub_json = json_encode($jwk_pub, JSON_PARTIAL_OUTPUT_ON_ERROR);
+print_r($jwk_pub_json);
+echo "<br>";
+
+echo "</pre>";
