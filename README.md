@@ -17,7 +17,7 @@ Este în elaborare și la moment nu este recomandat pentru a fi utilizat în pro
 About OpenID Connect & OpenID Connec Federeations see: http://openid.net/connect/
 
 Some requirements:
-    #	https://github.com/nov/jose-php
+    #	https://github.com/Spomky-Labs/jose
     #	https://github.com/krisrandall/OpenID-Connect-PHP
 
 P.S.: An other idea is to use / continue:
