@@ -37,10 +37,11 @@ require 'classes/autoloader.php';
 //$url_oidc_config = 'https://rp.certification.openid.net:8080/oidcfed_php_rp/rp-response_type-code/.well-known/openid-configuration';
 //$oidc_config = \oidcfed\oidcfed::get_oidc_config($url_oidc_config, false, false, true);
 ////----------
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
 echo "Here is just an example how to use libraries/classes!!!";
-echo "Docs (and more cleaning) will be later...";
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+echo "<br>";
+echo "Docs (and more cleaning) will be later...<br>";
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
 //echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
 //---------------------->>>>>
 $path_dataDir = __DIR__ . '/../oidcfed_data';
