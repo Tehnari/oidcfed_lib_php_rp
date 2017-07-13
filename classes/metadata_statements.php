@@ -30,7 +30,7 @@
 
 namespace oidcfed;
 
-require (__DIR__.'/../vendor/autoload.php');
+//require (__DIR__.'/../vendor/autoload.php');
 
 /**
  * Description of metadata_statements

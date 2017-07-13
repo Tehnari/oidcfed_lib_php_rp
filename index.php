@@ -43,31 +43,19 @@ echo "<br>";
 echo "Docs (and more cleaning) will be later...<br>";
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
 //echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+// Some parameters are in static variables !!!
+// You can just add a new value to static variables in \oidcfed\security_keys
 //---------------------->>>>>
-$path_dataDir = __DIR__ . '/../oidcfed_data';
-$path_dataDir_real = realpath($path_dataDir);
-$privateKeyName = "privateKey.pem";
-$private_key_path = $path_dataDir_real . '/keys/' . $privateKeyName;
-$publicKeyName = "publicKey.pem";
-$public_key_path = $path_dataDir_real . '/keys/' . $publicKeyName;
-$passphrase = '1234';
+$path_dataDir = \oidcfed\security_keys::$path_dataDir;
+$privateKeyName = \oidcfed\security_keys::$privateKeyName;
+$publicKeyName = \oidcfed\security_keys::$publicKeyName;
+$path_dataDir_real = \oidcfed\security_keys::path_dataDir_real($path_dataDir);
+$private_key_path = \oidcfed\security_keys::private_key_path();
+$public_key_path = \oidcfed\security_keys::public_key_path();
 //$pass_phrase = '';
-$configargs = ["digest_alg" => "sha512",
-    "private_key_bits" => 4096,
-    "private_key_type" => OPENSSL_KEYTYPE_RSA,
-//        "encrypt_key" => ''
-];
-//var_dump($_SERVER);
-//var_dump(filter_input($_SERVER));
-//var_dump($_ENV);
-$server_filtered = filter_input_array(INPUT_SERVER);
-$script_name_pathinfo = pathinfo($server_filtered['SCRIPT_NAME']);
-$script_name_filtered = '';
-if (\is_array($script_name_pathinfo) === true && array_key_exists('dirname',
-                                                                  $script_name_pathinfo)) {
-    $script_name_filtered = $script_name_pathinfo['dirname'];
-}
-$kid = $server_filtered['REQUEST_SCHEME'] . "://" . $server_filtered['SERVER_NAME'] . $script_name_filtered;
+$passphrase = \oidcfed\security_keys::$passphrase;
+$configargs = \oidcfed\security_keys::$configargs;
+$kid = \oidcfed\security_keys::parameter_kid_build();
 print_r($kid);
 echo "<br>---------------------------------------<br>";
 print_r(parse_url($kid));

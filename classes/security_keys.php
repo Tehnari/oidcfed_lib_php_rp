@@ -38,6 +38,94 @@ namespace oidcfed;
  */
 class security_keys {
 
+//=========================================================================
+
+    public static $passphrase = '1234';
+    public static $configargs = ["digest_alg" => "sha512",
+        "private_key_bits" => 4096,
+        "private_key_type" => OPENSSL_KEYTYPE_RSA,
+//        "encrypt_key" => ''
+    ];
+//=========================================================================
+
+    public static $path_dataDir = __DIR__ . '/../../oidcfed_data';
+
+    public static function path_dataDir_real($path_dataDir = false) {
+        if ($path_dataDir === false) {
+            $path_dataDir = self::$path_dataDir;
+        }
+        $pathinfo = pathinfo($path_dataDir);
+        if (\is_array($pathinfo) === true) {
+            $path_dataDir_real = realpath($path_dataDir);
+        }
+    //=============================================================================
+        try {
+            mkdir($path_dataDir_real, 0777, true);
+        }
+        catch (Exception $exc) {
+            echo $exc->getTraceAsString();
+        }
+        try {
+            mkdir($path_dataDir_real . '/keys', 0777, true);
+        }
+        catch (Exception $exc) {
+            echo $exc->getTraceAsString();
+        }
+        return $path_dataDir_real;
+    }
+
+    public static $privateKeyName = "privateKey.pem";
+    public static $publicKeyName = "publicKey.pem";
+
+    public static function keys_path_real($path, $filename) {
+        $path_dataDir_real = \realpath($path);
+        $key_path = $path_dataDir_real . '/keys/' . $filename;
+        return $key_path;
+    }
+
+    public static function private_key_path() {
+        $path_data = self::$path_dataDir;
+        $filename = self::$privateKeyName;
+        return self::keys_path_real($path_data, $filename);
+    }
+
+    public static function public_key_path() {
+        $path_data = self::$path_dataDir;
+        $filename = self::$publicKeyName;
+        return self::keys_path_real($path_data, $filename);
+    }
+
+//=========================================================================
+    public static function parameter_kid_build($library_path = false) {
+        $server_filtered = filter_input_array(INPUT_SERVER);
+        $script_name_pathinfo = \pathinfo($server_filtered['SCRIPT_NAME']);
+        if (\is_string($library_path) === true && \mb_strlen($library_path) > 0) {
+            $library_path_parsered = \parse_url($library_path);
+            if (\is_array($library_path_parsered) === true && \array_key_exists('path',
+                                                                                $library_path_parsered) === true) {
+                $script_name_filtered = $script_name_filtered['path'];
+            }
+            else {
+                throw new Exception('Failed to build jose/jwk/kid parameter.');
+//                return false;
+            }
+        }
+        else {
+            $script_name_filtered = '';
+            if (\is_array($script_name_pathinfo) === true && array_key_exists('dirname',
+                                                                              $script_name_pathinfo)) {
+                $script_name_filtered = $script_name_pathinfo['dirname'];
+            }
+            else {
+                throw new Exception('Failed to build jose/jwk/kid parameter.');
+//                return false;
+            }
+        }
+        $kid = $server_filtered['REQUEST_SCHEME'] . "://" . $server_filtered['SERVER_NAME'] . $script_name_filtered;
+        return $kid;
+    }
+
+//=========================================================================
     public static $supported_algs = [
         'HS256' => ['hash_hmac', 'SHA256'],
         'HS512' => ['hash_hmac', 'SHA512'],
@@ -47,7 +135,7 @@ class security_keys {
         'RS512' => ['openssl', 'SHA512'],
     ];
 
-    //=========================================================================
+//=========================================================================
     /*
       if (empty(static::$supported_algs[$alg])) {
       throw new DomainException('Algorithm not supported');
@@ -92,7 +180,7 @@ class security_keys {
         return $privateKey; // We generating private key, but not saving (in this function) !!!
     }
 
-    //=========================================================================
+//=========================================================================
     /**
      * This will help to generate certificate
      */
@@ -116,7 +204,7 @@ class security_keys {
         }
     }
 
-    //=========================================================================
+//=========================================================================
     public static function generate_public_key($dn = [], $ndays = 365,
                                                $res_privkey = false) {
 //        $dn = array();  // use defaults
@@ -154,7 +242,7 @@ class security_keys {
 // We generating public key (returning all in one object), but not saving (in this function) !!!
     }
 
-    //=========================================================================
+//=========================================================================
     public static function get_private_key($key_data = '', $passphrase = '',
                                            $configargs = ["digest_alg" => "sha512",
         "private_key_bits" => 4096,
@@ -181,11 +269,11 @@ class security_keys {
 //        else {
 //            return false;
 //        }
-        //If we have privateKey on file or as parameter (should be string!!!)
+//If we have privateKey on file or as parameter (should be string!!!)
 //        if ($check05 === true && $check04 === true && \count($path_parts) > 3 && $key_contents !== false) {
 //            self::save_filekey_contents($path_save_key, $key_contents);
 //        }
-        //Here we should try to check key and passphrase
+//Here we should try to check key and passphrase
         if (\is_string($key_contents) === true && \mb_strlen($key_contents) > 0) {
             $private_key_pem_string = $key_contents;
         }
@@ -194,10 +282,10 @@ class security_keys {
                                                                  $passphrase,
                                                                  $configargs);
         }
-        //TODO Need to check if it's key here
+//TODO Need to check if it's key here
         if ($private_key_pem_string !== false && \is_string($private_key_pem_string) === true
                 && \mb_strlen($private_key_pem_string) > 0 && $check02 === true) {
-            //Saving private key to file...
+//Saving private key to file...
             if (\is_dir($path_save_key) === true) {
                 $pk_filename = $path_save_key . '/privateKey.pem';
             }
@@ -217,7 +305,7 @@ class security_keys {
         return $private_key_pem_string;
     }
 
-    //=========================================================================
+//=========================================================================
     public static function get_private_key_resource($key_data = '',
                                                     $passphrase = '') {
         $check00 = (\is_string($key_data) === true && \mb_strlen($key_data) > 0);
@@ -239,7 +327,7 @@ class security_keys {
         return $private_key_resource;
     }
 
-    //=========================================================================
+//=========================================================================
     public static function get_csr($key_data = false, $dn = [],
                                    $res_privkey = false, $ndays = 365,
                                    $path_save_key = '') {
@@ -263,11 +351,11 @@ class security_keys {
         if ($check01 === true && $check02 === false && $check03 === true) {
             self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
         }
-        //TODO Need to check if it's key here
+//TODO Need to check if it's key here
         return $key_contents;
     }
 
-    //=========================================================================
+//=========================================================================
     public static function get_public_key($key_data = false, $dn = [],
                                           $ndays = 365, $res_privkey = false,
                                           $path_save_key = '') {
@@ -300,7 +388,7 @@ class security_keys {
         }
 
         if ($check01 === true && $check03 === true && $key_contents !== false) {
-            //Saving private key to file...
+//Saving private key to file...
             if (\is_dir($path_save_key) === true) {
                 $pubk_filename = $path_save_key . '/publicKey.pem';
             }
@@ -316,11 +404,11 @@ class security_keys {
             }
 //            self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
         }
-        //TODO Need to check if it's key here
+//TODO Need to check if it's key here
         return $key_contents;
     }
 
-    //=========================================================================
+//=========================================================================
     public static function get_filekey_contents($filename = false) {
         $check00 = (\is_string($filename) === true && \mb_strlen($filename) > 0);
         if ($check00 === true) {
@@ -330,8 +418,8 @@ class security_keys {
             $path_parts = false;
         }
         $check01 = ($check00 === true && \is_array($path_parts) === true);
-        // If it's path then in array should be at least:
-        // dirname, basename, filename but extension can be missing.
+// If it's path then in array should be at least:
+// dirname, basename, filename but extension can be missing.
         $check02 = ($check01 === true && \count($path_parts) >= 3);
         if ($check02 === true && \is_file($filename) === true && \is_readable($filename) === true) {
             $file_contents = \file_get_contents($filename);
@@ -343,7 +431,7 @@ class security_keys {
         return $file_contents;
     }
 
-    //=========================================================================
+//=========================================================================
     public static function save_filekey_contents($filename = false,
                                                  $data = false) {
         $check00 = (\is_string($filename) === true && \mb_strlen($filename) > 0);
@@ -363,5 +451,5 @@ class security_keys {
         return true;
     }
 
-    //=========================================================================
+//=========================================================================
 }
