@@ -61,7 +61,13 @@ $configargs = ["digest_alg" => "sha512",
 //var_dump(filter_input($_SERVER));
 //var_dump($_ENV);
 $server_filtered = filter_input_array(INPUT_SERVER);
-$kid = $server_filtered['REQUEST_SCHEME'] . "://" . $server_filtered['SERVER_NAME'] . $server_filtered['SCRIPT_NAME'];
+$script_name_pathinfo = pathinfo($server_filtered['SCRIPT_NAME']);
+$script_name_filtered = '';
+if (\is_array($script_name_pathinfo) === true && array_key_exists('dirname',
+                                                                  $script_name_pathinfo)) {
+    $script_name_filtered = $script_name_pathinfo['dirname'];
+}
+$kid = $server_filtered['REQUEST_SCHEME'] . "://" . $server_filtered['SERVER_NAME'] . $script_name_filtered;
 print_r($kid);
 echo "<br>---------------------------------------<br>";
 print_r(parse_url($kid));
