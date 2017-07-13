@@ -15,6 +15,8 @@ Este în elaborare și la moment nu este recomandat pentru a fi utilizat în pro
 
 ---
 About OpenID Connect & OpenID Connec Federeations see: http://openid.net/connect/
+JOSE or JSON Object Signing and Encryption, more info about JOSE can be found by link:
+ https://datatracker.ietf.org/wg/jose/documents/
 
 Some requirements:
     #	https://github.com/Spomky-Labs/jose

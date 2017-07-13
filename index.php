@@ -61,18 +61,18 @@ echo "<br>---------------------------------------<br>";
 print_r(parse_url($kid));
 $jwk_pub_json = "";
 //=============================================================================
-try {
-    mkdir($path_dataDir_real, 0777, true);
-}
-catch (Exception $exc) {
-    echo $exc->getTraceAsString();
-}
-try {
-    mkdir($path_dataDir_real . '/keys', 0777, true);
-}
-catch (Exception $exc) {
-    echo $exc->getTraceAsString();
-}
+//try {
+//    mkdir($path_dataDir_real, 0777, true);
+//}
+//catch (Exception $exc) {
+//    echo $exc->getTraceAsString();
+//}
+//try {
+//    mkdir($path_dataDir_real . '/keys', 0777, true);
+//}
+//catch (Exception $exc) {
+//    echo $exc->getTraceAsString();
+//}
 $private_key = \oidcfed\security_keys::get_private_key($private_key_path,
                                                        $passphrase, $configargs,
                                                        $path_dataDir_real . '/keys');
@@ -115,7 +115,6 @@ echo "</pre><br><<<===:::End of <b>Public key</b><br>";
 //=============================================================================
 //Generate JOSE/JWK for Private Key
 echo "<pre>";
-
 
 /*
   use Jose\Factory\JWKFactory;

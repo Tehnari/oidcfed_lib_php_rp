@@ -34,7 +34,8 @@ use Jose\Factory\JWKFactory;
 use Jose\Object\JWK;
 
 /**
- * Description of security_jose (JSON Object Signing and Encryption)`
+ * Description of security_jose (JSON Object Signing and Encryption)
+ * More info about jose: https://datatracker.ietf.org/wg/jose/documents/
  *
  * @author constantin
  */

@@ -96,6 +96,13 @@ class security_keys {
     }
 
 //=========================================================================
+    /**
+     * This function will help to create/generate jose/jwk/kid parameter
+     * This can be user as client_id for our scope
+     * @param type $library_path
+     * @return string
+     * @throws Exception
+     */
     public static function parameter_kid_build($library_path = false) {
         $server_filtered = filter_input_array(INPUT_SERVER);
         $script_name_pathinfo = \pathinfo($server_filtered['SCRIPT_NAME']);
