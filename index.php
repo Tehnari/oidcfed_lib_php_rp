@@ -128,10 +128,10 @@ echo "</pre><br><<<===:::End of <b>Public key</b><br>";
 //Generate JOSE/JWK for Private Key
 echo "<pre>";
 
-use Jose\Factory\JWKFactory;
-use Jose\Object\JWK;
 
 /*
+  use Jose\Factory\JWKFactory;
+  use Jose\Object\JWK;
   $jwk_priv = JWKFactory::createFromKey($priv_key_woPass, $passphrase);
   echo "JWK (Private KEY): <br>";
   print_r($jwk_priv);
@@ -143,7 +143,8 @@ echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "<br>";
 //=============================================================================
 //Generate JOSE/JWK for Public Key
-$jwk_out = \oidcfed\security_jose::generate_jwk_with_public_key_and_kid($public_key, $kid);
+$jwk_out = \oidcfed\security_jose::generate_jwk_with_public_key_and_kid($public_key,
+                                                                        $kid);
 echo "JWK (Public KEY, resource array/object): <br>";
 echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
 echo "<br>";
@@ -156,7 +157,9 @@ echo "JWK (Public KEY, JSON format): <br>";
 echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
 echo "<br>";
 if (is_array($jwk_out) === true || is_object($jwk_out) === true) {
-    $jwk_pub_json = \oidcfed\security_jose::generate_jwk_with_public_key_and_kid($public_key, $kid, true);
+    $jwk_pub_json = \oidcfed\security_jose::generate_jwk_with_public_key_and_kid($public_key,
+                                                                                 $kid,
+                                                                                 true);
 }
 print_r($jwk_pub_json);
 echo "<br>";
