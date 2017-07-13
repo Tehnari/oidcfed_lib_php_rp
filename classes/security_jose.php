@@ -62,4 +62,12 @@ class security_jose {
         return $jwk_out;
     }
 
+    public static function create_jwt($header_object, $claims, $jwk) {
+        return self::create_jws($header_object, $claims, $jwk);
+    }
+    public static function create_jws($header_object, $claims, $jwk) {
+
+    }
+
+
 }
