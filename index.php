@@ -143,29 +143,21 @@ echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "<br>";
 //=============================================================================
 //Generate JOSE/JWK for Public Key
-$jwk_pub = JWKFactory::createFromKey($public_key);
-$jwk_elements = $jwk_pub->getAll();
-if ($jwk_pub->has('kid') === false && is_array($jwk_elements) === true) {
-    $jwk_elements['kid'] = $kid;
-}
-if (is_array($jwk_elements)) {
-    $jwk_out = new JWK($jwk_elements);
-}
-else {
-    $jwk_out = false;
-}
+$jwk_out = \oidcfed\security_jose::generate_jwk_with_public_key_and_kid($public_key, $kid);
 echo "JWK (Public KEY, resource array/object): <br>";
 echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
 echo "<br>";
 //print_r($jwk_pub);
 print_r($jwk_out);
-if (is_array($jwk_out) === true || is_object($jwk_out) === true) {
-    $jwk_pub_json = json_encode($jwk_out, JSON_PARTIAL_OUTPUT_ON_ERROR);
-}
-echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
 echo "<br>";
 echo "JWK (Public KEY, JSON format): <br>";
+//echo "<br>";
+echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
 echo "<br>";
+if (is_array($jwk_out) === true || is_object($jwk_out) === true) {
+    $jwk_pub_json = \oidcfed\security_jose::generate_jwk_with_public_key_and_kid($public_key, $kid, true);
+}
 print_r($jwk_pub_json);
 echo "<br>";
 echo "<br>";

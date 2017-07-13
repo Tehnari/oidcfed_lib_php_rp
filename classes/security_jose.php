@@ -30,6 +30,9 @@
 
 namespace oidcfed;
 
+use Jose\Factory\JWKFactory;
+use Jose\Object\JWK;
+
 /**
  * Description of security_jose (JSON Object Signing and Encryption)`
  *
@@ -37,6 +40,25 @@ namespace oidcfed;
  */
 class security_jose {
 
+    public static function generate_jwk_with_public_key_and_kid($public_key,
+                                                                $kid,
+                                                                $json_return = false) {
+        //Generate JOSE/JWK for Public Key
+        $jwk_pub = JWKFactory::createFromKey($public_key);
+        $jwk_elements = $jwk_pub->getAll();
+        if ($jwk_pub->has('kid') === false && \is_array($jwk_elements) === true) {
+            $jwk_elements['kid'] = $kid;
+        }
+        if (\is_array($jwk_elements)) {
+            $jwk_out = new JWK($jwk_elements);
+        }
+        else {
+            $jwk_out = false;
+        }
+        if ($json_return !== false) {
+            $jwk_out = \json_encode($jwk_out, \JSON_PARTIAL_OUTPUT_ON_ERROR);
+        }
+        return $jwk_out;
+    }
 
-    //put your code here
 }
