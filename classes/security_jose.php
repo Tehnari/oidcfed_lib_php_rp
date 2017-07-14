@@ -85,16 +85,16 @@ class security_jose {
         }
     }
 
-    public static function create_jwt($payload, $headers, $jws_signer=false,
-                                      $jws_signer_alg = ['RS256', 'HS512'], $jwk_signature_key=false) {
-        if($jws_signer === false || $jwk_signature_key===false){
+    public static function create_jwt($payload, $headers,
+                                      $jwk_signature_key = false,
+                                      $jws_signer = false,
+                                      $jws_signer_alg = ['RS256', 'HS512']) {
+        if ($jwk_signature_key === false) {
             throw new Exception('Failed to create JWT. Wrong parameters.');
 //                return false;
         }
         // We create a Signer object with the signature algorithms we want to use
-        $signer      = Signer::createSigner($jws_signer_alg);
-        // Then we sign
-        $signer->sign($jws_signer);
+        $signer      = self::create_signer($jws_signer_alg, $jws_signer);
         $jwt_creator = new JWTCreator($signer);
         $jws         = $jwt_creator->sign(
                 $payload, // The payload to sign
@@ -102,6 +102,28 @@ class security_jose {
                 $jwk_signature_key  // The key used to sign (depends on the "alg" parameter). Must be typeof Object\JWKInterface
         );
         return $jws;
+    }
+
+    public static function create_signer($jws_signer_alg = ['RS256', 'HS512'],
+                                         $jws_signer = false) {
+        if ($jws_signer === false) {
+            throw new Exception('Failed to create Signer. Check JWS.');
+//                return false;
+        }
+        // We create a Signer object with the signature algorithms we want to use
+        $signer = Signer::createSigner($jws_signer_alg);
+        if ($jws_signer !== false) {
+            try {
+                // Then we sign
+                $signer->sign($jws_signer);
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+                $exc_message = $exc->getTraceAsString();
+                throw new Exception('Failed to create Signer. Error/exception message:' . $exc_message);
+            }
+        }
+        return $signer;
     }
 
     public static function create_jws($header_object, $claims, $jwk) {
