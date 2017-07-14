@@ -85,7 +85,17 @@ class security_jose {
         }
     }
 
-    public static function create_jwt($payload, $headers,
+    /**
+     * This function help to create JWT (signed JWS)
+     * @param type $payload
+     * @param array $protected_headers
+     * @param Object\JWKInterface $jwk_signature_key
+     * @param type $jws_signer
+     * @param type $jws_signer_alg
+     * @return type
+     * @throws Exception
+     */
+    public static function create_jwt($payload, array $protected_headers,
                                       $jwk_signature_key = false,
                                       $jws_signer = false,
                                       $jws_signer_alg = ['RS256', 'HS512']) {
@@ -96,12 +106,52 @@ class security_jose {
         // We create a Signer object with the signature algorithms we want to use
         $signer      = self::create_signer($jws_signer_alg, $jws_signer);
         $jwt_creator = new JWTCreator($signer);
-        $jws         = $jwt_creator->sign(
-                $payload, // The payload to sign
-                $headers, // The protected headers (must contain at least the "alg" parameter)
-                $jwk_signature_key  // The key used to sign (depends on the "alg" parameter). Must be typeof Object\JWKInterface
+        $jwt         = $jwt_creator->sign(
+                // The payload to sign
+                $payload,
+                // The protected headers (must contain at least the "alg" parameter)
+                $protected_headers,
+                // The key used to sign (depends on the "alg" parameter).
+                // Must be type of Object\JWKInterface
+                $jwk_signature_key
         );
-        return $jws;
+        return $jwt;
+    }
+
+    /**
+     * This function create an object of JWSFactoryInterface.
+     * Returned object has methods that convert to JSON.
+     * @param string|array $payload
+     * @param bool $is_payload_detached
+     * @return Object\JWSFactoryInterface
+     * @throws Exception
+     */
+    public static function create_jws($payload, $is_payload_detached = false) {
+        $is_payload_check = \boolval($is_payload_detached);
+        if (\is_bool($is_payload_check) === false) {
+            throw new Exception('Wrong parameters. Payload is not boolean.');
+//                return false;
+        }
+        return JWSFactory::createJWS($payload, $is_payload_check);
+    }
+
+    /**
+     * This function create an object of JWSFactoryInterface and signed.
+     * Returned object has methods that convert to JSON.
+     * @param type $payload
+     * @param array $protected_headers
+     * @param type $jwk_signature_key
+     * @param type $jws_signer
+     * @param type $jws_signer_alg
+     * @return type
+     */
+    public static function create_jws_and_sign($payload,
+                                               array $protected_headers,
+                                               $jwk_signature_key = false,
+                                               $jws_signer = false,
+                                               $jws_signer_alg = ['RS256', 'HS512']) {
+        return self::create_jwt($payload, $protected_headers,
+                                $jwk_signature_key, $jws_signer, $jws_signer_alg);
     }
 
     public static function create_signer($jws_signer_alg = ['RS256', 'HS512'],
@@ -124,10 +174,6 @@ class security_jose {
             }
         }
         return $signer;
-    }
-
-    public static function create_jws($header_object, $claims, $jwk) {
-
     }
 
 }

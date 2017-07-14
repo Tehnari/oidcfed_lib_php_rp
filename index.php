@@ -159,4 +159,19 @@ echo "<br>";
 echo "<br>";
 echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 echo "<br>";
+echo "========================================================================";
+use Jose\Factory\JWSFactory;
+/*
+$jws = JWSFactory::createJWS([
+    'iss' => 'My server',
+    'aud' => 'Your client',
+    'sub' => 'Your resource owner',
+    'exp' => time()+3600,
+    'iat' => time(),
+    'nbf' => time(),
+]);
+*/
+$jws = JWSFactory::createJWS('A JWS with a detached payload', true);
+print_r($jws);
+
 echo "</pre>";
