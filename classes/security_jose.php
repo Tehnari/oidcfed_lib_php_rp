@@ -99,8 +99,9 @@ class security_jose {
         $jws         = $jwt_creator->sign(
                 $payload, // The payload to sign
                 $headers, // The protected headers (must contain at least the "alg" parameter)
-                $signature_key  // The key used to sign (depends on the "alg" parameter)
+                $jwk_signature_key  // The key used to sign (depends on the "alg" parameter)
         );
+        return $jws;
     }
 
     public static function create_jws($header_object, $claims, $jwk) {
