@@ -32,6 +32,8 @@ namespace oidcfed;
 
 use Jose\Factory\JWKFactory;
 use Jose\Object\JWK;
+use Jose\JWTCreator;
+use Jose\Signer;
 
 /**
  * Description of security_jose (JSON Object Signing and Encryption)
@@ -41,33 +43,68 @@ use Jose\Object\JWK;
  */
 class security_jose {
 
-    public static function generate_jwk_with_public_key_and_kid($public_key,
-                                                                $kid,
-                                                                $json_return = false) {
-        //Generate JOSE/JWK for Public Key
-        $jwk_pub = JWKFactory::createFromKey($public_key);
-        $jwk_elements = $jwk_pub->getAll();
-        if ($jwk_pub->has('kid') === false && \is_array($jwk_elements) === true) {
-            $jwk_elements['kid'] = $kid;
+    /**
+     * This function will help with generation of the jose/jwk. In this case
+     * passphrase can be set (if exist in the key).
+     * Additional parameters ('kid', 'alg' and 'use')
+     * are not mandatory but recommended.
+     * @param type $key_content
+     * @param type $key_passphrase
+     * @param array $additional_parameters
+     * @param type $kid
+     * @param type $json_return
+     * @return type
+     * @throws Exception
+     */
+    public static function generate_jwk_from_key_with_kid_and_parameter_array(
+    $key_content, $key_passphrase = null, array $additional_parameters = [],
+    $json_return = false) {
+        $check00 = (\is_array($additional_parameters) === true);
+        if ($check00 === false) {
+            $additional_parameters = [];
         }
-        if (\is_array($jwk_elements)) {
-            $jwk_out = new JWK($jwk_elements);
+        //Generate JOSE/JWK for Public Key
+        $check01  = (\is_string($key_passphrase) === true && \mb_strlen($key_passphrase)
+                > 0);
+        $check01a = ($check01 === false && empty($key_passphrase) === true);
+        if ($check01 === false && $check01a === true) {
+            $key_passphrase = null;
         }
         else {
-            $jwk_out = false;
+            throw new Exception('Failed to build jose/jwk. Wrong key passphrase.');
+//                return false;
         }
+        $jwk = JWKFactory::createFromKey($key_content, $key_passphrase,
+                                         $additional_parameters);
         if ($json_return !== false) {
-            $jwk_out = \json_encode($jwk_out, \JSON_PARTIAL_OUTPUT_ON_ERROR);
+            $jwk_out = \json_encode($jwk, \JSON_PARTIAL_OUTPUT_ON_ERROR);
+            return $jwk_out;
         }
-        return $jwk_out;
+        else {
+            return $jwk;
+        }
     }
 
-    public static function create_jwt($header_object, $claims, $jwk) {
-        return self::create_jws($header_object, $claims, $jwk);
+    public static function create_jwt($payload, $headers, $jws_signer=false,
+                                      $jws_signer_alg = ['RS256', 'HS512'], $jwk_signature_key=false) {
+        if($jws_signer === false || $jwk_signature_key===false){
+            throw new Exception('Failed to create JWT. Wrong parameters.');
+//                return false;
+        }
+        // We create a Signer object with the signature algorithms we want to use
+        $signer      = Signer::createSigner($jws_signer_alg);
+        // Then we sign
+        $signer->sign($jws_signer);
+        $jwt_creator = new JWTCreator($signer);
+        $jws         = $jwt_creator->sign(
+                $payload, // The payload to sign
+                $headers, // The protected headers (must contain at least the "alg" parameter)
+                $signature_key  // The key used to sign (depends on the "alg" parameter)
+        );
     }
+
     public static function create_jws($header_object, $claims, $jwk) {
 
     }
-
 
 }

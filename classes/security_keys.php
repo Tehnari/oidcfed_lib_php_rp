@@ -41,7 +41,7 @@ class security_keys {
 //=========================================================================
 
     public static $passphrase = '1234';
-    public static $configargs = ["digest_alg" => "sha512",
+    public static $configargs = ["digest_alg"       => "sha512",
         "private_key_bits" => 4096,
         "private_key_type" => OPENSSL_KEYTYPE_RSA,
 //        "encrypt_key" => ''
@@ -58,7 +58,7 @@ class security_keys {
         if (\is_array($pathinfo) === true) {
             $path_dataDir_real = realpath($path_dataDir);
         }
-    //=============================================================================
+        //=============================================================================
         try {
             mkdir($path_dataDir_real, 0777, true);
         }
@@ -75,23 +75,23 @@ class security_keys {
     }
 
     public static $privateKeyName = "privateKey.pem";
-    public static $publicKeyName = "publicKey.pem";
+    public static $publicKeyName  = "publicKey.pem";
 
     public static function keys_path_real($path, $filename) {
         $path_dataDir_real = \realpath($path);
-        $key_path = $path_dataDir_real . '/keys/' . $filename;
+        $key_path          = $path_dataDir_real . '/keys/' . $filename;
         return $key_path;
     }
 
     public static function private_key_path() {
         $path_data = self::$path_dataDir;
-        $filename = self::$privateKeyName;
+        $filename  = self::$privateKeyName;
         return self::keys_path_real($path_data, $filename);
     }
 
     public static function public_key_path() {
         $path_data = self::$path_dataDir;
-        $filename = self::$publicKeyName;
+        $filename  = self::$publicKeyName;
         return self::keys_path_real($path_data, $filename);
     }
 
@@ -104,7 +104,7 @@ class security_keys {
      * @throws Exception
      */
     public static function parameter_kid_build($library_path = false) {
-        $server_filtered = filter_input_array(INPUT_SERVER);
+        $server_filtered      = filter_input_array(INPUT_SERVER);
         $script_name_pathinfo = \pathinfo($server_filtered['SCRIPT_NAME']);
         if (\is_string($library_path) === true && \mb_strlen($library_path) > 0) {
             $library_path_parsered = \parse_url($library_path);
@@ -151,20 +151,20 @@ class security_keys {
 
     public static function generate_private_key(
     $key = '', $passphrase = "",
-    $configargs = ["digest_alg" => "sha512",
+    $configargs = ["digest_alg"       => "sha512",
         "private_key_bits" => 4096,
         "private_key_type" => OPENSSL_KEYTYPE_RSA,
 //        "encrypt_key" => ''
     ]) {
         $privateKey = "";
-        $check00 = (\is_string($key) === true && \mb_strlen($key) > 0);
-        $check00a = (\is_string($passphrase) === true && \mb_strlen($passphrase)
+        $check00    = (\is_string($key) === true && \mb_strlen($key) > 0);
+        $check00a   = (\is_string($passphrase) === true && \mb_strlen($passphrase)
                 > 0);
         if ($check00a === true) {
             $configargs["encrypt_key"] = $passphrase;
         }
         $path_parts = \pathinfo($key);
-        $check01 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+        $check01    = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
         if ($check00 === true && $check01 === true) {
             $key_contents = self::get_filekey_contents($key);
         }
@@ -216,15 +216,15 @@ class security_keys {
                                                $res_privkey = false) {
 //        $dn = array();  // use defaults
         $pubKey_details = false;
-        $str_cert = ""; // Here we will save public key
+        $str_cert       = ""; // Here we will save public key
 //        $res_privkey = \openssl_pkey_new();
-        $check01 = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
+        $check01        = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
                 > 0);
-        $check02 = (\is_resource($res_privkey) === true);
+        $check02        = (\is_resource($res_privkey) === true);
         if ($check02 === true) {
             $priv_key_details = \openssl_pkey_get_details($res_privkey);
-            $check03 = (\is_array($priv_key_details) === true && \array_key_exists('key',
-                                                                                   $priv_key_details));
+            $check03          = (\is_array($priv_key_details) === true && \array_key_exists('key',
+                                                                                            $priv_key_details));
             if ($check03 === false) {
                 throw new Exception('Failed to retrieve private key.');
 //            return false;
@@ -236,9 +236,9 @@ class security_keys {
             }
         }
         else if ($check01 === true) {
-            $res_cert = self::generate_csr($dn, $res_privkey, $ndays);
+            $res_cert       = self::generate_csr($dn, $res_privkey, $ndays);
             \openssl_x509_export($res_cert, $str_cert);
-            $res_pubkey = \openssl_pkey_get_public($str_cert);
+            $res_pubkey     = \openssl_pkey_get_public($str_cert);
             $pubKey_details = \openssl_pkey_get_details($res_pubkey);
         }
         else {
@@ -251,21 +251,23 @@ class security_keys {
 
 //=========================================================================
     public static function get_private_key($key_data = '', $passphrase = '',
-                                           $configargs = ["digest_alg" => "sha512",
+                                           $configargs = ["digest_alg"       => "sha512",
         "private_key_bits" => 4096,
         "private_key_type" => OPENSSL_KEYTYPE_RSA,
 //        "encrypt_key" => ''
     ], $path_save_key = '') {
-        $check00 = (\is_string($key_data) === true && \mb_strlen($key_data) > 0);
-//        $check01 = (\is_string($passphrase) === true || \is_numeric($passphrase) === true);
-        $check02 = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
+        $check00       = (\is_string($key_data) === true && \mb_strlen($key_data)
                 > 0);
-        $path_parts = \pathinfo($key_data);
-        $check03 = ((\is_array($path_parts) === true && \count($path_parts) > 3));
+//        $check01 = (\is_string($passphrase) === true || \is_numeric($passphrase) === true);
+        $check02       = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
+                > 0);
+        $path_parts    = \pathinfo($key_data);
+        $check03       = ((\is_array($path_parts) === true && \count($path_parts)
+                > 3));
         $path_parts_sk = \pathinfo($path_save_key);
-        $check04 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+        $check04       = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
 //        $check05 = ($check02 === true && $check03 === true );
-        $check06 = ($check00 === true && $check03 === false); //TODO Need to check if it's a key !!!
+        $check06       = ($check00 === true && $check03 === false); //TODO Need to check if it's a key !!!
 //        if (($check00 === true && $check01 === true) && $check03 === true) {
         if ($check00 === true && $check03 === true) {
             $key_contents = self::get_filekey_contents($key_data);
@@ -315,10 +317,10 @@ class security_keys {
 //=========================================================================
     public static function get_private_key_resource($key_data = '',
                                                     $passphrase = '') {
-        $check00 = (\is_string($key_data) === true && \mb_strlen($key_data) > 0);
+        $check00    = (\is_string($key_data) === true && \mb_strlen($key_data) > 0);
 //        $check01 = (\is_string($passphrase) === true || \is_numeric($passphrase) === true);
         $path_parts = \pathinfo($key_data);
-        $check03 = ((\is_array($path_parts) === true && \count($path_parts) > 3));
+        $check03    = ((\is_array($path_parts) === true && \count($path_parts) > 3));
 //        if (($check00 === true && $check01 === true) && $check03 === true) {
         if ($check00 === true && $check03 === true) {
             $key_contents = self::get_filekey_contents($key_data);
@@ -338,13 +340,14 @@ class security_keys {
     public static function get_csr($key_data = false, $dn = [],
                                    $res_privkey = false, $ndays = 365,
                                    $path_save_key = '') {
-        $check00 = (\is_string($key_data) === true && \mb_strlen($key_data) > 0 && ($res_privkey !== false));
-        $check01 = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
+        $check00       = (\is_string($key_data) === true && \mb_strlen($key_data)
+                > 0 && ($res_privkey !== false));
+        $check01       = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
                 > 0);
-        $path_parts = \pathinfo($key_data);
-        $check02 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+        $path_parts    = \pathinfo($key_data);
+        $check02       = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
         $path_parts_sk = \pathinfo($path_save_key);
-        $check03 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+        $check03       = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
         if ($check00 === true) {
             $key_contents = self::get_filekey_contents($key_data);
         }
@@ -374,10 +377,10 @@ class security_keys {
                 > 0);
 
         $path_parts = \pathinfo($key_data);
-        $check02 = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
+        $check02    = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
 
         $path_parts_sk = \pathinfo($path_save_key);
-        $check03 = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+        $check03       = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
 
         $check04 = ((\is_array($path_parts) === false));
         $check05 = ($check00 === true && $check04 === true);
@@ -391,7 +394,7 @@ class security_keys {
         if ($key_contents === false || (\is_string($key_contents) === true && \mb_strlen($key_contents) <= 10)) {
             $pubKey_details = self::generate_public_key($dn, $ndays,
                                                         $res_privkey);
-            $key_contents = $pubKey_details['key'];
+            $key_contents   = $pubKey_details['key'];
         }
 
         if ($check01 === true && $check03 === true && $key_contents !== false) {

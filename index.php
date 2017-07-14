@@ -46,20 +46,21 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
 // Some parameters are in static variables !!!
 // You can just add a new value to static variables in \oidcfed\security_keys
 //---------------------->>>>>
-$path_dataDir = \oidcfed\security_keys::$path_dataDir;
-$privateKeyName = \oidcfed\security_keys::$privateKeyName;
-$publicKeyName = \oidcfed\security_keys::$publicKeyName;
+$path_dataDir      = \oidcfed\security_keys::$path_dataDir;
+$privateKeyName    = \oidcfed\security_keys::$privateKeyName;
+$publicKeyName     = \oidcfed\security_keys::$publicKeyName;
 $path_dataDir_real = \oidcfed\security_keys::path_dataDir_real($path_dataDir);
-$private_key_path = \oidcfed\security_keys::private_key_path();
-$public_key_path = \oidcfed\security_keys::public_key_path();
-//$pass_phrase = '';
-$passphrase = \oidcfed\security_keys::$passphrase;
-$configargs = \oidcfed\security_keys::$configargs;
-$kid = \oidcfed\security_keys::parameter_kid_build();
+$private_key_path  = \oidcfed\security_keys::private_key_path();
+$public_key_path   = \oidcfed\security_keys::public_key_path();
+$passphrase        = \oidcfed\security_keys::$passphrase;
+$configargs        = \oidcfed\security_keys::$configargs;
+// CLIENT ID is below:
+$client_id         = \oidcfed\security_keys::parameter_kid_build();
+$kid               = $client_id;
 print_r($kid);
 echo "<br>---------------------------------------<br>";
 print_r(parse_url($kid));
-$jwk_pub_json = "";
+$jwk_pub_json      = "";
 //=============================================================================
 //try {
 //    mkdir($path_dataDir_real, 0777, true);
@@ -73,9 +74,10 @@ $jwk_pub_json = "";
 //catch (Exception $exc) {
 //    echo $exc->getTraceAsString();
 //}
-$private_key = \oidcfed\security_keys::get_private_key($private_key_path,
-                                                       $passphrase, $configargs,
-                                                       $path_dataDir_real . '/keys');
+$private_key       = \oidcfed\security_keys::get_private_key($private_key_path,
+                                                             $passphrase,
+                                                             $configargs,
+                                                             $path_dataDir_real . '/keys');
 echo "<br><b>Private key</b>:::===>>><br><pre>";
 print_r($private_key);
 echo "</pre><br><<<===:::End of <b>Private key</b><br>";
@@ -102,10 +104,10 @@ catch (Exception $exc) {
 // $private_key_toCheck can be resource or Private Key content (PEM format)
 // Should be without passphrase !!!
 $private_key_toCheck = $priv_key_woPass;
-$public_key = \oidcfed\security_keys::get_public_key($public_key_path, $dn = [],
-                                                     $ndays = 365,
-                                                     $private_key_toCheck,
-                                                     $path_dataDir_real . '/keys');
+$public_key          = \oidcfed\security_keys::get_public_key($public_key_path,
+                                                              $dn                  =
+                [], $ndays               = 365, $private_key_toCheck,
+                                                              $path_dataDir_real . '/keys');
 echo "<br><b>Public key</b>:::===>>><br><pre>";
 print_r($public_key);
 echo "</pre><br><<<===:::End of <b>Public key</b><br>";
@@ -130,8 +132,13 @@ echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "<br>";
 //=============================================================================
 //Generate JOSE/JWK for Public Key
-$jwk_out = \oidcfed\security_jose::generate_jwk_with_public_key_and_kid($public_key,
-                                                                        $kid);
+// Using null as passprase, for an example,
+//  and because before we have key without pass
+$additional_parameters = [
+    'kid' => $kid
+];
+$jwk_out               = \oidcfed\security_jose::generate_jwk_from_key_with_kid_and_parameter_array(
+                $public_key, null, $additional_parameters);
 echo "JWK (Public KEY, resource array/object): <br>";
 echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
 echo "<br>";
@@ -144,9 +151,8 @@ echo "JWK (Public KEY, JSON format): <br>";
 echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
 echo "<br>";
 if (is_array($jwk_out) === true || is_object($jwk_out) === true) {
-    $jwk_pub_json = \oidcfed\security_jose::generate_jwk_with_public_key_and_kid($public_key,
-                                                                                 $kid,
-                                                                                 true);
+    $jwk_pub_json = \oidcfed\security_jose::generate_jwk_from_key_with_kid_and_parameter_array(
+                    $public_key, null, $additional_parameters, true);
 }
 print_r($jwk_pub_json);
 echo "<br>";
