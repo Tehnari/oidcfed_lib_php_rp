@@ -56,7 +56,7 @@ class security_jose {
      * @return type
      * @throws Exception
      */
-    public static function generate_jwk_from_key_with_kid_and_parameter_array(
+    public static function generate_jwk_from_key_with_parameter_array(
     $key_content, $key_passphrase = null, array $additional_parameters = [],
     $json_return = false) {
         $check00 = (\is_array($additional_parameters) === true);
@@ -174,6 +174,19 @@ class security_jose {
             }
         }
         return $signer;
+    }
+
+    public static function get_jose_header_to_object($jose_string){
+        $check00 = (\is_string($jose_string)===true && \mb_strlen($jose_string)>0);
+        if($check00===false){
+            throw new Exception('Not a JOSE string received as input.');
+        }
+        $strArr = \explode('.', $jose_string);
+        $check01 =(\is_array($strArr)===true && \count($strArr)===3);
+        if($check01===false){
+            throw new Exception('Not enougth parts in a JOSE string received as input.');
+        }
+        //TODO Need to finish here (base64_decode, get alg, and check)...
     }
 
 }

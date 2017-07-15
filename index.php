@@ -137,7 +137,7 @@ echo "<br>";
 $additional_parameters = [
     'kid' => $kid
 ];
-$jwk_out               = \oidcfed\security_jose::generate_jwk_from_key_with_kid_and_parameter_array(
+$jwk_out               = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array(
                 $public_key, null, $additional_parameters);
 echo "JWK (Public KEY, resource array/object): <br>";
 echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
@@ -151,7 +151,7 @@ echo "JWK (Public KEY, JSON format): <br>";
 echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
 echo "<br>";
 if (is_array($jwk_out) === true || is_object($jwk_out) === true) {
-    $jwk_pub_json = \oidcfed\security_jose::generate_jwk_from_key_with_kid_and_parameter_array(
+    $jwk_pub_json = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array(
                     $public_key, null, $additional_parameters, true);
 }
 print_r($jwk_pub_json);
