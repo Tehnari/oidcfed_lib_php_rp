@@ -225,6 +225,7 @@ class security_jose {
         if($check01 === FALSE){
             throw new Exception('Header Parameters typ and alg not found on JOSE/JWT Header');
         }
+        
         return $jose_jwt_json_header_obj;
     }
 
