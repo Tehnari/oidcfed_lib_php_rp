@@ -293,4 +293,9 @@ class security_jose {
         return $jose_jwt_json_payload_obj;
     }
 
+    public static function verify_jwt_from_string_base64enc($jose_string) {
+        
+
+    }
+
 }
