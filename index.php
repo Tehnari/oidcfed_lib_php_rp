@@ -218,12 +218,20 @@ echo "<br>MS Payload:<br>";
 print_r($ms_payload);
 echo "<br>MS Payload: JWK from signing_keys:<br>";
 //print_r($ms_payload->signing_keys[0]);
-try {
-    $jwk_from_signing_keys = \oidcfed\security_jose::create_jwk_from_values((array)$ms_payload->signing_keys[0]);
-    print_r($jwk_from_signing_keys);
-}
-catch (Exception $exc) {
-    echo $exc->getTraceAsString();
+foreach ($ms_payload->signing_keys as $mspkey => $mspvalue) {
+    if (empty($mspvalue) === true) {
+        continue;
+    }
+    echo ">>> " . (string) $mspkey . " <<<<br>";
+    try {
+        $jwk_from_signing_keys = \oidcfed\security_jose::create_jwk_from_values((array) $mspvalue);
+        print_r($jwk_from_signing_keys);
+        echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
+        unset($jwk_from_signing_keys);
+    }
+    catch (Exception $exc) {
+        echo $exc->getTraceAsString();
+    }
 }
 
 //use Jose\Factory\JWEFactory;
