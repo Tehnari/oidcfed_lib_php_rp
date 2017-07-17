@@ -159,7 +159,7 @@ echo "<br>";
 echo "<br>";
 echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 echo "<br>";
-echo "========================================================================";
+echo "========================================================================<br>";
 
 use Jose\Factory\JWSFactory;
 
@@ -173,9 +173,9 @@ use Jose\Factory\JWSFactory;
   'nbf' => time(),
   ]);
  */
-$jws = JWSFactory::createJWS('A JWS with a detached payload', true);
+$jws        = JWSFactory::createJWS('A JWS with a detached payload', true);
 print_r($jws);
-echo "========================================================================";
+echo "========================================================================<br>";
 echo "Working with Metadata Sttements. <br>";
 echo "Using examples from: https://openid.andreas.labs.uninett.no ";
 echo "<br>>>><br>";
@@ -183,11 +183,50 @@ echo "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Imh0dHBzOi8vZmVpZGUubm8vIn0.ey
 echo "<br><<<<br>";
 $ms_example = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Imh0dHBzOi8vZmVpZGUubm8vIn0.eyJjbGllbnRfbmFtZSI6IkZvb2RsZSBwb2xscyBhbmQgc3VydmV5cyIsImNvbnRhY3RzIjpbImFuZHJlYXMuc29sYmVyZ0B1bmluZXR0Lm5vIiwia29udGFrdEB1bmluZXR0Lm5vIl0sInJlZGlyZWN0X3VyaXMiOlsiaHR0cHM6Ly9mb29kbC5vcmcvY2FsbGJhY2siLCJodHRwczovL3d3dy5mb29kbC5vcmcvY2FsbGJhY2siXSwicmVzcG9uc2VfdHlwZXMiOlsiY29kZSJdLCJjbGFpbXMiOlsic3ViIiwibmFtZSIsInBpY3R1cmUiXSwiaXNzIjoiaHR0cHM6Ly9mZWlkZS5uby8iLCJzaWduaW5nX2tleXMiOlt7Imt0eSI6IlJTQSIsImtpZCI6Imh0dHBzOi8vZm9vZGwub3JnLyIsIm4iOiJ5bFdpZlhpbEczSlBEeDYwbWoxMng4c0pzeVlvWWZLcnlMdE5JVDAwR2oyd1hpUWlPNHVhUGlYTXZzRnltck5nZHBLUGtNVGlNRG5kYWVWWTFjSlc0NVRKRDAzbGQxTVZIc2tVdnJBREh3QTZKcXpLYV9qVlZlWjdFaGtsdzlXWjlFZDB5NnloUm9rS2xNSGpmY3RPQlVORXhoM3FmY0VUQ0N0Q0JIWWhWS0VMUFZVRWRlZ3lTWXFsTlB5QjlzR2xhdTY3UFFlMmdpMHRhWUstUXZnN1h3c29FTDJsUnNnS185R25FYjZQSEp2M2FrNlhkUTJSX0VnbDUtTTRxMV9xcEFKWXNNRTR4TnZVdXpqcVo5Z05ZSVJmUk5tWDhoMElwemZ6cnp2QjNhRFhLMktWb0V0N0JoSVBiYmNXYTk5dG5xODJNUW82c09lNVNIRk1uRjhGUVEiLCJlIjoiQVFBQiJ9XSwibWV0YWRhdGFfc3RhdGVtZW50cyI6WyJleUpoYkdjaU9pSlNVekkxTmlJc0luUjVjQ0k2SWtwWFZDSXNJbXRwWkNJNkltaDBkSEJ6T2k4dlpXUjFaMkZwYmk1dmNtY3ZJbjAuZXlKamJHRnBiWE1pT2xzaWMzVmlJaXdpYm1GdFpTSXNJbVZ0WVdsc0lpd2ljR2xqZEhWeVpTSmRMQ0pwWkY5MGIydGxibDl6YVdkdWFXNW5YMkZzWjE5MllXeDFaWE5mYzNWd2NHOXlkR1ZrSWpwYklsSlRNalUySWl3aVVsTTFNVElpWFN3aWFYTnpJam9pYUhSMGNITTZMeTlsWkhWbllXbHVMbTl5Wnk4aUxDSnphV2R1YVc1blgydGxlWE1pT2x0N0ltdDBlU0k2SWxKVFFTSXNJbXRwWkNJNkltaDBkSEJ6T2k4dlptVnBaR1V1Ym04dklpd2liaUk2SWpVeFJtTTVZVmhCTlRjMmNUazRlRUYzY2xReWNteEdiVUpyYzFRdE9UUktaRjh3YUd4Q2VXWlFORjlMT0VOMVRFSlVUVGhJUTJ4cFptUjNaVlJHWkZWa1UybENORFJsZEVNMldVeFJja3BGU1hsQ1dsOTRMVWRwUlhJMWIwMVNUbXh6TmtoWGJWZHViRUo0WVVSQlZURTJlbTVJVVRBMlJtRnJRWEoyUVZab2JrVmtUblY1TmpWblp6bFNNa2xCWnpGU2MxZENRV0Z3ZHpSbVZrWlRlWFpOVWt0bFMxTlVNWHBDV1ZZM04zTmxhVTlXYVVSSFozSjVkM2hDUTNkbmVqZFlSbGN6ZEdsNFVGcElRbTgyVG5FelIxVkZkMnBvWTFSTExXSkpOaTB6YlZVeldUSkJlREJTTjFNemFuSk9abEJMUlhWcE1FOXRZMkpKWlhGa2RTMUtUMlp2VEZGR1ZFOWZORTR0WWtKb1ZYcFhhR2RxUVZrMFdsbFdSR1ZQVWxSZlNIUlVkMVppZDBrMGVEZzRUbnBIVDBOeWVWcHFaVlpVU0RONE9FSmxWV0ZKYTNaVFJIbGtZMGxzWkZkS2IyaDRiRVZwZHlJc0ltVWlPaUpCVVVGQ0luMWRMQ0pwWVhRaU9qRTBPRGc0TnpNeU16Y3NJbVY0Y0NJNk1UUTRPRGczTmpnek9Dd2lZWFZrSWpvaWFIUjBjSE02THk5bVpXbGtaUzV1Ynk4aWZRLlU4c3VJSWtrNEIxLWxib1RuM1BFYVljUENMR3B2eW5sd2ptWmV6UnBiNWwybTR1U0N1aDd0c0NPUWd5RUdWVHpPc1NrV1JLeDlJbzVRREQwOWhINFo2Tzk0SVFZSG14X184aVhreld4ek9QNmdzSnROVnFxbE50NnBlanNzN1JoOU5hMXlyQWlibGl0YmJfMnlqaTlVaWtSUFdWd3U1czVqRmFJM1JtSXhCWnlPQm9LY29uTWVFMFB0aE9QOHB2ckZjallQYmk1Qjg1N3F2NzlnQWZVbVk4OTViYWhsUWhBMUdUamVrenBCdFZDQml3Yl90QjBtMFJwb0xBZzFvbENrYXdRVVhOZWVCRDdFckFTWGZBYzBpbm9WWm8tYzRWMGFMM3FobXFpR2IxVHdzZ2RhdXdHbEc1RzgtYlFCT25Edkg2Vmo2SGFDTG5pb1BoM3JheE1rdyIsImV5SmhiR2NpT2lKU1V6STFOaUlzSW5SNWNDSTZJa3BYVkNJc0ltdHBaQ0k2SW1oMGRIQnpPaTh2YTJGc2JXRnlMbTl5Wnk4aWZRLmV5SmpiR0ZwYlhNaU9sc2ljM1ZpSWl3aWJtRnRaU0pkTENKcFpGOTBiMnRsYmw5emFXZHVhVzVuWDJGc1oxOTJZV3gxWlhOZmMzVndjRzl5ZEdWa0lqcGJJbEpUTWpVMklsMHNJbWx6Y3lJNkltaDBkSEJ6T2k4dmEyRnNiV0Z5TG05eVp5OGlMQ0p6YVdkdWFXNW5YMnRsZVhNaU9sdDdJbXQwZVNJNklsSlRRU0lzSW10cFpDSTZJbWgwZEhCek9pOHZabVZwWkdVdWJtOHZJaXdpYmlJNklqVXhSbU01WVZoQk5UYzJjVGs0ZUVGM2NsUXljbXhHYlVKcmMxUXRPVFJLWkY4d2FHeENlV1pRTkY5TE9FTjFURUpVVFRoSVEyeHBabVIzWlZSR1pGVmtVMmxDTkRSbGRFTTJXVXhSY2twRlNYbENXbDk0TFVkcFJYSTFiMDFTVG14ek5raFhiVmR1YkVKNFlVUkJWVEUyZW01SVVUQTJSbUZyUVhKMlFWWm9ia1ZrVG5WNU5qVm5aemxTTWtsQlp6RlNjMWRDUVdGd2R6Um1Wa1pUZVhaTlVrdGxTMU5VTVhwQ1dWWTNOM05sYVU5V2FVUkhaM0o1ZDNoQ1EzZG5lamRZUmxjemRHbDRVRnBJUW04MlRuRXpSMVZGZDJwb1kxUkxMV0pKTmkwemJWVXpXVEpCZURCU04xTXphbkpPWmxCTFJYVnBNRTl0WTJKSlpYRmtkUzFLVDJadlRGRkdWRTlmTkU0dFlrSm9WWHBYYUdkcVFWazBXbGxXUkdWUFVsUmZTSFJVZDFaaWQwazBlRGc0VG5wSFQwTnllVnBxWlZaVVNETjRPRUpsVldGSmEzWlRSSGxrWTBsc1pGZEtiMmg0YkVWcGR5SXNJbVVpT2lKQlVVRkNJbjFkTENKcFlYUWlPakUwT0RnNE56TXlNemNzSW1WNGNDSTZNVFE0T0RnM05qZ3pPQ3dpWVhWa0lqb2lhSFIwY0hNNkx5OW1aV2xrWlM1dWJ5OGlmUS5vUGl4azZUWkZqeEprUmt6SGF0YjhPNzhEY2xVMmFKUjg4N0FqX1NTWWE5Y2xrRXZnRDVpRy00ZGRwWG5hVGNpNjRDWnBoUzJkV3JOQ2JHcERCdHl6MGdsQldyZmI3dnpxSnRYX25FWVVuOGZ5T1hqdWlXbUc5TlZuUEZIOXBia1BLZkk3NzdxWFRFM2EycklBb3hoaTZpMFdaTmxBTkFqQ0xmZTJxRHVJVEp3TFpzUmZGMi13a3lJZWN2MHFEY2NaRENRVkppbnRZVFdoQVhBTnhjVnJsNFZYaWEwQ3hCWVFOa3VwTFNFMmtvTDNiZU1pZExyVjRxOTJvbFRTa0dMR1BuVzdqcTc2Q1pxdG1QR2c0aEpIZG9seXA3YzdWbkstT1pWUXdFR3NURjVUOGxrYm9uV2p6TjVPR19kU1FjcGhOX1g0OXhIS1lXNDJKRmRaZ3pvU3ciXSwiaWF0IjoxNDg4ODczMjM4LCJleHAiOjE0ODg4NzY4Mzh9.wjM0fZxf0kM88E7Rk1cU74pxZYyqvzpimZijVIC_710G2TUYkD9TV8Zcz1Bl7v9xuANxwSlW29fHk2lK5O8eDBizwfX4dUJwulnkCJHUcY8hWLpxIJa_o2lXBDXeOCHpey7kySLe859bQLsXUI_LEqHjyKysOfk5TJhzno930HfuTa6ixNefSRt3_owYCiDCkHPluuSx2l9ot058qBK6Lwqno4fMF5DoVRTALeMnLhsy-iIcVYILMNJuEl9tmlIftnYQ_V1HRk1vZlibjJZa4PdeNe1250yrX3lDbluxoSPydy30tfdRRP9DwAbIq9_L8uKGt4qptsWS0WNd_Tdp1A";
 echo "<br>";
-$ms_strArr= explode('.', $ms_example);
+$ms_strArr  = explode('.', $ms_example);
 var_dump($ms_strArr);
 
-echo "========================================================================";
-$ms_header = \oidcfed\security_jose::get_jose_header_to_object($ms_example);
-var_dump($ms_header);
-echo "========================================================================";
+echo "========================================================================<br>";
+$ms_header  = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms_example);
+echo "<br>MS Header:<br>";
+print_r($ms_header);
+echo "========================================================================<br>";
+/*
+  echo "Trying to work with JWKS:<br>";
+  use Jose\Factory\JWKFactory;
+  $jwk_set = JWKFactory::createFromJKU('https://www.googleapis.com/oauth2/v2/certs');
+  print($jwk_set->count());
+  echo "<br>";
+  $jwks_serialized = $jwk_set->jsonSerialize();
+  echo "<br>Current Key for Key Set<br>";
+  print_r($jwk_set->current());
+  $jwks_allkeys = $jwk_set->getKeys();
+  foreach ($jwks_allkeys as $jwks_akey => $jwks_avalue) {
+  //    $key_current = $jwks_allkeys->get($jwks_akey);
+  //    $key_current = $jwks_allkeys->get($jwks_avalue);
+  print_r($jwks_avalue);
+  //    $key_current = \oidcfed\security_jose::create_jwk_from_values($jwks_avalue);
+  //    print_r($key_current);
+  }
+  echo "<br>jsonSerialize:<br>";
+  print($jwks_serialized);
+  var_dump($jwk_set);
+ */
+echo "========================================================================<br>";
+$ms_payload = \oidcfed\security_jose::get_jose_jwt_payload_to_object($ms_example);
+echo "<br>MS Payload:<br>";
+print_r($ms_payload);
+echo "<br>MS Payload: JWK from signing_keys:<br>";
+//print_r($ms_payload->signing_keys[0]);
+try {
+    $jwk_from_signing_keys = \oidcfed\security_jose::create_jwk_from_values((array)$ms_payload->signing_keys[0]);
+    print_r($jwk_from_signing_keys);
+}
+catch (Exception $exc) {
+    echo $exc->getTraceAsString();
+}
+
+//use Jose\Factory\JWEFactory;
+//$jwe = JWEFactory::
+echo "========================================================================<br>";
 echo "</pre>";

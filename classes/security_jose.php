@@ -31,6 +31,7 @@
 namespace oidcfed;
 
 use Jose\Factory\JWKFactory;
+use Jose\Factory\JWEFactory;
 use Jose\Object\JWK;
 use Jose\JWTCreator;
 use Jose\Signer;
@@ -84,6 +85,32 @@ class security_jose {
         else {
             return $jwk;
         }
+    }
+
+    public static function create_jwk_from_values(array $param) {
+        if(\is_object($param)===true){
+            $param = (array) $param;
+        }
+        if (\is_array($param) === false) {
+            throw new Exception('Not a array provided for JWK(S) creation');
+        }
+        $jwk = JWKFactory::createFromValues($param);
+        return $jwk;
+    }
+
+    public static function create_jwks_from_values(array $param) {
+        $jwks = self::create_jwk_from_values($param);
+        return $jwks;
+    }
+
+    public static function create_jwks_from_uri($param) {
+        $check00 = (\is_string($param) === true && \mb_strlen($param) > 0);
+        $check01 = (\parse_url($param) !== false);
+        if ($check00 === false || $check01 === false) {
+            throw new Exception('Not an URL provided for JWK creation');
+        }
+        $jwks = JWKFactory::createFromJKU($param, true);
+        return $jwks;
     }
 
     /**
@@ -197,7 +224,7 @@ class security_jose {
         }
     }
 
-    public static function get_jose_header_to_object($jose_string) {
+    public static function get_jose_jwt_header_to_object($jose_string) {
         try {
             $jose_stringArr_checked = self::check_jose_jwt_string_base64enc($jose_string,
                                                                             false);
@@ -219,14 +246,51 @@ class security_jose {
         if ($check00 === true) {
             throw new Exception('Problems with decoding JOSE/JWT header from string received as input.');
         }
+//        $check01 = (\is_object($jose_jwt_json_header_obj) === true
+//        && \property_exists($jose_jwt_json_header_obj, 'alg')===true
+//        && \property_exists($jose_jwt_json_header_obj, 'typ')===true);
         $check01 = (\is_object($jose_jwt_json_header_obj) === true && \property_exists($jose_jwt_json_header_obj,
-                                                                                      'alg')
-                && \property_exists($jose_jwt_json_header_obj, 'typ'));
-        if($check01 === FALSE){
+                                                                                       'alg') === true);
+        if ($check01 === FALSE) {
             throw new Exception('Header Parameters typ and alg not found on JOSE/JWT Header');
         }
-        
+
         return $jose_jwt_json_header_obj;
+    }
+
+    public static function get_jose_jwt_payload_to_object($jose_string) {
+        try {
+            $jose_stringArr_checked = self::check_jose_jwt_string_base64enc($jose_string,
+                                                                            false);
+        }
+        catch (Exception $exc) {
+            $jose_stringArr_checked = false;
+//            echo $exc->getTraceAsString();
+            $exc_message            = $exc->getTraceAsString();
+            throw new Exception('Not a JOSE/JWT string received. Error/exception message:' . $exc_message);
+        }
+        if ($jose_stringArr_checked === false) {
+            return false;
+        }
+        //TODO Need to finish here (base64_decode, get alg, and check)...
+        $jose_jwt_str_payload      = $jose_stringArr_checked[1];
+        $jose_jwt_json_payload     = \base64_decode($jose_jwt_str_payload);
+        $jose_jwt_json_payload_obj = \json_decode($jose_jwt_json_payload);
+        $check00                  = ($jose_jwt_json_payload_obj === FALSE || $jose_jwt_json_payload_obj === NULL);
+        if ($check00 === true) {
+            throw new Exception('Problems with decoding JOSE/JWT header from string received as input.');
+        }
+//        $check01 = (\is_object($jose_jwt_json_header_obj) === true
+//        && \property_exists($jose_jwt_json_header_obj, 'alg')===true
+//        && \property_exists($jose_jwt_json_header_obj, 'typ')===true);
+        $check01 = (\is_object($jose_jwt_json_payload_obj) === true && (\property_exists($jose_jwt_json_payload_obj,
+                                                                                        'claims') === true
+                || (\property_exists($jose_jwt_json_payload_obj, 'signing_keys') === true
+                && \property_exists($jose_jwt_json_payload_obj, 'iss') === true)));
+        if ($check01 === FALSE) {
+            throw new Exception('Header Parameters typ and alg not found on JOSE/JWT Header');
+        }
+        return $jose_jwt_json_payload_obj;
     }
 
 }
