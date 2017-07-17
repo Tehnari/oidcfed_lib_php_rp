@@ -30,11 +30,14 @@
 
 namespace oidcfed;
 
+use Jose\Checker\AudienceChecker;
+use Jose\Factory\CheckerManagerFactory;
 use Jose\Factory\JWKFactory;
 use Jose\Factory\JWEFactory;
 use Jose\Object\JWK;
 use Jose\JWTCreator;
 use Jose\Signer;
+use Jose\Loader;
 use Exception;
 
 /**
@@ -294,7 +297,7 @@ class security_jose {
     }
 
     public static function verify_jwt_from_string_base64enc($jose_string) {
-        
+
 
     }
 

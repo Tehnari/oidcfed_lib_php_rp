@@ -236,6 +236,33 @@ foreach ($ms_payload->signing_keys as $mspkey => $mspvalue) {
 }
 
 //use Jose\Factory\JWEFactory;
-//$jwe = JWEFactory::
+use Jose\Checker\AudienceChecker;
+use Jose\Factory\CheckerManagerFactory;
+use Jose\Factory\JWKFactory;
+use Jose\Loader;
+
+$loader          = new Loader();
+//$jose_obj_loaded = $loader->load($ms_example);
+//print_r($jose_obj_loaded->getSignature(0));
+//print_r($jose_obj_loaded->getSignatures());
+echo "<br>";
+//print_r($jose_obj_loaded);
+//Signature key (public or private)
+$signatureKey    = \oidcfed\security_jose::create_jwk_from_values((array) $ms_payload->signing_keys[0]);
+// We load it and verify the signature
+$alg             = $ms_header->alg;
+// ['RS256']
+$signature       = null;
+try {
+    $result = $loader->loadAndVerifySignatureUsingKey(
+            $ms_example, $signatureKey, [$alg], $signature
+    );
+    print_r($result);
+}
+catch (Exception $exc) {
+    echo $exc->getTraceAsString();
+    echo "<br>";
+}
+
 echo "========================================================================<br>";
 echo "</pre>";
