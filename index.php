@@ -257,8 +257,8 @@ use Jose\JWTCreator;
 use Jose\Signer;
 use Jose\Loader;
 
-$loader          = new Loader();
-$jose_obj_loaded = $loader->load($ms_example);
+$loader           = new Loader();
+$jose_obj_loaded  = $loader->load($ms_example);
 //$signatures      = $jose_obj_loaded->getSignatures();
 //print_r($signatures);
 //reset($signatures);
@@ -270,25 +270,29 @@ echo "<br>";
 //print_r($jose_obj_loaded);
 //Signature key (public or private)
 echo "<br>****************************<br>";
-var_dump($jose_obj_loaded->hasClaim('signing_keys'));
-echo "<br>****************************<br>";
-$signing_keys_arr        = (array) $jose_obj_loaded->getClaim('signing_keys');
+//var_dump($jose_obj_loaded->hasClaim('signing_keys'));
+//echo "<br>****************************<br>";
+$signing_keys_arr = (array) $jose_obj_loaded->getClaim('signing_keys');
 reset($signing_keys_arr);
-$mspvalue = current($signing_keys_arr);
+$mspvalue         = current($signing_keys_arr);
 print_r($mspvalue);
 //$jwk_example0 = \oidcfed\security_jose::create_jwk_from_values($mspvalue);
 //print_r($jwk_example0);
-$signatureKey    = \oidcfed\security_jose::create_jwk_from_values($mspvalue);
-print_r($signatureKey);
-// We load it and verify the signature
-$alg             = $ms_header->alg;
-// ['RS256']
-$signature       = null;
+//$signatureKey    = \oidcfed\security_jose::create_jwk_from_values($mspvalue);
+//print_r($signatureKey);
+//// We load it and verify the signature
+//$alg             = $ms_header->alg;
+//// ['RS256']
+//$signature       = null;
 try {
-    $result = $loader->loadAndVerifySignatureUsingKey(
-            $ms_example, $signatureKey, [$alg], $signature
-    );
+//    $result = $loader->loadAndVerifySignatureUsingKey(
+//            $ms_example, $signatureKey, [$alg], $signature
+//    );
+
+    echo "<br>****************************<br>";
+    $result = \oidcfed\security_jose::validate_jwt_from_string_base64enc($ms_example);
     print_r($result);
+    echo "<br>****************************<br>";
 }
 catch (Exception $exc) {
     echo $exc->getTraceAsString();

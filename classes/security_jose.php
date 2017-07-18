@@ -43,10 +43,12 @@ use Jose\Factory\VerifierFactory;
 use Jose\Object\JWSInterface;
 use Jose\Object\JWKSet;
 use \Jose\Object\JWKSetInterface;
+use \Jose\Object\JWKInterface;
 use Jose\Object\JWK;
 use Jose\JWTCreator;
 use Jose\Signer;
 use Jose\Loader;
+use Jose\JWTLoader;
 use Exception;
 
 /**
@@ -305,67 +307,52 @@ class security_jose {
         return $jose_jwt_json_payload_obj;
     }
 
-    public static function validate_jwt_from_string_base64enc($jose_string,
-                                                              $jwks = false) {
+    public static function validate_jwt_from_string_base64enc(
+    $jose_string, $jwk = false, $jwks = false
+    ) {
         //Thanks for the idea from this source:
         //https://stackoverflow.com/questions/34754385/verify-jwt-signature-with-rsa-public-key-in-php
 // We create a JWT loader.
-        $loader = LoaderFactory::createLoader();
+//        $loader = LoaderFactory::createLoader();
+        $loader = new Loader();
 
 // We load the input
         $jws = $loader->load($jose_string);
-
+        $jws->getEncodedPayload($signature);
         if (!$jws instanceof JWSInterface) {
 //            die('Not a JWS');
             throw new Exception('Not a JWS');
         }
+
+        $header  = \oidcfed\security_jose::get_jose_jwt_header_to_object($jose_string);
         // Please note that at this moment the signature and the claims are not verified
 // To verify a JWS, we need a JWKSet that contains public keys (from RSA key in your case).
         $check00 = ($jwks !== false && $jwks instanceof JWKSetInterface);
         $check01 = ($jws->hasClaim('signing_keys') === true);
+        $check02 = (is_object($header) === true && property_exists($header,
+                                                                   'alg') === true);
+//        $check02 = ($jwk !== false && $jwk instanceof JWKInterface);
         if ($check00 === false && $check01 === false) {
             throw new Exception("JWKS not loaded or recieved.");
         }
         else if ($check00 === false && $check01 === true) {
             $signing_keys_arr   = (array) $jws->getClaim('signing_keys');
             $signing_key_values = \current($signing_keys_arr);
+//            $signature_index    = \key($signing_keys_arr);
             // We create our key object (JWK) using values in one of the claims (using first): signature_keys
-            //TODO Need to rewrite/check for JWKSet
             $jwk                = \oidcfed\security_jose::create_jwk_from_values($signing_key_values);
-// Then we set this key in a keyset (JWKSet object)
-// Be careful, the JWKSet object is immutable. When you add a key, you get a new JWKSet object.
-            $jwkset             = new JWKSet();
-            if ($jwkset instanceof JWKSetInterface) {
-                $jwkset = $jwkset->addKey($jwk);
-            }
-            else {
-                throw new Exception("JWKS not created.");
-            }
         }
-        else {
-            $jwkset = $jwks;
-        }
-
-// We create our verifier object with a list of authorized signature algorithms (only 'RS512' in this example)
-// We add some checkers. These checkers will verify claims or headers.
-        $verifier = VerifierFactory::createVerifier(
-                        ['RS512'],
-                        [
-                    new IssuedAtChecker(),
-                    new NotBeforeChecker(),
-                    new ExpirationChecker(),
-                        ]
+        $is_valid = $loader->loadAndVerifySignatureUsingKey(
+                $jose_string, $jwk, [$header->alg], $signature_index
         );
-
-        $is_valid = $verifier->verify($jws, $jwkset);
 
 // The variable $is_valid contains a boolean that indicates the signature is valid or not.
 // If a claim is not verified (e.g. the JWT expired), an exception is thrown.
 //Now you can use the $jws object to retreive all claims or header key/value pairs
         //Returning object with validation message and JWS object
-        $result = new \stdClass();
+        $result           = new \stdClass();
         $result->is_valid = $is_valid;
-        $result->jws = $jws;
+        $result->jws      = $jws;
         return $result;
     }
 
