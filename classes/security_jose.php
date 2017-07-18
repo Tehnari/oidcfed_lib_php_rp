@@ -31,9 +31,18 @@
 namespace oidcfed;
 
 use Jose\Checker\AudienceChecker;
+use Jose\Checker\ExpirationChecker;
+use Jose\Checker\IssuedAtChecker;
+use Jose\Checker\NotBeforeChecker;
 use Jose\Factory\CheckerManagerFactory;
 use Jose\Factory\JWKFactory;
 use Jose\Factory\JWEFactory;
+use Jose\Factory\KeyFactory;
+use Jose\Factory\LoaderFactory;
+use Jose\Factory\VerifierFactory;
+use Jose\Object\JWSInterface;
+use Jose\Object\JWKSet;
+use \Jose\Object\JWKSetInterface;
 use Jose\Object\JWK;
 use Jose\JWTCreator;
 use Jose\Signer;
@@ -91,7 +100,7 @@ class security_jose {
     }
 
     public static function create_jwk_from_values(array $param) {
-        if(\is_object($param)===true){
+        if (\is_object($param) === true) {
             $param = (array) $param;
         }
         if (\is_array($param) === false) {
@@ -279,7 +288,7 @@ class security_jose {
         $jose_jwt_str_payload      = $jose_stringArr_checked[1];
         $jose_jwt_json_payload     = \base64_decode($jose_jwt_str_payload);
         $jose_jwt_json_payload_obj = \json_decode($jose_jwt_json_payload);
-        $check00                  = ($jose_jwt_json_payload_obj === FALSE || $jose_jwt_json_payload_obj === NULL);
+        $check00                   = ($jose_jwt_json_payload_obj === FALSE || $jose_jwt_json_payload_obj === NULL);
         if ($check00 === true) {
             throw new Exception('Problems with decoding JOSE/JWT header from string received as input.');
         }
@@ -287,7 +296,7 @@ class security_jose {
 //        && \property_exists($jose_jwt_json_header_obj, 'alg')===true
 //        && \property_exists($jose_jwt_json_header_obj, 'typ')===true);
         $check01 = (\is_object($jose_jwt_json_payload_obj) === true && (\property_exists($jose_jwt_json_payload_obj,
-                                                                                        'claims') === true
+                                                                                         'claims') === true
                 || (\property_exists($jose_jwt_json_payload_obj, 'signing_keys') === true
                 && \property_exists($jose_jwt_json_payload_obj, 'iss') === true)));
         if ($check01 === FALSE) {
@@ -296,9 +305,68 @@ class security_jose {
         return $jose_jwt_json_payload_obj;
     }
 
-    public static function verify_jwt_from_string_base64enc($jose_string) {
+    public static function validate_jwt_from_string_base64enc($jose_string,
+                                                              $jwks = false) {
+        //Thanks for the idea from this source:
+        //https://stackoverflow.com/questions/34754385/verify-jwt-signature-with-rsa-public-key-in-php
+// We create a JWT loader.
+        $loader = LoaderFactory::createLoader();
 
+// We load the input
+        $jws = $loader->load($jose_string);
 
+        if (!$jws instanceof JWSInterface) {
+//            die('Not a JWS');
+            throw new Exception('Not a JWS');
+        }
+        // Please note that at this moment the signature and the claims are not verified
+// To verify a JWS, we need a JWKSet that contains public keys (from RSA key in your case).
+        $check00 = ($jwks !== false && $jwks instanceof JWKSetInterface);
+        $check01 = ($jws->hasClaim('signing_keys') === true);
+        if ($check00 === false && $check01 === false) {
+            throw new Exception("JWKS not loaded or recieved.");
+        }
+        else if ($check00 === false && $check01 === true) {
+            $signing_keys_arr   = (array) $jws->getClaim('signing_keys');
+            $signing_key_values = \current($signing_keys_arr);
+            // We create our key object (JWK) using values in one of the claims (using first): signature_keys
+            //TODO Need to rewrite/check for JWKSet
+            $jwk                = \oidcfed\security_jose::create_jwk_from_values($signing_key_values);
+// Then we set this key in a keyset (JWKSet object)
+// Be careful, the JWKSet object is immutable. When you add a key, you get a new JWKSet object.
+            $jwkset             = new JWKSet();
+            if ($jwkset instanceof JWKSetInterface) {
+                $jwkset = $jwkset->addKey($jwk);
+            }
+            else {
+                throw new Exception("JWKS not created.");
+            }
+        }
+        else {
+            $jwkset = $jwks;
+        }
+
+// We create our verifier object with a list of authorized signature algorithms (only 'RS512' in this example)
+// We add some checkers. These checkers will verify claims or headers.
+        $verifier = VerifierFactory::createVerifier(
+                        ['RS512'],
+                        [
+                    new IssuedAtChecker(),
+                    new NotBeforeChecker(),
+                    new ExpirationChecker(),
+                        ]
+        );
+
+        $is_valid = $verifier->verify($jws, $jwkset);
+
+// The variable $is_valid contains a boolean that indicates the signature is valid or not.
+// If a claim is not verified (e.g. the JWT expired), an exception is thrown.
+//Now you can use the $jws object to retreive all claims or header key/value pairs
+        //Returning object with validation message and JWS object
+        $result = new \stdClass();
+        $result->is_valid = $is_valid;
+        $result->jws = $jws;
+        return $result;
     }
 
 }

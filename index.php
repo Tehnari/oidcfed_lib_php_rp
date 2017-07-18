@@ -216,39 +216,70 @@ echo "========================================================================<b
 $ms_payload = \oidcfed\security_jose::get_jose_jwt_payload_to_object($ms_example);
 echo "<br>MS Payload:<br>";
 print_r($ms_payload);
-echo "<br>MS Payload: JWK from signing_keys:<br>";
-//print_r($ms_payload->signing_keys[0]);
-foreach ($ms_payload->signing_keys as $mspkey => $mspvalue) {
-    if (empty($mspvalue) === true) {
-        continue;
-    }
-    echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
-    echo ">>> " . (string) $mspkey . " <<<<br>";
-    try {
-        $jwk_from_signing_keys = \oidcfed\security_jose::create_jwk_from_values((array) $mspvalue);
-        print_r($jwk_from_signing_keys);
-        echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
-        unset($jwk_from_signing_keys);
-    }
-    catch (Exception $exc) {
-        echo $exc->getTraceAsString();
-    }
-}
 
-//use Jose\Factory\JWEFactory;
+//echo "<br>MS Payload: JWK from signing_keys:<br>";
+////print_r($ms_payload->signing_keys[0]);
+//foreach ($ms_payload->signing_keys as $mspkey => $mspvalue) {
+//    if (empty($mspvalue) === true) {
+//        continue;
+//    }
+//    echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
+//    echo ">>> " . (string) $mspkey . " <<<<br>";
+//    try {
+//        $jwk_from_signing_keys = \oidcfed\security_jose::create_jwk_from_values((array) $mspvalue);
+//        print_r($jwk_from_signing_keys);
+//        echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
+//        unset($jwk_from_signing_keys);
+//    }
+//    catch (Exception $exc) {
+//        echo $exc->getTraceAsString();
+//    }
+//}
+
+
+
 use Jose\Checker\AudienceChecker;
+use Jose\Checker\ExpirationChecker;
+use Jose\Checker\IssuedAtChecker;
+use Jose\Checker\NotBeforeChecker;
 use Jose\Factory\CheckerManagerFactory;
 use Jose\Factory\JWKFactory;
+use Jose\Factory\JWEFactory;
+use Jose\Factory\KeyFactory;
+use Jose\Factory\LoaderFactory;
+use Jose\Factory\VerifierFactory;
+use Jose\Object\Signature;
+use Jose\Object\SignatureInterface;
+use Jose\Object\JWSInterface;
+use Jose\Object\JWKSet;
+use Jose\Object\JWK;
+use Jose\JWTCreator;
+use Jose\Signer;
 use Jose\Loader;
 
 $loader          = new Loader();
-//$jose_obj_loaded = $loader->load($ms_example);
+$jose_obj_loaded = $loader->load($ms_example);
+//$signatures      = $jose_obj_loaded->getSignatures();
+//print_r($signatures);
+//reset($signatures);
+//list($mspkey,$mspvalue) = $signatures;
+//$mspvalue        = current($signatures);
 //print_r($jose_obj_loaded->getSignature(0));
 //print_r($jose_obj_loaded->getSignatures());
 echo "<br>";
 //print_r($jose_obj_loaded);
 //Signature key (public or private)
-$signatureKey    = \oidcfed\security_jose::create_jwk_from_values((array) $ms_payload->signing_keys[0]);
+echo "<br>****************************<br>";
+var_dump($jose_obj_loaded->hasClaim('signing_keys'));
+echo "<br>****************************<br>";
+$signing_keys_arr        = (array) $jose_obj_loaded->getClaim('signing_keys');
+reset($signing_keys_arr);
+$mspvalue = current($signing_keys_arr);
+print_r($mspvalue);
+//$jwk_example0 = \oidcfed\security_jose::create_jwk_from_values($mspvalue);
+//print_r($jwk_example0);
+$signatureKey    = \oidcfed\security_jose::create_jwk_from_values($mspvalue);
+print_r($signatureKey);
 // We load it and verify the signature
 $alg             = $ms_header->alg;
 // ['RS256']
