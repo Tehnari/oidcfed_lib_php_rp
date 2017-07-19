@@ -30,25 +30,25 @@
 
 namespace oidcfed;
 
-use Jose\Checker\AudienceChecker;
-use Jose\Checker\ExpirationChecker;
-use Jose\Checker\IssuedAtChecker;
-use Jose\Checker\NotBeforeChecker;
-use Jose\Factory\CheckerManagerFactory;
+//use Jose\Checker\AudienceChecker;
+//use Jose\Checker\ExpirationChecker;
+//use Jose\Checker\IssuedAtChecker;
+//use Jose\Checker\NotBeforeChecker;
+//use Jose\Factory\CheckerManagerFactory;
 use Jose\Factory\JWKFactory;
-use Jose\Factory\JWEFactory;
-use Jose\Factory\KeyFactory;
-use Jose\Factory\LoaderFactory;
-use Jose\Factory\VerifierFactory;
+//use Jose\Factory\JWEFactory;
+//use Jose\Factory\KeyFactory;
+//use Jose\Factory\LoaderFactory;
+//use Jose\Factory\VerifierFactory;
 use Jose\Object\JWSInterface;
-use Jose\Object\JWKSet;
+//use Jose\Object\JWKSet;
 use \Jose\Object\JWKSetInterface;
-use \Jose\Object\JWKInterface;
-use Jose\Object\JWK;
+//use \Jose\Object\JWKInterface;
+//use Jose\Object\JWK;
 use Jose\JWTCreator;
 use Jose\Signer;
 use Jose\Loader;
-use Jose\JWTLoader;
+//use Jose\JWTLoader;
 use Exception;
 
 /**
@@ -318,7 +318,6 @@ class security_jose {
 
 // We load the input
         $jws = $loader->load($jose_string);
-        $jws->getEncodedPayload($signature);
         if (!$jws instanceof JWSInterface) {
 //            die('Not a JWS');
             throw new Exception('Not a JWS');
@@ -329,8 +328,7 @@ class security_jose {
 // To verify a JWS, we need a JWKSet that contains public keys (from RSA key in your case).
         $check00 = ($jwks !== false && $jwks instanceof JWKSetInterface);
         $check01 = ($jws->hasClaim('signing_keys') === true);
-        $check02 = (is_object($header) === true && property_exists($header,
-                                                                   'alg') === true);
+//        $check02 = (is_object($header) === true && property_exists($header,'alg') === true);
 //        $check02 = ($jwk !== false && $jwk instanceof JWKInterface);
         if ($check00 === false && $check01 === false) {
             throw new Exception("JWKS not loaded or recieved.");

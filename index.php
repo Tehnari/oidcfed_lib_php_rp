@@ -259,6 +259,19 @@ use Jose\Loader;
 
 $loader           = new Loader();
 $jose_obj_loaded  = $loader->load($ms_example);
+//TODO test how to work correctly with Lcobucci\JWT
+//$jose_obj_loaded_lcobucci  = (object) \oidcfed\security_jose_lcobucci::parse_token_from_string($ms_example);
+//print_r($jose_obj_loaded_lcobucci);
+//echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
+//$claims_example = $jose_obj_loaded_lcobucci->getClaims();
+//var_dump($claims_example);
+//echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
+//$key_param_arr = $claims_example['signing_keys']->value[0];
+//print_r($key_param_arr);
+//$jwk_example = \oidcfed\security_jose::create_jwk_from_values($key_param_arr);
+//print_r($jwk_example);
+//$jwk_example_json = json_encode($jwk_example);
+//print_r($jwk_example_json);
 //$signatures      = $jose_obj_loaded->getSignatures();
 //print_r($signatures);
 //reset($signatures);
