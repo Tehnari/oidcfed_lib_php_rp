@@ -101,7 +101,9 @@ class security_jose {
         }
     }
 
-    public static function create_jwk_from_values(array $param) {
+    public static function create_jwk_from_values(array $param,
+                                                  $returnToPublic = false,
+                                                  $returnPEM = false) {
         if (\is_object($param) === true) {
             $param = (array) $param;
         }
@@ -109,6 +111,12 @@ class security_jose {
             throw new Exception('Not a array provided for JWK(S) creation');
         }
         $jwk = JWKFactory::createFromValues($param);
+        if ($returnToPublic !== false) {
+            $jwk = $jwk->toPublic();
+        }
+        if ($returnPEM !== false) {
+            $jwk = $jwk->toPEM();
+        }
         return $jwk;
     }
 

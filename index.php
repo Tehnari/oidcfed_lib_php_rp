@@ -62,18 +62,6 @@ echo "<br>---------------------------------------<br>";
 print_r(parse_url($kid));
 $jwk_pub_json      = "";
 //=============================================================================
-//try {
-//    mkdir($path_dataDir_real, 0777, true);
-//}
-//catch (Exception $exc) {
-//    echo $exc->getTraceAsString();
-//}
-//try {
-//    mkdir($path_dataDir_real . '/keys', 0777, true);
-//}
-//catch (Exception $exc) {
-//    echo $exc->getTraceAsString();
-//}
 $private_key       = \oidcfed\security_keys::get_private_key($private_key_path,
                                                              $passphrase,
                                                              $configargs,
@@ -186,6 +174,29 @@ echo "<br>";
 $ms_strArr  = explode('.', $ms_example);
 var_dump($ms_strArr);
 
+
+
+
+use Jose\Checker\AudienceChecker;
+use Jose\Checker\ExpirationChecker;
+use Jose\Checker\IssuedAtChecker;
+use Jose\Checker\NotBeforeChecker;
+use Jose\Factory\CheckerManagerFactory;
+use Jose\Factory\JWKFactory;
+use Jose\Factory\JWEFactory;
+use Jose\Factory\KeyFactory;
+use Jose\Factory\LoaderFactory;
+use Jose\Factory\VerifierFactory;
+use Jose\Object\Signature;
+use Jose\Object\SignatureInterface;
+use Jose\Object\JWSInterface;
+use Jose\Object\JWKSet;
+use Jose\Object\JWK;
+use Jose\JWTCreator;
+use Jose\Signer;
+use Jose\Loader;
+
+
 echo "========================================================================<br>";
 $ms_header  = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms_example);
 echo "<br>MS Header:<br>";
@@ -217,45 +228,29 @@ $ms_payload = \oidcfed\security_jose::get_jose_jwt_payload_to_object($ms_example
 echo "<br>MS Payload:<br>";
 print_r($ms_payload);
 
-//echo "<br>MS Payload: JWK from signing_keys:<br>";
-////print_r($ms_payload->signing_keys[0]);
-//foreach ($ms_payload->signing_keys as $mspkey => $mspvalue) {
-//    if (empty($mspvalue) === true) {
-//        continue;
-//    }
-//    echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
-//    echo ">>> " . (string) $mspkey . " <<<<br>";
-//    try {
-//        $jwk_from_signing_keys = \oidcfed\security_jose::create_jwk_from_values((array) $mspvalue);
-//        print_r($jwk_from_signing_keys);
-//        echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
-//        unset($jwk_from_signing_keys);
-//    }
-//    catch (Exception $exc) {
-//        echo $exc->getTraceAsString();
-//    }
-//}
-
-
-
-use Jose\Checker\AudienceChecker;
-use Jose\Checker\ExpirationChecker;
-use Jose\Checker\IssuedAtChecker;
-use Jose\Checker\NotBeforeChecker;
-use Jose\Factory\CheckerManagerFactory;
-use Jose\Factory\JWKFactory;
-use Jose\Factory\JWEFactory;
-use Jose\Factory\KeyFactory;
-use Jose\Factory\LoaderFactory;
-use Jose\Factory\VerifierFactory;
-use Jose\Object\Signature;
-use Jose\Object\SignatureInterface;
-use Jose\Object\JWSInterface;
-use Jose\Object\JWKSet;
-use Jose\Object\JWK;
-use Jose\JWTCreator;
-use Jose\Signer;
-use Jose\Loader;
+echo "<br>MS Payload: JWK from signing_keys:<br>";
+//print_r($ms_payload->signing_keys[0]);
+foreach ($ms_payload->signing_keys as $mspkey => $mspvalue) {
+    if (empty($mspvalue) === true) {
+        continue;
+    }
+    echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
+    echo ">>> " . (string) $mspkey . " <<<<br>";
+    try {
+        $jwk_from_signing_keys = \oidcfed\security_jose::create_jwk_from_values((array) $mspvalue, true);
+        $jwk_from_signing_keys_PEM = \oidcfed\security_jose::create_jwk_from_values((array) $mspvalue, true);
+        print_r($jwk_from_signing_keys);
+        echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
+        print_r($jwk_from_signing_keys_PEM);
+        echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
+        print_r(json_encode($jwk_from_signing_keys));
+        echo "<br>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
+        unset($jwk_from_signing_keys);
+    }
+    catch (Exception $exc) {
+        echo $exc->getTraceAsString();
+    }
+}
 
 $loader           = new Loader();
 $jose_obj_loaded  = $loader->load($ms_example);
