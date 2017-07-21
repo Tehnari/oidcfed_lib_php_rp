@@ -118,6 +118,8 @@ class security_jose {
             $jwk = $jwk->toPEM();
         }
         return $jwk;
+        $j1 = new JWKFactory();
+        $j1->createKey($param);
     }
 
     public static function create_jwks_from_values(array $param) {
