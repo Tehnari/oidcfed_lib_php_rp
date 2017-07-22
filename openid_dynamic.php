@@ -1,11 +1,13 @@
 <?php
 
 /**
- *
- * @author Constantin Sclifos
- * @copyright (c) 2017, Constantin Sclifos
- * @license    https://opensource.org/licenses/MIT
- *
+ * @category  PHP
+ * @package   OIDCFED_Lib_PHP_RP
+ * @author Constantin Sclifos <sclifcon@gmail.com>
+ * @copyright 2017 Constantin Sclifos
+ * @license    https://opensource.org/licenses/MIT MIT
+ * @version "GIT:f23edba8"
+ * @link   https://github.com/Tehnari/oidcfed_lib_php_rp
  * Copyright MIT <2017> Constantin Sclifos <sclifcon@gmail.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -25,7 +27,6 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
- *
  */
 
 require 'vendor/autoload.php';
