@@ -30,25 +30,26 @@
 
 namespace oidcfed;
 
-//use Jose\Checker\AudienceChecker;
-//use Jose\Checker\ExpirationChecker;
-//use Jose\Checker\IssuedAtChecker;
-//use Jose\Checker\NotBeforeChecker;
-//use Jose\Factory\CheckerManagerFactory;
+use Jose\Checker\AudienceChecker;
+use Jose\Checker\ExpirationChecker;
+use Jose\Checker\IssuedAtChecker;
+use Jose\Checker\NotBeforeChecker;
+use Jose\Factory\CheckerManagerFactory;
 use Jose\Factory\JWKFactory;
-//use Jose\Factory\JWEFactory;
-//use Jose\Factory\KeyFactory;
-//use Jose\Factory\LoaderFactory;
-//use Jose\Factory\VerifierFactory;
+use Jose\Factory\JWSFactory;
+use Jose\Factory\JWEFactory;
+use Jose\Factory\KeyFactory;
+use Jose\Factory\LoaderFactory;
+use Jose\Factory\VerifierFactory;
 use Jose\Object\JWSInterface;
-//use Jose\Object\JWKSet;
+use Jose\Object\JWKSet;
 use \Jose\Object\JWKSetInterface;
-//use \Jose\Object\JWKInterface;
-//use Jose\Object\JWK;
+use \Jose\Object\JWKInterface;
+use Jose\Object\JWK;
 use Jose\JWTCreator;
 use Jose\Signer;
 use Jose\Loader;
-//use Jose\JWTLoader;
+use Jose\JWTLoader;
 use Exception;
 
 /**
@@ -111,6 +112,8 @@ class security_jose {
             throw new Exception('Not a array provided for JWK(S) creation');
         }
         $jwk = JWKFactory::createFromValues($param);
+//        $jwk = new JWKFactory();
+//        $jwk->createKey($param);
         if ($returnToPublic !== false) {
             $jwk = $jwk->toPublic();
         }
@@ -118,8 +121,6 @@ class security_jose {
             $jwk = $jwk->toPEM();
         }
         return $jwk;
-        $j1 = new JWKFactory();
-        $j1->createKey($param);
     }
 
     public static function create_jwks_from_values(array $param) {

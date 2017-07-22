@@ -38,5 +38,5 @@ namespace oidcfed;
  * @author constantin
  */
 class metadata_statements {
-    //put your code here
+
 }
