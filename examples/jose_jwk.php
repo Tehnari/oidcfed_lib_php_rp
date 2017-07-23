@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * OIDCFED Library for PHP
+ *
+ * @abstract OIDCFED Library for PHP
+ *
+ *  PHP version 5
+ *
+ * @category  PHP
+ * @package   OIDCFED_Lib_PHP_RP
+ * @author    Constantin Sclifos <sclifcon@gmail.com>
+ * @copyright 2017 Constantin Sclifos
+ * @license   https://opensource.org/licenses/MIT MIT
+ * @version   "GIT:f23edba8"
+ * @link      https://github.com/Tehnari/oidcfed_lib_php_rp
+ * Copyright MIT <2017> Constantin Sclifos <sclifcon@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ *  - The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+require '../vendor/autoload.php';
+require '../classes/autoloader.php';
+//Loading classes
+\oidcfed\autoloader::init();
+
+global $path_dataDir, $privateKeyName, $publicKeyName,
+ $path_dataDir_real, $private_key_path, $public_key_path,
+ $passphrase, $configargs, $client_id, $private_key, $public_key;
+
+//=============================================================================
+//Generate JOSE/JWK for Private Key
+echo "<pre>";
+
+/*
+  use Jose\Factory\JWKFactory;
+  use Jose\Object\JWK;
+  $jwk_priv = JWKFactory::createFromKey($priv_key_woPass, $passphrase);
+  echo "JWK (Private KEY): <br>";
+  print_r($jwk_priv);
+  $jwk_priv_json = json_encode($jwk_priv, JSON_PARTIAL_OUTPUT_ON_ERROR);
+  print_r($jwk_priv_json);
+ */
+echo "<br>";
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
+echo "<br>";
+//=============================================================================
+//Generate JOSE/JWK for Public Key
+// Using null as passprase, for an example,
+//  and because before we have key without pass
+$additional_parameters = [
+    'kid' => $kid
+];
+$jwk_out               = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array(
+                $public_key, null, $additional_parameters);
+echo "JWK (Public KEY, resource array/object): <br>";
+echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
+echo "<br>";
+//print_r($jwk_pub);
+print_r($jwk_out);
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
+echo "<br>";
+echo "JWK (Public KEY, JSON format): <br>";
+//echo "<br>";
+echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
+echo "<br>";
+if (is_array($jwk_out) === true || is_object($jwk_out) === true) {
+    $jwk_pub_json = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array(
+                    $public_key, null, $additional_parameters, true);
+}
+print_r($jwk_pub_json);
+echo "<br>";
+echo "<br>";
+echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
+echo "<br>";
+echo "========================================================================<br>";
+

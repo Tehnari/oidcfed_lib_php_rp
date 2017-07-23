@@ -2,11 +2,11 @@
 
 /**
  * OIDCFED Library for PHP
- * 
+ *
  * @abstract OIDCFED Library for PHP
- * 
- *  PHP version 5 
- * 
+ *
+ *  PHP version 5
+ *
  * @category  PHP
  * @package   OIDCFED_Lib_PHP_RP
  * @author    Constantin Sclifos <sclifcon@gmail.com>
@@ -33,8 +33,6 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
- */
-
  */
 
 namespace oidcfed;

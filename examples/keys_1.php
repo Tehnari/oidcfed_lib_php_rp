@@ -34,46 +34,24 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-require 'vendor/autoload.php';
-require 'classes/autoloader.php';
+require '../vendor/autoload.php';
+require '../classes/autoloader.php';
 //Loading classes
 \oidcfed\autoloader::init();
 
-// First testing dynaming registration ...
-//$issuer = 'https://rp.certification.openid.net:8080/oidcfed_lib_php_rp/rp-response_type-code';
-//$url_oidc_config = 'https://rp.certification.openid.net:8080/oidcfed_php_rp/rp-response_type-code/.well-known/openid-configuration';
-//$oidc_config = \oidcfed\oidcfed::get_oidc_config($url_oidc_config, false, false, true);
-////----------
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
-echo "Here is just an example how to use libraries/classes!!!";
-echo "<br>";
-echo "Docs (and more cleaning) will be later...<br>";
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
-//echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-// Some parameters (global) are in static variables !!!
-// You can just add a new value to static variables in \oidcfed\security_keys
-//---------------------->>>>>
+
 global $path_dataDir, $privateKeyName, $publicKeyName,
  $path_dataDir_real, $private_key_path, $public_key_path,
  $passphrase, $configargs, $client_id, $private_key, $public_key;
 
-$path_dataDir      = \oidcfed\security_keys::$path_dataDir;
-$privateKeyName    = \oidcfed\security_keys::$privateKeyName;
-$publicKeyName     = \oidcfed\security_keys::$publicKeyName;
-$path_dataDir_real = \oidcfed\security_keys::path_dataDir_real($path_dataDir);
-$private_key_path  = \oidcfed\security_keys::private_key_path();
-$public_key_path   = \oidcfed\security_keys::public_key_path();
-$passphrase        = \oidcfed\security_keys::$passphrase;
-$configargs        = \oidcfed\security_keys::$configargs;
-// CLIENT ID is below:
-$client_id         = \oidcfed\security_keys::parameter_kid_build();
-$kid               = $client_id;
-$jwk_pub_json      = "";
-//=============================================================================
+
 $private_key       = \oidcfed\security_keys::get_private_key($private_key_path,
                                                              $passphrase,
                                                              $configargs,
                                                              $path_dataDir_real . '/keys');
+echo "<br><b>Private key</b>:::===>>><br><pre>";
+print_r($private_key);
+echo "</pre><br><<<===:::End of <b>Private key</b><br>";
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 try {
     $priv_key_res = \oidcfed\security_keys::get_private_key_resource($private_key,
@@ -101,9 +79,10 @@ $public_key          = \oidcfed\security_keys::get_public_key($public_key_path,
                                                               $dn                  =
                 [], $ndays               = 365, $private_key_toCheck,
                                                               $path_dataDir_real . '/keys');
-//=============================================================================
-// TODO Work on/with JOSE should be rewrited !!!
-//=============================================================================
-echo "<br>";
-echo "========================================================================<br>";
-echo "</pre>";
+echo "<br><b>Public key</b>:::===>>><br><pre>";
+print_r($public_key);
+echo "</pre><br><<<===:::End of <b>Public key</b><br>";
+
+
+
+
