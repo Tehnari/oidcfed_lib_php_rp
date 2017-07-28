@@ -36,9 +36,10 @@
  */
 require 'vendor/autoload.php';
 require 'classes/autoloader.php';
-//Loading classes
+////Loading classes
 \oidcfed\autoloader::init();
-
+require 'parameters.php';
+//
 // First testing dynaming registration ...
 //$issuer = 'https://rp.certification.openid.net:8080/oidcfed_lib_php_rp/rp-response_type-code';
 //$url_oidc_config = 'https://rp.certification.openid.net:8080/oidcfed_php_rp/rp-response_type-code/.well-known/openid-configuration';
@@ -50,60 +51,36 @@ echo "<br>";
 echo "Docs (and more cleaning) will be later...<br>";
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
 //echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-// Some parameters (global) are in static variables !!!
+// Some parameters are in static variables and hold in class \oidcfed\configure !!!
+// In class \oidcfed\security_keys we have default value for some parameters.
 // You can just add a new value to static variables in \oidcfed\security_keys
 //---------------------->>>>>
 global $path_dataDir, $privateKeyName, $publicKeyName,
  $path_dataDir_real, $private_key_path, $public_key_path,
  $passphrase, $configargs, $client_id, $private_key, $public_key;
 
-$path_dataDir      = \oidcfed\security_keys::$path_dataDir;
-$privateKeyName    = \oidcfed\security_keys::$privateKeyName;
-$publicKeyName     = \oidcfed\security_keys::$publicKeyName;
-$path_dataDir_real = \oidcfed\security_keys::path_dataDir_real($path_dataDir);
-$private_key_path  = \oidcfed\security_keys::private_key_path();
-$public_key_path   = \oidcfed\security_keys::public_key_path();
-$passphrase        = \oidcfed\security_keys::$passphrase;
-$configargs        = \oidcfed\security_keys::$configargs;
-// CLIENT ID is below:
-$client_id         = \oidcfed\security_keys::parameter_kid_build();
-$kid               = $client_id;
-$jwk_pub_json      = "";
+$kid                                   = $client_id;
+$jwk_pub_json                          = "";
 //=============================================================================
-$dn                = [];
-$ndays             = 365;
-//=============================================================================
-$private_key       = \oidcfed\security_keys::get_private_key(
-                $private_key_path, $passphrase, $configargs,
-                $path_dataDir_real . '/keys'
-);
+$dn                                    = [];
+$ndays                                 = 365;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-try {
-    $priv_key_res = \oidcfed\security_keys::get_private_key_resource(
-                    $private_key, $passphrase
-    );
-}
-catch (Exception $exc) {
-    echo $exc->getTraceAsString();
-}
-$priv_key_details = openssl_pkey_get_details($priv_key_res);
-//Getting private key without passphrase
-openssl_pkey_export($priv_key_res, $priv_key_woPass);
+$priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key, $passphrase);
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-try {
-    $priv_key_res_woPass = \oidcfed\security_keys::get_private_key_resource(
-                    $priv_key_woPass);
-}
-catch (Exception $exc) {
-    echo $exc->getTraceAsString();
-}
+//try {
+//    $priv_key_res_woPass = \oidcfed\security_keys::get_private_key_resource(
+//                    $priv_key_woPass);
+//}
+//catch (Exception $exc) {
+//    echo $exc->getTraceAsString();
+//}
 //$priv_key_details = openssl_pkey_get_details($private_key);
 //=============================================================================
 // $private_key_toCheck can be resource or Private Key content (PEM format)
 // Should be without passphrase !!!
-$private_key_toCheck = $priv_key_woPass;
-$public_key          = \oidcfed\security_keys::get_public_key(
-                $public_key_path, $dn, $ndays, $private_key_toCheck,
+//$private_key_toCheck            = $priv_key_woPass;
+$public_key = \oidcfed\security_keys::get_public_key(
+                $public_key_path, $dn, $ndays, $priv_key_woPass,
                 $path_dataDir_real . '/keys'
 );
 //=============================================================================
@@ -112,3 +89,6 @@ $public_key          = \oidcfed\security_keys::get_public_key(
 echo "<br>";
 echo "========================================================================<br>";
 echo "</pre>";
+echo "Examples:<br>";
+echo "<a href='./examples/keys_1.php' target='_blank'> - example for key generation ...</a><br> ";
+echo "<a href='./examples/keys_2.php' target='_blank'> - example for convertion from RSAKey (object) to PEM format (for RSA type) ...</a><br> ";

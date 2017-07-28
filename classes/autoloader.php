@@ -2,11 +2,11 @@
 
 /**
  * OIDCFED Library for PHP
- * 
+ *
  * @abstract OIDCFED Library for PHP
- * 
- *  PHP version 5 
- * 
+ *
+ *  PHP version 5
+ *
  * @category  PHP
  * @package   OIDCFED_Lib_PHP_RP
  * @author    Constantin Sclifos <sclifcon@gmail.com>
@@ -75,7 +75,8 @@ class autoloader {
         \set_include_path(\get_include_path() . \PATH_SEPARATOR . \PATH);
 
         foreach ($exts as $ext) {
-            if (\is_readable($path = BASE . \strtolower($class . $ext))) {
+//            if (\is_readable($path = \BASE . \strtolower($class . $ext))) {
+            if (\is_readable($path = PATH . DS. \strtolower($class . $ext))) {
                 require_once $path;
                 return true;
             }

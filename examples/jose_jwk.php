@@ -36,8 +36,9 @@
  */
 require '../vendor/autoload.php';
 require '../classes/autoloader.php';
-//Loading classes
+////Loading classes
 \oidcfed\autoloader::init();
+//require '../parameters.php';
 
 global $path_dataDir, $privateKeyName, $publicKeyName,
  $path_dataDir_real, $private_key_path, $public_key_path,
@@ -88,5 +89,36 @@ echo "<br>";
 echo "<br>";
 echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 echo "<br>";
+echo "========================================================================<br>";
+/*
+  echo "Trying to work with JWKS:<br>";
+  use Jose\Factory\JWKFactory;
+  $jwk_set = JWKFactory::createFromJKU('https://www.googleapis.com/oauth2/v2/certs');
+  print($jwk_set->count());
+  echo "<br>";
+  $jwks_serialized = $jwk_set->jsonSerialize();
+  echo "<br>Current Key for Key Set<br>";
+  print_r($jwk_set->current());
+  $jwks_allkeys = $jwk_set->getKeys();
+  foreach ($jwks_allkeys as $jwks_akey => $jwks_avalue) {
+  //    $key_current = $jwks_allkeys->get($jwks_akey);
+  //    $key_current = $jwks_allkeys->get($jwks_avalue);
+  print_r($jwks_avalue);
+  //    $key_current = \oidcfed\security_jose::create_jwk_from_values($jwks_avalue);
+  //    print_r($key_current);
+  }
+  echo "<br>jsonSerialize:<br>";
+  print($jwks_serialized);
+  var_dump($jwk_set);
+ */
+echo "========================================================================<br>";
+echo "========================================================================<br>";
+$jwk1      = \oidcfed\security_jose::create_jwk_from_values([
+            "kty" => "RSA",
+            "n"   => "oahUIoWw0K0usKNuOR6H4wkf4oBUXHTxRvgb48E-BVvxkeDNjbC4he8rUWcJoZmds2h7M70imEVhRU5djINXtqllXI4DFqcI1DgjT9LewND8MW2Krf3Spsk_ZkoFnilakGygTwpZ3uesH-PFABNIUYpOiN15dsQRkgr0vEhxN92i2asbOenSZeyaxziK72UwxrrKoExv6kc5twXTq4h-QChLOln0_mtUZwfsRaMStPs6mS6XrgxnxbWhojf663tuEQueGC-FCMfra36C9knDFGzKsNa7LZK2djYgyD3JR_MB_4NUJW_TqOQtwHYbxevoJArm-L5StowjzGy-_bq6Gw",
+            "e"   => "AQAB"], true);
+echo "JWK from values >>>";
+var_dump($jwk1);
+echo "========================================================================<br>";
 echo "========================================================================<br>";
 

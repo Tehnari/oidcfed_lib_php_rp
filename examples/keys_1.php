@@ -34,21 +34,33 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-require '../vendor/autoload.php';
-require '../classes/autoloader.php';
+require_once  '../vendor/autoload.php';
+require_once '../classes/autoloader.php';
 //Loading classes
 \oidcfed\autoloader::init();
-
+require_once '../parameters.php';
 
 global $path_dataDir, $privateKeyName, $publicKeyName,
  $path_dataDir_real, $private_key_path, $public_key_path,
  $passphrase, $configargs, $client_id, $private_key, $public_key;
 
+$path_dataDir      = \oidcfed\configure::path_dataDir();
+$privateKeyName    = \oidcfed\configure::privateKeyName();
+$publicKeyName     = \oidcfed\configure::publicKeyName();
+$path_dataDir_real = \oidcfed\configure::path_dataDir_real();
+$private_key_path  = \oidcfed\configure::private_key_path();
+$public_key_path   = \oidcfed\configure::public_key_path();
+$passphrase        = \oidcfed\configure::passphrase();
+$configargs        = \oidcfed\configure::configargs();
+// CLIENT ID is below:
+$client_id         = \oidcfed\configure::client_id();
+$private_key       = \oidcfed\configure::private_key();
+$public_key        = \oidcfed\configure::public_key();
 
-$private_key       = \oidcfed\security_keys::get_private_key($private_key_path,
-                                                             $passphrase,
-                                                             $configargs,
-                                                             $path_dataDir_real . '/keys');
+
+$private_key = \oidcfed\security_keys::get_private_key($private_key_path,
+                                                       $passphrase, $configargs,
+                                                       $path_dataDir_real . '/keys');
 echo "<br><b>Private key</b>:::===>>><br><pre>";
 print_r($private_key);
 echo "</pre><br><<<===:::End of <b>Private key</b><br>";
@@ -74,11 +86,12 @@ catch (Exception $exc) {
 //=============================================================================
 // $private_key_toCheck can be resource or Private Key content (PEM format)
 // Should be without passphrase !!!
-$private_key_toCheck = $priv_key_woPass;
-$public_key          = \oidcfed\security_keys::get_public_key($public_key_path,
-                                                              $dn                  =
-                [], $ndays               = 365, $private_key_toCheck,
-                                                              $path_dataDir_real . '/keys');
+//$private_key_toCheck = $priv_key_woPass;
+$public_key = \oidcfed\security_keys::get_public_key($public_key_path,
+                                                     $dn         = [],
+                                                     $ndays      = 365,
+                                                     $priv_key_woPass,
+                                                     $path_dataDir_real . '/keys');
 echo "<br><b>Public key</b>:::===>>><br><pre>";
 print_r($public_key);
 echo "</pre><br><<<===:::End of <b>Public key</b><br>";

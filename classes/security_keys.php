@@ -2,11 +2,11 @@
 
 /**
  * OIDCFED Library for PHP
- * 
+ *
  * @abstract OIDCFED Library for PHP
- * 
- *  PHP version 5 
- * 
+ *
+ *  PHP version 5
+ *
  * @category  PHP
  * @package   OIDCFED_Lib_PHP_RP
  * @author    Constantin Sclifos <sclifcon@gmail.com>
@@ -34,7 +34,6 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
 
 namespace oidcfed;
 
@@ -68,13 +67,17 @@ class security_keys {
         }
         //=============================================================================
         try {
-            mkdir($path_dataDir_real, 0777, true);
+            if (\is_dir($path_dataDir_real) === false) {
+                \mkdir($path_dataDir_real, 0777, true);
+            }
         }
         catch (Exception $exc) {
             echo $exc->getTraceAsString();
         }
         try {
-            mkdir($path_dataDir_real . '/keys', 0777, true);
+            if (\is_dir($path_dataDir_real . '/keys') === false) {
+                \mkdir($path_dataDir_real . '/keys', 0777, true);
+            }
         }
         catch (Exception $exc) {
             echo $exc->getTraceAsString();
@@ -320,6 +323,24 @@ class security_keys {
         }
 
         return $private_key_pem_string;
+    }
+
+//=========================================================================
+    public static function get_private_key_without_passphrase($private_key,
+                                                              $passphrase) {
+        $priv_key_woPass = '';
+        try {
+            $priv_key_res = \oidcfed\security_keys::get_private_key_resource(
+                            $private_key, $passphrase
+            );
+        }
+        catch (Exception $exc) {
+            echo $exc->getTraceAsString();
+        }
+//        $priv_key_details = openssl_pkey_get_details($priv_key_res);
+//Getting private key without passphrase
+        openssl_pkey_export($priv_key_res, $priv_key_woPass);
+        return $priv_key_woPass;
     }
 
 //=========================================================================

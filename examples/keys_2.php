@@ -36,13 +36,25 @@
  */
 require '../vendor/autoload.php';
 require '../classes/autoloader.php';
-//Loading classes
+////Loading classes
 \oidcfed\autoloader::init();
 
+//require '../parameters.php';
 
-global $path_dataDir, $privateKeyName, $publicKeyName,
- $path_dataDir_real, $private_key_path, $public_key_path,
- $passphrase, $configargs, $client_id, $private_key, $public_key;
+
+$path_dataDir      = \oidcfed\configure::path_dataDir();
+$privateKeyName    = \oidcfed\configure::privateKeyName();
+$publicKeyName     = \oidcfed\configure::publicKeyName();
+$path_dataDir_real = \oidcfed\configure::path_dataDir_real();
+$private_key_path  = \oidcfed\configure::private_key_path();
+$public_key_path   = \oidcfed\configure::public_key_path();
+$passphrase        = \oidcfed\configure::passphrase();
+$configargs        = \oidcfed\configure::configargs();
+// CLIENT ID is below:
+$client_id         = \oidcfed\configure::client_id();
+$private_key       = \oidcfed\configure::private_key();
+$public_key        = \oidcfed\configure::public_key();
+
 
 
 //use Jose\KeyConverter\KeyConverter;
@@ -59,40 +71,13 @@ $key        = new RSAKey([
 //    "dq"  => "Dq0gfgJ1DdFGXiLvQEZnuKEN0UUmsJBxkjydc3j4ZYdBiMRAy86x0vHCjywcMlYYg4yoC4YZa9hNVcsjqA3FeiL19rk8g6Qn29Tt0cj8qqyFpz9vNDBUfCAiJVeESOjJDZPYHdHY8v1b-o-Z2X5tvLx-TCekf7oxyeKDUqKWjis",
 //    "qi"  => "VIMpMYbPf47dT1w_zDUXfPimsSegnMOA1zTaX7aGk_8urY6R8-ZW1FxU7AlWAyLWybqq6t16VFd7hQd0y6flUK4SlOydB61gwanOsXGOAOv82cHq0E3eL4HrtZkUuKvnPrMnsUUFlfUdybVzxyjz9JF_XyaY14ardLSjf4L_FNY",
         ]);
+echo "<br><pre><br>";
+echo "Public Key (example)<br>";
 print_r($key);
 $pem        = $key->toPEM();
 echo "<br>";
+echo "Public Key in PEM format (example)<br>";
 print_r($pem);
 echo "========================================================================<br>";
 
-/*
-  echo "Trying to work with JWKS:<br>";
-  use Jose\Factory\JWKFactory;
-  $jwk_set = JWKFactory::createFromJKU('https://www.googleapis.com/oauth2/v2/certs');
-  print($jwk_set->count());
-  echo "<br>";
-  $jwks_serialized = $jwk_set->jsonSerialize();
-  echo "<br>Current Key for Key Set<br>";
-  print_r($jwk_set->current());
-  $jwks_allkeys = $jwk_set->getKeys();
-  foreach ($jwks_allkeys as $jwks_akey => $jwks_avalue) {
-  //    $key_current = $jwks_allkeys->get($jwks_akey);
-  //    $key_current = $jwks_allkeys->get($jwks_avalue);
-  print_r($jwks_avalue);
-  //    $key_current = \oidcfed\security_jose::create_jwk_from_values($jwks_avalue);
-  //    print_r($key_current);
-  }
-  echo "<br>jsonSerialize:<br>";
-  print($jwks_serialized);
-  var_dump($jwk_set);
- */
-echo "========================================================================<br>";
-echo "========================================================================<br>";
-$jwk1      = \oidcfed\security_jose::create_jwk_from_values([
-            "kty" => "RSA",
-            "n"   => "oahUIoWw0K0usKNuOR6H4wkf4oBUXHTxRvgb48E-BVvxkeDNjbC4he8rUWcJoZmds2h7M70imEVhRU5djINXtqllXI4DFqcI1DgjT9LewND8MW2Krf3Spsk_ZkoFnilakGygTwpZ3uesH-PFABNIUYpOiN15dsQRkgr0vEhxN92i2asbOenSZeyaxziK72UwxrrKoExv6kc5twXTq4h-QChLOln0_mtUZwfsRaMStPs6mS6XrgxnxbWhojf663tuEQueGC-FCMfra36C9knDFGzKsNa7LZK2djYgyD3JR_MB_4NUJW_TqOQtwHYbxevoJArm-L5StowjzGy-_bq6Gw",
-            "e"   => "AQAB"], true);
-echo "JWK >>>";
-var_dump($jwk1);
-echo "========================================================================<br>";
-echo "========================================================================<br>";
+echo "<br></pre><br>";

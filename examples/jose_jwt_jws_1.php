@@ -34,10 +34,12 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-require '../vendor/autoload.php';
-require '../classes/autoloader.php';
-//Loading classes
-\oidcfed\autoloader::init();
+//require '../vendor/autoload.php';
+//require '../classes/autoloader.php';
+////Loading classes
+//\oidcfed\autoloader::init();
+
+require '../parameters.php';
 
 global $path_dataDir, $privateKeyName, $publicKeyName,
  $path_dataDir_real, $private_key_path, $public_key_path,
