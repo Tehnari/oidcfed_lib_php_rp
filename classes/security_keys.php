@@ -413,6 +413,7 @@ class security_keys {
 
         $check04 = ((\is_array($path_parts) === false));
         $check05 = ($check00 === true && $check04 === true);
+        $key_contents = false;
         if ($check00 === true && $check02 === true && ( \count($path_parts) > 3)
                 && $check03 === true) {
             $key_contents = self::get_filekey_contents($key_data);

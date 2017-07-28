@@ -57,31 +57,32 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
 //---------------------->>>>>
 global $path_dataDir, $privateKeyName, $publicKeyName,
  $path_dataDir_real, $private_key_path, $public_key_path,
- $passphrase, $configargs, $client_id, $private_key, $public_key;
+ $passphrase, $configargs, $client_id, $private_key, $public_key, $dn, $ndays;
 
-$kid                                   = $client_id;
-$jwk_pub_json                          = "";
+$kid             = $client_id;
+$jwk_pub_json    = "";
 //=============================================================================
-$dn                                    = [];
-$ndays                                 = 365;
+$dn              = [];
+$ndays           = 365;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-$priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key, $passphrase);
+$priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
+                                                                              $passphrase);
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-//try {
-//    $priv_key_res_woPass = \oidcfed\security_keys::get_private_key_resource(
-//                    $priv_key_woPass);
-//}
-//catch (Exception $exc) {
-//    echo $exc->getTraceAsString();
-//}
+try {
+    $priv_key_res_woPass = \oidcfed\security_keys::get_private_key_resource(
+                    $priv_key_woPass);
+}
+catch (Exception $exc) {
+    echo $exc->getTraceAsString();
+}
 //$priv_key_details = openssl_pkey_get_details($private_key);
 //=============================================================================
 // $private_key_toCheck can be resource or Private Key content (PEM format)
 // Should be without passphrase !!!
 //$private_key_toCheck            = $priv_key_woPass;
-$public_key = \oidcfed\security_keys::get_public_key(
-                $public_key_path, $dn, $ndays, $priv_key_woPass,
-                $path_dataDir_real . '/keys'
+$public_key = \oidcfed\security_keys::get_public_key($public_key_path, $dn,
+                                                     $ndays, $priv_key_woPass,
+                                                     $path_dataDir_real . '/keys'
 );
 //=============================================================================
 // TODO Work on/with JOSE should be rewrited !!!

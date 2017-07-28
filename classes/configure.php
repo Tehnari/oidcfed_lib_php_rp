@@ -37,6 +37,8 @@
 
 namespace oidcfed;
 
+use Exception;
+
 require_once 'autoloader.php';
 \oidcfed\autoloader::init();
 
@@ -142,7 +144,9 @@ class configure {
         global $public_key;
         $check00 = (\is_string($private_key_woPass) === true && \mb_strlen($private_key_woPass)
                 > 0);
-        if (empty($public_key) === true && ($private_key_woPass === false || ($check00 === false))) {
+        $check01 = (\is_resource($private_key_woPass) === true);
+        if (empty($public_key) === true && ($private_key_woPass === false || ($check00 === false
+                && $check01 === false))) {
 //            return null;
             throw new Exception('Private key (content) without passphrase wasn\'t provided');
         }
