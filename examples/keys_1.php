@@ -34,7 +34,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-require_once  '../vendor/autoload.php';
+require_once '../vendor/autoload.php';
 require_once '../classes/autoloader.php';
 //Loading classes
 \oidcfed\autoloader::init();
@@ -55,12 +55,10 @@ $configargs        = \oidcfed\configure::configargs();
 // CLIENT ID is below:
 $client_id         = \oidcfed\configure::client_id();
 $private_key       = \oidcfed\configure::private_key();
-$public_key        = \oidcfed\configure::public_key();
-
-
-$private_key = \oidcfed\security_keys::get_private_key($private_key_path,
-                                                       $passphrase, $configargs,
-                                                       $path_dataDir_real . '/keys');
+//$public_key        = \oidcfed\configure::public_key();
+//$private_key = \oidcfed\security_keys::get_private_key($private_key_path,
+//                                                       $passphrase, $configargs,
+//                                                       $path_dataDir_real . '/keys');
 echo "<br><b>Private key</b>:::===>>><br><pre>";
 print_r($private_key);
 echo "</pre><br><<<===:::End of <b>Private key</b><br>";
@@ -87,11 +85,14 @@ catch (Exception $exc) {
 // $private_key_toCheck can be resource or Private Key content (PEM format)
 // Should be without passphrase !!!
 //$private_key_toCheck = $priv_key_woPass;
-$public_key = \oidcfed\security_keys::get_public_key($public_key_path,
-                                                     $dn         = [],
-                                                     $ndays      = 365,
-                                                     $priv_key_woPass,
-                                                     $path_dataDir_real . '/keys');
+//$public_key = \oidcfed\security_keys::get_public_key($public_key_path,
+//                                                     $dn         = [],
+//                                                     $ndays      = 365,
+//                                                     $priv_key_woPass,
+//                                                     $path_dataDir_real . '/keys');
+$public_key = \oidcfed\configure::public_key($priv_key_woPass, $public_key_path,
+                                             $dn, $ndays,
+                                             $path_dataDir_real . '/keys');
 echo "<br><b>Public key</b>:::===>>><br><pre>";
 print_r($public_key);
 echo "</pre><br><<<===:::End of <b>Public key</b><br>";
