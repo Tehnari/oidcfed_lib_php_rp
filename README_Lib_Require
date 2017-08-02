@@ -31,21 +31,22 @@ to support decoding, verification and flattening of compounded metadata statemen
 on whether a particular claim is signed or not. As standard discovery documents
 are not signed, but might still contain valuable information a library might
 want to provide the application with:
-- Both, the signed MS and the unsigned discovery document;
-Or a merged version of both the signed MS and the discovery document where
+    - Both, the signed MS and the unsigned discovery document;
+    - Or a merged version of both the signed MS and the discovery document where
 the signed claims have prevalence.
-A Client library MUST provide a way for applications to specify their trusted keys
+- A Client library MUST provide a way for applications to specify their trusted keys
  for Federation Operators (FO)
-A Client library MUST provide a way for applications to specify which FO will be used
+- A Client library MUST provide a way for applications to specify which FO will be used
  for the authentication process. For instance:
-The application might provide an ordered list of FO where the first one available
+    - The application might provide an ordered list of FO where the first one available
 in the OP's MS is used;
-Or the application is fed with the list of supported FO's (according to the discovered
- MS) and let the end user to decide which one use.
+    - Or the application is fed with the list of supported FO's (according to
+the discovered MS) and let the end user to decide which one use.
 A Client library MAY provide means for automatically disabling federation support
 for specific OP's.
-A Client library MUST be able to use "signing_keys", "signing_keys_uri", and
+- A Client library MUST be able to use "signing_keys", "signing_keys_uri", and
 "signed_jwks_uri" to verify OP's "jwks_uri" claim (if present).
+
 OP/IdP
 In OIDC, an OP/IdP is the entity which is able to authenticate the end user and,
 often, also to provide identity information. Adding federation support to an OP
