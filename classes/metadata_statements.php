@@ -2,11 +2,11 @@
 
 /**
  * OIDCFED Library for PHP
- * 
+ *
  * @abstract OIDCFED Library for PHP
- * 
- *  PHP version 5 
- * 
+ *
+ *  PHP version 5
+ *
  * @category  PHP
  * @package   OIDCFED_Lib_PHP_RP
  * @author    Constantin Sclifos <sclifcon@gmail.com>
@@ -46,5 +46,33 @@ namespace oidcfed;
  * @author constantin
  */
 class metadata_statements {
+    public static function validation_MS($param) {
+
+    }
+    public static function flattening_MS($param) {
+
+    }
+    public static function merge_two_MS($param) {
+
+    }
+    public static function check_info_in_MS($param) {
+
+    }
+    public static function check_if_MS_is_signed($param) {
+
+    }
+    public static function get_RP_keys_for_FO($param) {
+
+    }
+    public static function get_FO_list_from_MS($param) {
+
+    }
+    public static function verify_OP_keys_from_MS($param) {
+
+    }
+    public static function verify_OP_keys_from_jwks_uri($param) {
+
+    }
+
 
 }
