@@ -1,0 +1,57 @@
+Source: https://wiki.geant.org/display/gn42jra3/OIDCFED+implementation+blueprint+requirements
+
+OIDCFED implementation blueprint requirements
+Skip to end of metadata
+Created by Alejandro Perez Mendez, last modified on Jun 29, 2017 Go to start of metadata
+This page provides a live document aiming to gather all the requirement an existing
+OIDC library must address to incorporate the federation functionality described
+in https://github.com/OpenIDC/fedoidc/blob/master/draft/oidcfed.hf.txt.
+Client/RP
+In OIDC, a Client/RP is the entity that wants to obtain authentication and
+identity information about the end user. The purpose of this information is
+typically for authorization and/or customization of the service. Adding
+federation support for a Client means that a) the Client will trust the
+information received from the OP (and/or Identity Endpoints) that take part
+of the federation. b) These OPs and/or Identity Endpoints will disclose end
+user's information to the RP as it is trusted that it will deal with it
+appropriately.
+There exist a variety of software libraries and solutions that implement the Client
+functionality defined by the OIDC specification. The following list provides
+a non-exhaustive list of requirements that they should address to include
+support federation as described in https://github.com/OpenIDC/fedoidc/blob/master/draft/oidcfed.hf.txt:
+- A client library MUST include support (either by itself of by the use of
+third-party libraries) of JSON Web Tokens, as the federation spec heavily
+relies on them for its operation.
+- A Client library MUST extend its discovery document retrieval functionality
+to support decoding, verification and flattening of compounded metadata statement
+ (hereafter MS).
+- A Client library MUST implement policies for determining whether the information
+ in a compounded MS is valid (e.g. using federation specification's Appendix A rules).
+- A Client library MAY implement a way of providing the application information
+on whether a particular claim is signed or not. As standard discovery documents
+are not signed, but might still contain valuable information a library might
+want to provide the application with:
+- Both, the signed MS and the unsigned discovery document;
+Or a merged version of both the signed MS and the discovery document where
+the signed claims have prevalence.
+A Client library MUST provide a way for applications to specify their trusted keys
+ for Federation Operators (FO)
+A Client library MUST provide a way for applications to specify which FO will be used
+ for the authentication process. For instance:
+The application might provide an ordered list of FO where the first one available
+in the OP's MS is used;
+Or the application is fed with the list of supported FO's (according to the discovered
+ MS) and let the end user to decide which one use.
+A Client library MAY provide means for automatically disabling federation support
+for specific OP's.
+A Client library MUST be able to use "signing_keys", "signing_keys_uri", and
+"signed_jwks_uri" to verify OP's "jwks_uri" claim (if present).
+OP/IdP
+In OIDC, an OP/IdP is the entity which is able to authenticate the end user and,
+often, also to provide identity information. Adding federation support to an OP
+enables secure and trusted interaction with federation's Clients to exchange
+identity information about the end users OP controls.
+The following list provides a non-exhaustive list of requirements that
+existing/new OIDC libraries should address in order to support federation
+specificatrion as described in https://github.com/OpenIDC/fedoidc/blob/master/draft/oidcfed.hf.txt:
+
