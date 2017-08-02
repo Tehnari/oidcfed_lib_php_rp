@@ -1,12 +1,14 @@
 Source: https://wiki.geant.org/display/gn42jra3/OIDCFED+implementation+blueprint+requirements
 
-OIDCFED implementation blueprint requirements
-Skip to end of metadata
+                OIDCFED implementation blueprint requirements
+
 Created by Alejandro Perez Mendez, last modified on Jun 29, 2017 Go to start of metadata
+
 This page provides a live document aiming to gather all the requirement an existing
 OIDC library must address to incorporate the federation functionality described
 in https://github.com/OpenIDC/fedoidc/blob/master/draft/oidcfed.hf.txt.
-Client/RP
+
+    Client/RP
 In OIDC, a Client/RP is the entity that wants to obtain authentication and
 identity information about the end user. The purpose of this information is
 typically for authorization and/or customization of the service. Adding
@@ -18,10 +20,11 @@ appropriately.
 There exist a variety of software libraries and solutions that implement the Client
 functionality defined by the OIDC specification. The following list provides
 a non-exhaustive list of requirements that they should address to include
-support federation as described in https://github.com/OpenIDC/fedoidc/blob/master/draft/oidcfed.hf.txt:
+support federation as described in
+https://github.com/OpenIDC/fedoidc/blob/master/draft/oidcfed.hf.txt:
 - A client library MUST include support (either by itself of by the use of
 third-party libraries) of JSON Web Tokens, as the federation spec heavily
-relies on them for its operation.
+relies on them for its operation. (** Work using: Spomky-Labs/jose **)
 - A Client library MUST extend its discovery document retrieval functionality
 to support decoding, verification and flattening of compounded metadata statement
  (hereafter MS).
@@ -47,12 +50,13 @@ for specific OP's.
 - A Client library MUST be able to use "signing_keys", "signing_keys_uri", and
 "signed_jwks_uri" to verify OP's "jwks_uri" claim (if present).
 
-OP/IdP
+    OP/IdP
 In OIDC, an OP/IdP is the entity which is able to authenticate the end user and,
 often, also to provide identity information. Adding federation support to an OP
 enables secure and trusted interaction with federation's Clients to exchange
 identity information about the end users OP controls.
 The following list provides a non-exhaustive list of requirements that
 existing/new OIDC libraries should address in order to support federation
-specificatrion as described in https://github.com/OpenIDC/fedoidc/blob/master/draft/oidcfed.hf.txt:
+specificatrion as described in
+https://github.com/OpenIDC/fedoidc/blob/master/draft/oidcfed.hf.txt:
 
