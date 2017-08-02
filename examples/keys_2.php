@@ -53,7 +53,7 @@ $configargs        = \oidcfed\configure::configargs();
 // CLIENT ID is below:
 $client_id         = \oidcfed\configure::client_id();
 $private_key       = \oidcfed\configure::private_key();
-$public_key        = \oidcfed\configure::public_key();
+//$public_key        = \oidcfed\configure::public_key();
 
 
 
