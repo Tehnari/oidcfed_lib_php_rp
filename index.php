@@ -94,3 +94,4 @@ echo "Examples:<br>";
 echo "<a href='./examples/keys_1.php' target='_blank'> - example for key generation ...</a><br> ";
 echo "<a href='./examples/keys_2.php' target='_blank'> - example for convertion from RSAKey (object) to PEM format (for RSA type) ...</a><br> ";
 echo "<a href='./examples/jose_jwk.php' target='_blank'> - JOSE/JWK (Example 1) ...</a><br> ";
+echo "<a href='./examples/jose_jwt_jws_1.php' target='_blank'> - JOSE/JWS (Example 1) ...</a><br> ";

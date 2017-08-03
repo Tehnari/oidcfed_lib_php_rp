@@ -61,6 +61,7 @@ use Jose\Factory\JWSFactory;
  */
 $jws        = JWSFactory::createJWS('A JWS with a detached payload', true);
 print_r($jws);
+echo "<pre>";
 echo "========================================================================<br>";
 echo "Working with Metadata Statements. <br>";
 echo "Using examples from: https://openid.andreas.labs.uninett.no ";
@@ -172,3 +173,5 @@ catch (Exception $exc) {
     echo $exc->getTraceAsString();
     echo "<br>";
 }
+
+echo "</pre>";
