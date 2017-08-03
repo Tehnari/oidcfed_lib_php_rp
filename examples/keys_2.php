@@ -34,12 +34,11 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-require '../vendor/autoload.php';
-require '../classes/autoloader.php';
 ////Loading classes
-\oidcfed\autoloader::init();
-
-//require '../parameters.php';
+//require '../vendor/autoload.php';
+//require '../classes/autoloader.php';
+//\oidcfed\autoloader::init();
+require_once '../parameters.php';
 
 
 $path_dataDir      = \oidcfed\configure::path_dataDir();

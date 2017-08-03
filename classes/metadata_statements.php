@@ -35,8 +35,15 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 namespace oidcfed;
+
+use Exception;
+
+//require '../vendor/autoload.php';
+require_once 'autoloader.php';
+\oidcfed\autoloader::init();
+////require_once '../parameters.php';
+//use Jose\Loader;
 
 //require (__DIR__.'/../vendor/autoload.php');
 
@@ -46,33 +53,58 @@ namespace oidcfed;
  * @author constantin
  */
 class metadata_statements {
-    public static function validation_MS($param) {
+
+    public static function check_info_in_MS($param) {
+        $claims_must      = ["scope"];
+        $scopes_supported = [
+            "profile", "openid",
+            "offline_access", "phone",
+            "address", "email"
+        ];
+    }
+
+    public static function check_MS_signature($ms) {
 
     }
+
+    public static function create_MS($param) {
+
+    }
+
     public static function flattening_MS($param) {
 
     }
-    public static function merge_two_MS($param) {
 
-    }
-    public static function check_info_in_MS($param) {
-
-    }
-    public static function check_if_MS_is_signed($param) {
-
-    }
     public static function get_RP_keys_for_FO($param) {
 
     }
+
     public static function get_FO_list_from_MS($param) {
 
     }
+
+    public static function merge_two_MS($param) {
+
+    }
+
+    public static function unpack_MS($jwt_string, $sign_keys) {
+        $keys       = [];
+        // We create our loader.
+//        $loader     = new Loader();
+//        $loader->
+
+    }
+
     public static function verify_OP_keys_from_MS($param) {
 
     }
-    public static function verify_OP_keys_from_jwks_uri($param) {
+
+    public static function validation_MS($param) {
 
     }
 
+    public static function verify_OP_keys_from_jwks_uri($param) {
+
+    }
 
 }

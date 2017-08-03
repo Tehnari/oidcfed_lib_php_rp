@@ -34,10 +34,10 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-require 'vendor/autoload.php';
-require 'classes/autoloader.php';
+//require 'vendor/autoload.php';
+//require 'classes/autoloader.php';
 ////Loading classes
-\oidcfed\autoloader::init();
+//\oidcfed\autoloader::init();
 require 'parameters.php';
 //
 // First testing dynaming registration ...
@@ -55,9 +55,9 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>><br>";
 // In class \oidcfed\security_keys we have default value for some parameters.
 // You can just add a new value to static variables in \oidcfed\security_keys
 //---------------------->>>>>
-global $path_dataDir, $privateKeyName, $publicKeyName,
- $path_dataDir_real, $private_key_path, $public_key_path,
- $passphrase, $configargs, $client_id, $private_key, $public_key, $dn, $ndays;
+//global $path_dataDir, $privateKeyName, $publicKeyName,
+// $path_dataDir_real, $private_key_path, $public_key_path,
+// $passphrase, $configargs, $client_id, $private_key, $public_key, $dn, $ndays;
 
 $kid             = $client_id;
 $jwk_pub_json    = "";
@@ -93,3 +93,4 @@ echo "</pre>";
 echo "Examples:<br>";
 echo "<a href='./examples/keys_1.php' target='_blank'> - example for key generation ...</a><br> ";
 echo "<a href='./examples/keys_2.php' target='_blank'> - example for convertion from RSAKey (object) to PEM format (for RSA type) ...</a><br> ";
+echo "<a href='./examples/jose_jwk.php' target='_blank'> - JOSE/JWK (Example 1) ...</a><br> ";

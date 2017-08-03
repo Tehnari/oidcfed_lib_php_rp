@@ -34,15 +34,15 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-require '../vendor/autoload.php';
-require '../classes/autoloader.php';
-////Loading classes
-\oidcfed\autoloader::init();
-//require '../parameters.php';
+//Loading classes
+//require '../vendor/autoload.php';
+//require '../classes/autoloader.php';
+//\oidcfed\autoloader::init();
+require_once '../parameters.php';
 
-global $path_dataDir, $privateKeyName, $publicKeyName,
- $path_dataDir_real, $private_key_path, $public_key_path,
- $passphrase, $configargs, $client_id, $private_key, $public_key;
+//global $path_dataDir, $privateKeyName, $publicKeyName,
+// $path_dataDir_real, $private_key_path, $public_key_path,
+// $passphrase, $configargs, $client_id, $private_key, $public_key;
 
 //=============================================================================
 //Generate JOSE/JWK for Private Key
