@@ -32,6 +32,7 @@ $client_id         = \oidcfed\configure::client_id();
 $private_key       = \oidcfed\configure::private_key();
 $priv_key_woPass   = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
                                                                                 $passphrase);
-$public_key        = \oidcfed\configure::public_key($public_key_path, $dn,
-                                                    $ndays, $priv_key_woPass,
-                                                    $path_dataDir_real . '/keys');
+$public_key        = \oidcfed\configure::public_key(
+                $priv_key_woPass, $public_key_path, $dn, $ndays,
+                $path_dataDir_real . '/keys');
+echo "";
