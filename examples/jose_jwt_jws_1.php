@@ -142,7 +142,7 @@ var_dump($pl);
 echo "========================================================================<br>";
 $ms_is_encrypt = $jose_obj_loaded->getSignatures();
 echo "<br>Signatures<br>";
-var_sump($ms_is_encrypt);
+var_dump($ms_is_encrypt);
 echo "========================================================================<br>";
 //$signing_keys_arr = (array) $jose_obj_loaded->getClaim('signing_keys');
 //reset($signing_keys_arr);
