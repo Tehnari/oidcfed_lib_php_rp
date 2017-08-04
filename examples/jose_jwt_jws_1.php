@@ -131,8 +131,19 @@ print_r($ms_payload);
 //    }
 //}
 
-//$loader           = new Loader();
-//$jose_obj_loaded  = $loader->load($ms_example);
+$loader           = new Loader();
+$jose_obj_loaded  = $loader->load($ms_example);
+echo "========================================================================<br>";
+$pl = $jose_obj_loaded->getPayload();
+$ms_claims = $jose_obj_loaded->getClaims();
+echo "<br>Payload/Claims...<br>";
+var_dump($pl);
+//var_dump($ms_claims);
+echo "========================================================================<br>";
+$ms_is_encrypt = $jose_obj_loaded->getSignatures();
+echo "<br>Signatures<br>";
+var_sump($ms_is_encrypt);
+echo "========================================================================<br>";
 //$signing_keys_arr = (array) $jose_obj_loaded->getClaim('signing_keys');
 //reset($signing_keys_arr);
 //$mspvalue         = current($signing_keys_arr);
