@@ -103,7 +103,7 @@ print_r($ms_header->alg);
 //echo "========================================================================<br>";
 
 echo "========================================================================<br>";
-$ms_payload = \oidcfed\security_jose::get_jose_jwt_payload_to_object($ms_example);
+$ms_payload      = \oidcfed\security_jose::get_jose_jwt_payload_to_object($ms_example);
 echo "<br>MS Payload:<br>";
 print_r($ms_payload);
 //echo "<br>MS Payload: JWK from signing_keys:<br>";
@@ -132,21 +132,31 @@ print_r($ms_payload);
 //    }
 //}
 // We create our loader.
-$loader                     = new Loader();
-$jose_obj_loaded            = $loader->load($ms_example);
+$loader          = new Loader();
+$jose_obj_loaded = $loader->load($ms_example);
 echo "========================================================================<br>";
-$pl                         = $jose_obj_loaded->getPayload();
-$ms_claims                  = $jose_obj_loaded->getClaims();
+$pl              = $jose_obj_loaded->getPayload();
+$ms_claims       = $jose_obj_loaded->getClaims();
 echo "<br>Payload/Claims...<br>";
 var_dump($pl);
 //var_dump($ms_claims);
 echo "========================================================================<br>";
-$ms_signatures              = $jose_obj_loaded->getSignatures();
+$ms_signatures   = $jose_obj_loaded->getSignatures();
 echo "<br>Signatures count: " . $jose_obj_loaded->countSignatures() . "<br>";
 echo "<br>Signatures:<br>";
 var_dump($ms_signatures);
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%<br>";
 print_r($ms_signatures[0]);
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%<br>";
+echo "Protected header (from signature):<br>";
+try {
+    $protected_header = $ms_signatures[0]->getProtectedHeaders();
+}
+catch (Exception $exc) {
+    $protected_header = false;
+    echo $exc->getTraceAsString();
+}
+print_r($protected_header);
 echo "========================================================================<br>";
 echo "Creating JWK for public key for kid: 'kid' => string 'https://feide.no/' (in this example)<br>";
 //Convert json to array (associative = true)...
@@ -154,8 +164,9 @@ echo "Creating JWK for public key for kid: 'kid' => string 'https://feide.no/' (
 $ms_example_public_keys_obj = json_decode($ms_example_public_keys_json, true);
 $kid_to_search              = "https://feide.no/";
 $kid_public_key_values      = false;
-$kid_jwk         = \oidcfed\security_jose::create_jwk_from_values_in_json($ms_example_public_keys_obj, $kid_to_search);
-if($kid_jwk instanceof Jose\Object\JWKInterface){
+$kid_jwk                    = \oidcfed\security_jose::create_jwk_from_values_in_json($ms_example_public_keys_obj,
+                                                                                     $kid_to_search);
+if ($kid_jwk instanceof Jose\Object\JWKInterface) {
     echo "<br>";
     echo "##################################<br>";
     echo "@@@@ Instance of JWKInterface @@@@<br>";
