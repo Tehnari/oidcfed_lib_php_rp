@@ -106,7 +106,6 @@ echo "========================================================================<b
 $ms_payload = \oidcfed\security_jose::get_jose_jwt_payload_to_object($ms_example);
 echo "<br>MS Payload:<br>";
 print_r($ms_payload);
-
 //echo "<br>MS Payload: JWK from signing_keys:<br>";
 //print_r($ms_payload->signing_keys[0]);
 //foreach ($ms_payload->signing_keys as $mspkey => $mspvalue) {
@@ -155,18 +154,7 @@ echo "Creating JWK for public key for kid: 'kid' => string 'https://feide.no/' (
 $ms_example_public_keys_obj = json_decode($ms_example_public_keys_json, true);
 $kid_to_search              = "https://feide.no/";
 $kid_public_key_values      = false;
-if (\is_array($ms_example_public_keys_obj) === true) {
-    foreach ($ms_example_public_keys_obj as $msPKvalue) {
-        $check00 = (is_array($msPKvalue) === true && array_key_exists('kid',
-                                                                      $msPKvalue));
-        $check01 = ($check00 === true && $msPKvalue['kid'] === $kid_to_search);
-        if ($check01 === false) {
-            continue;
-        }
-        $kid_public_key_values = $msPKvalue;
-    }
-}
-$kid_jwk         = \oidcfed\security_jose::create_jwk_from_values($kid_public_key_values);
+$kid_jwk         = \oidcfed\security_jose::create_jwk_from_values_in_json($ms_example_public_keys_obj, $kid_to_search);
 echo "";
 var_dump($kid_jwk);
 echo "========================================================================<br>";
@@ -180,7 +168,6 @@ try {
     $result = $loader->loadAndVerifySignatureUsingKey(
             $ms_example, $pubSignatureKey, [$ms_header->alg], $signature
     );
-//    $result = \oidcfed\security_jose::validate_jwt_from_string_base64enc($ms_example);
 }
 catch (Exception $exc) {
     $result = false;
