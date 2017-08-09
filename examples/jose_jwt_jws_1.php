@@ -148,13 +148,19 @@ var_dump($ms_signatures);
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%<br>";
 print_r($ms_signatures[0]);
 echo "========================================================================<br>";
-echo "Creating JWK for public key for kid: 'kid' => string 'https://feide.no/' (in this example)";
+echo "Creating JWK for public key for kid: 'kid' => string 'https://feide.no/' (in this example)<br>";
 //Convert json to array (associative = true)...
 //This will help us to create JWK using values from array.
 $ms_example_public_keys_obj = json_decode($ms_example_public_keys_json, true);
 $kid_to_search              = "https://feide.no/";
 $kid_public_key_values      = false;
 $kid_jwk         = \oidcfed\security_jose::create_jwk_from_values_in_json($ms_example_public_keys_obj, $kid_to_search);
+if($kid_jwk instanceof Jose\Object\JWKInterface){
+    echo "<br>";
+    echo "##################################<br>";
+    echo "@@@@ Instance of JWKInterface @@@@<br>";
+    echo "<#################################<br>";
+}
 echo "";
 var_dump($kid_jwk);
 echo "========================================================================<br>";

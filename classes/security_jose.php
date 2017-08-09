@@ -37,26 +37,26 @@
 
 namespace oidcfed;
 
-use Jose\Checker\AudienceChecker;
-use Jose\Checker\ExpirationChecker;
-use Jose\Checker\IssuedAtChecker;
-use Jose\Checker\NotBeforeChecker;
-use Jose\Factory\CheckerManagerFactory;
-use Jose\Factory\JWKFactory;
-use Jose\Factory\JWSFactory;
-use Jose\Factory\JWEFactory;
-use Jose\Factory\KeyFactory;
-use Jose\Factory\LoaderFactory;
-use Jose\Factory\VerifierFactory;
-use Jose\Object\JWSInterface;
-use Jose\Object\JWKSet;
+use \Jose\Checker\AudienceChecker;
+use \Jose\Checker\ExpirationChecker;
+use \Jose\Checker\IssuedAtChecker;
+use \Jose\Checker\NotBeforeChecker;
+use \Jose\Factory\CheckerManagerFactory;
+use \Jose\Factory\JWKFactory;
+use \Jose\Factory\JWSFactory;
+use \Jose\Factory\JWEFactory;
+use \Jose\Factory\KeyFactory;
+use \Jose\Factory\LoaderFactory;
+use \Jose\Factory\VerifierFactory;
+use \Jose\Object\JWSInterface;
+use \Jose\Object\JWKSet;
 use \Jose\Object\JWKSetInterface;
 use \Jose\Object\JWKInterface;
-use Jose\Object\JWK;
-use Jose\JWTCreator;
-use Jose\Signer;
-use Jose\Loader;
-use Jose\JWTLoader;
+use \Jose\Object\JWK;
+use \Jose\JWTCreator;
+use \Jose\Signer;
+use \Jose\Loader;
+use \Jose\JWTLoader;
 use Exception;
 
 /**
@@ -141,6 +141,11 @@ class security_jose {
             throw new Exception($exc->getTraceAsString());
         }
         $kid_jwk = \oidcfed\security_jose::create_jwk_from_values($values_arr);
+        $check00 = ($kid_jwk instanceof \Jose\Object\JWKInterface);
+        $check01 = ($kid_jwk instanceof \Jose\Object\JWK);
+        if ($check00 === false && $check01 === false) {
+            throw new Exception("Couldn't generate JWK object.");
+        }
         return $kid_jwk;
     }
 
