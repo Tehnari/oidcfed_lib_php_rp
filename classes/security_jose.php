@@ -132,21 +132,50 @@ class security_jose {
 
     public static function create_jwk_from_values_in_json($values_str = false,
                                                           $kid_to_search = false) {
+        try {
+            $values_arr = self::search_json_array_for_clientid($values_str,
+                                                               $kid_to_search);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            throw new Exception($exc->getTraceAsString());
+        }
+        $kid_jwk = \oidcfed\security_jose::create_jwk_from_values($values_arr);
+        return $kid_jwk;
+    }
+
+    public static function search_json_array_for_clientid($values_str = false,
+                                                          $kid_to_search = false) {
 
         $check00 = (\is_string($values_str) === true && \mb_strlen($values_str) > 0);
         if ($check00 === true) {
             $values_str = \json_decode($values_str, true);
         }
-        $check01 = (\is_array($values_str) === true && \count($values_str) > 0 );
-        $check02 = ($check01 === true && $values_str['kid'] === $kid_to_search);
+        $key_values_arr = false;
+        $check01        = (\is_array($values_str) === true && \count($values_str)
+                > 0 );
+        $check02        = ($check01 === true && \array_key_exists('kid',
+                                                                  $values_str[0]) === true);
         if ($check01 === false) {
             throw new Exception('Not a array/json values provided!');
         }
-        else if ($check02 === false) {
+        else if ($check02 === true) {
+            foreach ($values_str as $msPKvalue) {
+                $check00 = (is_array($msPKvalue) === true && array_key_exists('kid',
+                                                                              $msPKvalue));
+                $check01 = ($check00 === true && $msPKvalue['kid'] === $kid_to_search);
+                if ($check01 === false) {
+                    continue;
+                }
+                $key_values_arr = $msPKvalue;
+            }
+        }
+        $check03 = (\is_array($key_values_arr) === true && \count($key_values_arr)
+                > 0 && \array_key_exists('kid', $key_values_arr) === true && $key_values_arr['kid'] === $kid_to_search);
+        if ($check02 === false && $check03 === false) {
             throw new Exception('ClientID not found!');
         }
-        $kid_jwk = \oidcfed\security_jose::create_jwk_from_values($values_str);
-        return $kid_jwk;
+        return $key_values_arr;
     }
 
     public static function create_jwks_from_values(array $param) {
