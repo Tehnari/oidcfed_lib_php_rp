@@ -130,6 +130,25 @@ class security_jose {
         return $jwk;
     }
 
+    public static function create_jwk_from_values_in_json($values_str = false,
+                                                          $kid_to_search = false) {
+
+        $check00 = (\is_string($values_str) === true && \mb_strlen($values_str) > 0);
+        if ($check00 === true) {
+            $values_str = \json_decode($values_str, true);
+        }
+        $check01 = (\is_array($values_str) === true && \count($values_str) > 0 );
+        $check02 = ($check01 === true && $values_str['kid'] === $kid_to_search);
+        if ($check01 === false) {
+            throw new Exception('Not a array/json values provided!');
+        }
+        else if ($check02 === false) {
+            throw new Exception('ClientID not found!');
+        }
+        $kid_jwk = \oidcfed\security_jose::create_jwk_from_values($values_str);
+        return $kid_jwk;
+    }
+
     public static function create_jwks_from_values(array $param) {
         $jwks = self::create_jwk_from_values($param);
         return $jwks;
