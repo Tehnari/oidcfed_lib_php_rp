@@ -148,15 +148,9 @@ var_dump($ms_signatures);
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%<br>";
 print_r($ms_signatures[0]);
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%<br>";
-echo "Protected header (from signature):<br>";
-try {
-    $protected_header = $ms_signatures[0]->getProtectedHeaders();
-}
-catch (Exception $exc) {
-    $protected_header = false;
-    echo $exc->getTraceAsString();
-}
-print_r($protected_header);
+echo "Protected header(s) (from signature):<br>";
+$protected_headers = \oidcfed\security_jose::get_jwt_signatures_protected_header($ms_example);
+print_r($protected_headers);
 echo "========================================================================<br>";
 echo "Creating JWK for public key for kid: 'kid' => string 'https://feide.no/' (in this example)<br>";
 //Convert json to array (associative = true)...

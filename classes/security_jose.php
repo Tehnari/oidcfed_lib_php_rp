@@ -132,6 +132,12 @@ class security_jose {
 
     public static function create_jwk_from_values_in_json($values_str = false,
                                                           $kid_to_search = false) {
+        $check00  = ($values_str instanceof \Jose\Object\JWKInterface);
+        $check00a = ($values_str instanceof \Jose\Object\JWK);
+        if ($check00 === true || $check00a === true) {
+            return $values_str;
+        }
+
         try {
             $values_arr = self::search_json_array_for_clientid($values_str,
                                                                $kid_to_search);
@@ -141,9 +147,9 @@ class security_jose {
             throw new Exception($exc->getTraceAsString());
         }
         $kid_jwk = \oidcfed\security_jose::create_jwk_from_values($values_arr);
-        $check00 = ($kid_jwk instanceof \Jose\Object\JWKInterface);
-        $check01 = ($kid_jwk instanceof \Jose\Object\JWK);
-        if ($check00 === false && $check01 === false) {
+        $check01 = ($kid_jwk instanceof \Jose\Object\JWKInterface);
+        $check02 = ($kid_jwk instanceof \Jose\Object\JWK);
+        if ($check01 === false && $check02 === false) {
             throw new Exception("Couldn't generate JWK object.");
         }
         return $kid_jwk;
@@ -378,51 +384,54 @@ class security_jose {
         return $jose_jwt_json_payload_obj;
     }
 
-    public static function validate_jwt_from_string_base64enc(
+    public static function verify_jwt_signature_from_string_base64enc(
     $jose_string, $jwk = false, $jwks = false
     ) {
-        //Thanks for the idea from this source:
-        //https://stackoverflow.com/questions/34754385/verify-jwt-signature-with-rsa-public-key-in-php
-// We create a JWT loader.
-//        $loader = LoaderFactory::createLoader();
-        $loader = new Loader();
+        // We create our loader.
+        $loader          = new Loader();
+        $jose_obj_loaded = $loader->load($jose_string);
+        $pl              = $jose_obj_loaded->getPayload();
+        $ms_claims       = $jose_obj_loaded->getClaims();
+    }
 
-// We load the input
-        $jws = $loader->load($jose_string);
-        if (!$jws instanceof JWSInterface) {
-//            die('Not a JWS');
-            throw new Exception('Not a JWS');
+    public static function get_jwt_claims($jose_string) {
+        // We create our loader.
+        $loader          = new Loader();
+        $jose_obj_loaded = $loader->load($jose_string);
+        $pl              = false;
+        if ($jose_obj_loaded->hasClaims() === true) {
+            $pl = $jose_obj_loaded->getClaims();
+            return $pl;
         }
+        else {
+            throw new Exception("Claims not found.");
+        }
+    }
 
-        $header  = \oidcfed\security_jose::get_jose_jwt_header_to_object($jose_string);
-        // Please note that at this moment the signature and the claims are not verified
-// To verify a JWS, we need a JWKSet that contains public keys (from RSA key in your case).
-        $check00 = ($jwks !== false && $jwks instanceof JWKSetInterface);
-        $check01 = ($jws->hasClaim('signing_keys') === true);
-//        $check02 = (is_object($header) === true && property_exists($header,'alg') === true);
-//        $check02 = ($jwk !== false && $jwk instanceof JWKInterface);
-        if ($check00 === false && $check01 === false) {
-            throw new Exception("JWKS not loaded or recieved.");
+    public static function get_jwt_signatures_protected_header($jose_string) {
+        // We create our loader.
+        $loader          = new Loader();
+        $jose_obj_loaded = $loader->load($jose_string);
+        $jose_signatures = $jose_obj_loaded->getSignatures();
+        if ($jose_obj_loaded->countSignatures() === 0) {
+            throw new Exception("Signature(s) not found.");
         }
-        else if ($check00 === false && $check01 === true) {
-            $signing_keys_arr   = (array) $jws->getClaim('signing_keys');
-            $signing_key_values = \current($signing_keys_arr);
-//            $signature_index    = \key($signing_keys_arr);
-            // We create our key object (JWK) using values in one of the claims (using first): signature_keys
-            $jwk                = \oidcfed\security_jose::create_jwk_from_values($signing_key_values);
+        $signArr = [];
+        foreach ($jose_signatures as $josekey => $joseval) {
+            $check00 = ($joseval instanceof \Jose\Object\Signature);
+            if ($check00 === false) {
+                continue;
+            }
+            try {
+                $signArr[$josekey] = $joseval->getProtectedHeaders();
+            }
+            catch (Exception $exc) {
+//                $protected_header = false;
+//                echo $exc->getTraceAsString();
+                continue;
+            }
         }
-        $is_valid = $loader->loadAndVerifySignatureUsingKey(
-                $jose_string, $jwk, [$header->alg], $signature_index
-        );
-
-// The variable $is_valid contains a boolean that indicates the signature is valid or not.
-// If a claim is not verified (e.g. the JWT expired), an exception is thrown.
-//Now you can use the $jws object to retreive all claims or header key/value pairs
-        //Returning object with validation message and JWS object
-        $result           = new \stdClass();
-        $result->is_valid = $is_valid;
-        $result->jws      = $jws;
-        return $result;
+        return $signArr;
     }
 
 }
