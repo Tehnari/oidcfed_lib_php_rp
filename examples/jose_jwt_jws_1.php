@@ -186,7 +186,7 @@ catch (Exception $exc) {
     echo "<br>";
 }
 if (is_object($result) === true) {
-    echo "Signature verified, below you can see our MS object...<br>";
+    echo "Signature verified, below you can see our MS object (JWT/JWS)...<br>";
     print_r($result);
 }
 echo "<br>****************************<br>";
