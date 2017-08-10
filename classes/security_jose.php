@@ -385,13 +385,31 @@ class security_jose {
     }
 
     public static function verify_jwt_signature_from_string_base64enc(
-    $jose_string, $jwk = false, $jwks = false
+    $jose_string, $pubSignatureKey = false, $signature = false
     ) {
         // We create our loader.
         $loader          = new Loader();
         $jose_obj_loaded = $loader->load($jose_string);
-        $pl              = $jose_obj_loaded->getPayload();
-        $ms_claims       = $jose_obj_loaded->getClaims();
+        $jwt_header      = self::get_jose_jwt_header_to_object($jose_string);
+        $jwt_signatures  = $jose_obj_loaded->getSignatures();
+        $jwk_pubKey      = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubSignatureKey);
+        $check00         = ($jwk_pubKey instanceof \Jose\Object\JWK);
+        if ($check00 === false) {
+            throw new Exception("Public key wasn't provided...");
+        }
+        //TODO Need to search clientid in claims from jwt signatures
+        try {
+            echo "<br>****************************<br>";
+            $result = $loader->loadAndVerifySignatureUsingKey(
+                    $jose_string, $pubSignatureKey, [$jwt_header->alg],
+                    $signature
+            );
+        }
+        catch (Exception $exc) {
+            $result = false;
+            echo $exc->getTraceAsString();
+            echo "<br>";
+        }
     }
 
     public static function get_jwt_claims($jose_string) {
