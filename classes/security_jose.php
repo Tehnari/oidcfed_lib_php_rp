@@ -384,8 +384,8 @@ class security_jose {
         return $jose_jwt_json_payload_obj;
     }
 
-    public static function verify_jwt_signature_from_string_base64enc(
-    $jose_string, $pubSignatureKey = false, $signature = false
+    public static function verify_jwt_sign_async_from_string_base64enc(
+    $jose_string, $pubSignatureKey = false
     ) {
         // We create our loader.
         $loader          = new Loader();
@@ -398,17 +398,28 @@ class security_jose {
             throw new Exception("Public key wasn't provided...");
         }
         //TODO Need to search clientid in claims from jwt signatures
-        try {
-            echo "<br>****************************<br>";
-            $result = $loader->loadAndVerifySignatureUsingKey(
-                    $jose_string, $pubSignatureKey, [$jwt_header->alg],
-                    $signature
-            );
-        }
-        catch (Exception $exc) {
-            $result = false;
-            echo $exc->getTraceAsString();
-            echo "<br>";
+        $result = false;
+        foreach ($jwt_signatures as $jwt_skey => $jwt_sval) {
+            $check01 = ($jwt_sval instanceof \Jose\Object\Signature);
+            if ($check01 === false) {
+                continue;
+            }
+            try {
+                echo "<br>****************************<br>";
+                $result = $loader->loadAndVerifySignatureUsingKey(
+                        $jose_string, $pubSignatureKey, [$jwt_header->alg],
+                        $jwt_sval
+                );
+            }
+            catch (Exception $exc) {
+//                $result = false;
+//                echo $exc->getTraceAsString();
+//                echo "<br>";
+            }
+            $check02 = ($result instanceof \Jose\Object\JWS);
+            if ($check02 === true) {
+                return $result;
+            }
         }
     }
 
