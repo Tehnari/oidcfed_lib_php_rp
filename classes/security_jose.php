@@ -92,7 +92,7 @@ class security_jose {
                 > 0);
         $check01a = ($check01 === false && empty($key_passphrase) === true);
         $check01b = ($key_content instanceof \Jose\Object\JWK);
-        if ($check01 === false && $check01a === true) {
+        if ($check01 === false && $check01a === true && $check01b === false) {
             $key_passphrase = null;
         }
         else if ($check01b === true ){
