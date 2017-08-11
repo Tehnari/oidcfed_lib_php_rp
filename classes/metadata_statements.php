@@ -111,7 +111,7 @@ class metadata_statements {
             $claim_iss = $claims['iss'];
         }
         if ($check01_kid === true) {
-            $claim_iss = $claims['kid'];
+            $claim_kid = $claims['kid'];
         }
         if ($check01_MS === true) {
             $ms_str = $claims['metadata_statements'];
