@@ -44,7 +44,6 @@ require_once 'autoloader.php';
 \oidcfed\autoloader::init();
 ////require_once '../parameters.php';
 //use Jose\Loader;
-
 //require (__DIR__.'/../vendor/autoload.php');
 
 /**
@@ -88,12 +87,53 @@ class metadata_statements {
     }
 
     public static function unpack_MS($jwt_string, $sign_keys) {
-        $keys       = [];
-//        $pl =
-        // We create our loader.
-//        $loader     = new Loader();
-//        $loader->
-
+        $keys            = [];
+        $claims          = \oidcfed\security_jose::get_jwt_claims($jose_string);
+        $claim_iss       = false;
+        $claim_kid       = false;
+        $ms_str          = false;
+        $ms_arr          = [];
+        $check00         = (\is_array($claims) === true && \count($claims) > 0);
+        $check01_iss     = ($check00 === true && \array_key_exists('iss',
+                                                                   $claims) === true);
+        $check01_kid     = ($check00 === true && \array_key_exists('kid',
+                                                                   $claims) === true);
+        // metadata_statement = MS
+        // metadata_statement_uris = MS_uris
+        $check01_MS      = ($check00 === true && \array_key_exists('metadata_statements',
+                                                                   $claims) === true);
+        $check01_MS_uris = ($check00 === true && \array_key_exists('metadata_statement_uris',
+                                                                   $claims) === true);
+        if ($check00 === true) {
+            throw new Exception('Claim(s) not found.');
+        }
+        if ($check01_iss === true) {
+            $claim_iss = $claims['iss'];
+        }
+        if ($check01_kid === true) {
+            $claim_iss = $claims['kid'];
+        }
+        if ($check01_MS === true) {
+            $ms_str = $claims['metadata_statements'];
+        }
+        else if ($check01_MS_uris === true) {
+            $tmp_ms = $claims['metadata_statement_uris'];
+            $ms_str = \oidcfed\configure::getUrlContent($tmp_ms);
+        }
+        $check02 = (\is_string($ms_str) === true && \mb_strlen($mb_str) > 0);
+        if ($check02 === true) {
+            try {
+                $ms_arr = json_decode($ms_str, true);
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+            }
+        }
+        $check03 = (\is_array($ms_arr) === true && \count($ms_arr) > 0);
+        if ($check03 === true) {
+            $ms_arr = $ms_str;
+        }
+        //TODO Need to check MS and verify signature(s)...
     }
 
     public static function verify_OP_keys_from_MS($param) {
