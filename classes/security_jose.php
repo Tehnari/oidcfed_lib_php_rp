@@ -91,8 +91,13 @@ class security_jose {
         $check01  = (\is_string($key_passphrase) === true && \mb_strlen($key_passphrase)
                 > 0);
         $check01a = ($check01 === false && empty($key_passphrase) === true);
+        $check01b = ($key_content instanceof \Jose\Object\JWK);
         if ($check01 === false && $check01a === true) {
             $key_passphrase = null;
+        }
+        else if ($check01b === true ){
+            //If it's JWK we just return it ...
+            return $key_content;
         }
         else {
             throw new Exception('Failed to build jose/jwk. Wrong key passphrase.');

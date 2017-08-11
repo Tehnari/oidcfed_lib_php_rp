@@ -172,18 +172,8 @@ echo "========================================================================<b
 // We load it and verify the signature
 // Verifying our signature like is described here:
 // https://github.com/Spomky-Labs/jose/blob/master/doc/operation/Verify.md
-$pubSignatureKey       = $ms_signatures[0];
-//try {
-//    echo "<br>****************************<br>";
-//    $result = $loader->loadAndVerifySignatureUsingKey(
-//            $ms_example, $kid_jwk, [$ms_header->alg], $pubSignatureKey
-//    );
-//}
-//catch (Exception $exc) {
-//    $result = false;
-//    echo $exc->getTraceAsString();
-//    echo "<br>";
-//}
+//$pubSignatureKey       = $ms_signatures[0];
+$pubSignatureKey = $kid_jwk;
 $result = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_example, $pubSignatureKey);
 if (is_object($result) === true) {
     echo "Signature verified, below you can see our MS object (JWT/JWS)...<br>";
