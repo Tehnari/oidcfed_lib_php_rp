@@ -172,12 +172,11 @@ echo "========================================================================<b
 // We load it and verify the signature
 // Verifying our signature like is described here:
 // https://github.com/Spomky-Labs/jose/blob/master/doc/operation/Verify.md
-$pubSignatureKey = $kid_jwk;
 $pubSignatureKey       = $ms_signatures[0];
 //try {
 //    echo "<br>****************************<br>";
 //    $result = $loader->loadAndVerifySignatureUsingKey(
-//            $ms_example, $pubSignatureKey, [$ms_header->alg], $signature
+//            $ms_example, $kid_jwk, [$ms_header->alg], $pubSignatureKey
 //    );
 //}
 //catch (Exception $exc) {
