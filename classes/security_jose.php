@@ -392,7 +392,7 @@ class security_jose {
     public static function jwt_async_verify_sign_from_string_base64enc(
     $jose_string, $pubSignatureKey = false
     ) {
-        // We create our loader.
+        // We create our loader. 
         $loader          = new Loader();
         $jose_obj_loaded = $loader->load($jose_string);
         $jwt_header      = self::get_jose_jwt_header_to_object($jose_string);
