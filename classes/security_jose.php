@@ -405,7 +405,7 @@ class security_jose {
                 continue;
             }
             try {
-                echo "<br>****************************<br>";
+//                echo "<br>****************************<br>";
                 $result = $loader->loadAndVerifySignatureUsingKey(
                         $jose_string, $pubSignatureKey, [$jwt_header->alg],
                         $jwt_sval
@@ -448,7 +448,7 @@ class security_jose {
                 continue;
             }
             try {
-                echo "<br>****************************<br>";
+//                echo "<br>****************************<br>";
                 $result = $loader->loadAndDecryptUsingKey($jose_string, $jwk_privKey, $jwt_header->alg, $arr_allowed_content_encr_alg);
             }
             catch (Exception $exc) {
