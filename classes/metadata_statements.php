@@ -86,20 +86,30 @@ class metadata_statements {
 
     }
 
-    public static function unpack_MS($jwt_string, $sign_keys) {
-        $keys            = [];
-        $claims          = \oidcfed\security_jose::get_jwt_claims($jose_string);
-        $claim_iss       = false;
-        $claim_kid       = false;
+    public static function unpack_MS($jwt_string, $sign_keys, $keys = []) {
+        $claims          = \oidcfed\security_jose::get_jwt_claims($jwt_string);
         $ms_str          = false;
         $ms_arr          = [];
         $check00         = (\is_array($claims) === true && \count($claims) > 0);
-        $check01_iss     = ($check00 === true && \array_key_exists('iss',
-                                                                   $claims) === true);
-        $check01_kid     = ($check00 === true && \array_key_exists('kid',
-                                                                   $claims) === true);
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//        $claim_iss            = false;
+//        $claim_kid            = false;
+//        $check01_iss          = ($check00 === true && \array_key_exists('iss',
+//                                                                        $claims) === true);
+//        $check01_kid          = ($check00 === true && \array_key_exists('kid',
+//
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//        if ($check01_iss === true) {
+//            $claim_iss = $claims['iss'];
+//        }
+//        if ($check01_kid === true) {
+//            $claim_kid = $claims['kid'];
+//        }                                                       $claims) === true);
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //
         // metadata_statement = MS
         // metadata_statement_uris = MS_uris
+        //
         $check01_MS      = ($check00 === true && \array_key_exists('metadata_statements',
                                                                    $claims) === true);
         $check01_MS_uris = ($check00 === true && \array_key_exists('metadata_statement_uris',
@@ -107,12 +117,7 @@ class metadata_statements {
         if ($check00 === true) {
             throw new Exception('Claim(s) not found.');
         }
-        if ($check01_iss === true) {
-            $claim_iss = $claims['iss'];
-        }
-        if ($check01_kid === true) {
-            $claim_kid = $claims['kid'];
-        }
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if ($check01_MS === true) {
             $ms_str = $claims['metadata_statements'];
         }
@@ -120,7 +125,29 @@ class metadata_statements {
             $tmp_ms = $claims['metadata_statement_uris'];
             $ms_str = \oidcfed\configure::getUrlContent($tmp_ms);
         }
-        $check02 = (\is_string($ms_str) === true && \mb_strlen($mb_str) > 0);
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        $check01_signing_keys = ($check00 === true && \array_key_exists('signing_keys',
+                                                                        $claims) === true);
+        $check_arr_sk         = (\is_array($sign_keys) === true && \count($sign_keys)
+                > 0);
+        $check_arr_csk        = (\is_array($claims['signing_keys']) === true && \count($claims['signing_keys'])
+                > 0);
+        //TODO Need a check for array type
+        if ($check01_signing_keys === true && $check_arr_sk === true && $check_arr_csk === true) {
+            $keys_tmp = \array_merge_recursive($claims['signing_keys'],
+                                               $sign_keys);
+        }
+        else if ($check01_signing_keys === true && $check_arr_csk === true && $check_arr_sk === false) {
+            $keys_tmp = $claims['signing_keys'];
+        }
+        else {
+            $keys_tmp = $sign_keys;
+        }
+        if (\is_array($keys_tmp) === true) {
+            $keys = \array_merge_recursive($keys_tmp, $keys);
+        }
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        $check02 = (\is_string($ms_str) === true && \mb_strlen($ms_str) > 0);
         if ($check02 === true) {
             try {
                 $ms_arr = json_decode($ms_str, true);
@@ -129,10 +156,20 @@ class metadata_statements {
 //                echo $exc->getTraceAsString();
             }
         }
-        $check03 = (\is_array($ms_arr) === true && \count($ms_arr) > 0);
+        $check03 = (\is_array($ms_str) === true && \count($ms_str) > 0);
         if ($check03 === true) {
             $ms_arr = $ms_str;
         }
+        //Unpack all MS
+        $check04 = (\is_array($ms_arr) === true && \count($ms_arr) > 0);
+        if ($check04 === true) {
+            $ms_tmp = [];
+            foreach ($ms_arr as $msaval) {
+                $ms_tmp[] = self::unpack_MS($msaval, $sign_keys);
+            }
+        }
+        $claims['metadata_statements'] = $ms_tmp;
+
         //TODO Need to check MS and verify signature(s)...
     }
 

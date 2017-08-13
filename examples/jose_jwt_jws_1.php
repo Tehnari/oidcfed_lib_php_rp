@@ -103,7 +103,7 @@ print_r($ms_header->alg);
 //echo "========================================================================<br>";
 
 echo "========================================================================<br>";
-$ms_payload      = \oidcfed\security_jose::get_jose_jwt_payload_to_object($ms_example);
+$ms_payload                 = \oidcfed\security_jose::get_jose_jwt_payload_to_object($ms_example);
 echo "<br>MS Payload:<br>";
 print_r($ms_payload);
 //echo "<br>MS Payload: JWK from signing_keys:<br>";
@@ -132,16 +132,16 @@ print_r($ms_payload);
 //    }
 //}
 // We create our loader.
-$loader          = new Loader();
-$jose_obj_loaded = $loader->load($ms_example);
+$loader                     = new Loader();
+$jose_obj_loaded            = $loader->load($ms_example);
 echo "========================================================================<br>";
-$pl              = $jose_obj_loaded->getPayload();
-$ms_claims       = $jose_obj_loaded->getClaims();
+$pl                         = $jose_obj_loaded->getPayload();
+$ms_claims                  = $jose_obj_loaded->getClaims();
 echo "<br>Payload/Claims...<br>";
 var_dump($pl);
 //var_dump($ms_claims);
 echo "========================================================================<br>";
-$ms_signatures   = $jose_obj_loaded->getSignatures();
+$ms_signatures              = $jose_obj_loaded->getSignatures();
 echo "<br>Signatures count: " . $jose_obj_loaded->countSignatures() . "<br>";
 echo "<br>Signatures:<br>";
 var_dump($ms_signatures);
@@ -149,7 +149,7 @@ echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%<br>";
 print_r($ms_signatures[0]);
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%<br>";
 echo "Protected header(s) (from signature):<br>";
-$protected_headers = \oidcfed\security_jose::get_jwt_signatures_protected_header($ms_example);
+$protected_headers          = \oidcfed\security_jose::get_jwt_signatures_protected_header($ms_example);
 print_r($protected_headers);
 echo "========================================================================<br>";
 echo "Creating JWK for public key for kid: 'kid' => string 'https://feide.no/' (in this example)<br>";
@@ -174,10 +174,16 @@ echo "========================================================================<b
 // https://github.com/Spomky-Labs/jose/blob/master/doc/operation/Verify.md
 //$pubSignatureKey       = $ms_signatures[0];
 $pubSignatureKey = $kid_jwk;
-$result = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_example, $pubSignatureKey);
+$result          = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_example,
+                                                                                       $pubSignatureKey);
 if (is_object($result) === true) {
     echo "Signature verified, below you can see our MS object (JWT/JWS)...<br>";
     print_r($result);
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>";
+    echo "Claims from JWT/JWS<br>";
+    $result_claims = $result->getClaims();
+    print_r($result_claims);
 }
 echo "<br>****************************<br>";
 
