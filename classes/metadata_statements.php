@@ -92,20 +92,6 @@ class metadata_statements {
         $ms_arr          = [];
         $check00         = (\is_array($claims) === true && \count($claims) > 0);
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//        $claim_iss            = false;
-//        $claim_kid            = false;
-//        $check01_iss          = ($check00 === true && \array_key_exists('iss',
-//                                                                        $claims) === true);
-//        $check01_kid          = ($check00 === true && \array_key_exists('kid',
-//
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//        if ($check01_iss === true) {
-//            $claim_iss = $claims['iss'];
-//        }
-//        if ($check01_kid === true) {
-//            $claim_kid = $claims['kid'];
-//        }                                                       $claims) === true);
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //
         // metadata_statement = MS
         // metadata_statement_uris = MS_uris
@@ -125,6 +111,25 @@ class metadata_statements {
             $tmp_ms = $claims['metadata_statement_uris'];
             $ms_str = \oidcfed\configure::getUrlContent($tmp_ms);
         }
+        else {
+            //verify signature
+            return self::verify_signature_keys_from_MS($jwt_string,
+                                                       $claims['iss'], $keys);
+        }
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        /*
+          $claim_iss            = false;
+          $claim_kid            = false;
+          $check01_iss          = ($check00 === true && \array_key_exists('iss', $claims) === true);
+          $check01_kid          = ($check00 === true && \array_key_exists('kid', $claims) === true);
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          if ($check01_iss === true) {
+          $claim_iss = $claims['iss'];
+          }
+          if ($check01_kid === true) {
+          $claim_kid = $claims['kid'];
+          }
+         */
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         $check01_signing_keys = ($check00 === true && \array_key_exists('signing_keys',
                                                                         $claims) === true);
@@ -132,7 +137,6 @@ class metadata_statements {
                 > 0);
         $check_arr_csk        = (\is_array($claims['signing_keys']) === true && \count($claims['signing_keys'])
                 > 0);
-        //TODO Need a check for array type
         if ($check01_signing_keys === true && $check_arr_sk === true && $check_arr_csk === true) {
             $keys_tmp = \array_merge_recursive($claims['signing_keys'],
                                                $sign_keys);
@@ -171,9 +175,13 @@ class metadata_statements {
         $claims['metadata_statements'] = $ms_tmp;
 
         //TODO Need to check MS and verify signature(s)...
+        $check05 = (self::verify_signature_keys_from_MS($jwt_string,
+                                                        $claims['iss'], $keys));
     }
 
-    public static function verify_OP_keys_from_MS($param) {
+    public static function verify_signature_keys_from_MS($ms = false,
+                                                         $pl = false,
+                                                         $sign_keys = false) {
 
     }
 
@@ -181,8 +189,7 @@ class metadata_statements {
 
     }
 
-    public static function verify_OP_keys_from_jwks_uri($param) {
-
-    }
-
+//    public static function verify_signature_keys_from_jwks_uri($param) {
+//
+//    }
 }
