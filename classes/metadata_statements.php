@@ -186,10 +186,10 @@ class metadata_statements {
     }
 
     public static function verify_signature_keys_from_MS($ms = false,
-                                                         $pl = false,
+                                                         $iss_kid = false,
                                                          $sign_keys = false) {
         $check00 = (\is_string($ms) === true && \mb_strlen($ms) > 0);
-        $check01 = (\is_string($pl) === true && \mb_strlen($pl) > 0);
+        $check01 = (\is_string($iss_kid) === true && \mb_strlen($iss_kid) > 0);
         $check02 = (\is_array($sign_keys) === true && \count($sign_keys) > 0);
         if ($check00 === false || $check01 === false || $check02 === false) {
             throw new Exception('Recieved incorect parameters.');

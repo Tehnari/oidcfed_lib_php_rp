@@ -95,16 +95,18 @@ class security_jose {
         if ($check01 === false && $check01a === true && $check01b === false) {
             $key_passphrase = null;
         }
-        else if ($check01b === true ){
+        else if ($check01b === true) {
             //If it's JWK we just return it ...
             return $key_content;
         }
-        else {
+        $jwk = JWKFactory::createFromKey($key_content, $key_passphrase,
+                                         $additional_parameters);
+
+        $check03 = ($jwk instanceof \Jose\Object\JWK);
+        if ($check03 === false) {
             throw new Exception('Failed to build jose/jwk. Wrong key passphrase.');
 //                return false;
         }
-        $jwk = JWKFactory::createFromKey($key_content, $key_passphrase,
-                                         $additional_parameters);
         if ($json_return !== false) {
             $jwk_out = \json_encode($jwk, \JSON_PARTIAL_OUTPUT_ON_ERROR);
             return $jwk_out;
@@ -392,14 +394,20 @@ class security_jose {
     public static function jwt_async_verify_sign_from_string_base64enc(
     $jose_string, $pubSignatureKey = false
     ) {
-        // We create our loader. 
+        // We create our loader.
         $loader          = new Loader();
         $jose_obj_loaded = $loader->load($jose_string);
         $jwt_header      = self::get_jose_jwt_header_to_object($jose_string);
         $jwt_signatures  = $jose_obj_loaded->getSignatures();
-        $jwk_pubKey      = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubSignatureKey);
-        $check00         = ($jwk_pubKey instanceof \Jose\Object\JWK);
-        if ($check00 === false) {
+        $check00a        = ($pubSignatureKey instanceof \Jose\Object\JWK);
+        if ($check00a === true) {
+            $jwk_pubKey = $pubSignatureKey;
+        }
+        else {
+            $jwk_pubKey = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubSignatureKey);
+        }
+        $check00b = ($jwk_pubKey instanceof \Jose\Object\JWK);
+        if ($check00b === false) {
             throw new Exception("Public key wasn't provided...");
         }
         //TODO Need to search clientid in claims from jwt signatures
@@ -428,9 +436,9 @@ class security_jose {
         }
     }
 
-
     public static function jwt_sync_decrypt_from_string_base64enc(
-    $jose_string, $privSignatureKey = false, $passPhrase = null, $arr_allowed_content_encr_alg=[]
+    $jose_string, $privSignatureKey = false, $passPhrase = null,
+    $arr_allowed_content_encr_alg = []
     ) {
         //TODO Need to search clientid in claims from jwt signatures
         // We create our loader.
@@ -438,10 +446,13 @@ class security_jose {
         $jose_obj_loaded = $loader->load($jose_string);
         $jwt_header      = self::get_jose_jwt_header_to_object($jose_string);
         $jwt_signatures  = $jose_obj_loaded->getSignatures();
-        $privKey_woPass      = \oidcfed\security_keys::get_private_key_without_passphrase($privSignatureKey, $passPhrase);
-        $jwk_privKey      = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privKey_woPass, $passPhrase);
-        $check00         = ($jwk_privKey instanceof \Jose\Object\JWK);
-        if ($check00 === false) {
+        $check00a        = ($privSignatureKey instanceof \Jose\Object\JWK);
+        $privKey_woPass  = \oidcfed\security_keys::get_private_key_without_passphrase($privSignatureKey,
+                                                                                      $passPhrase);
+        $jwk_privKey     = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privKey_woPass,
+                                                                                              $passPhrase);
+        $check00b        = ($jwk_privKey instanceof \Jose\Object\JWK);
+        if ($check00b === false) {
             throw new Exception("Private key wasn't provided...");
         }
 
@@ -454,7 +465,10 @@ class security_jose {
             }
             try {
 //                echo "<br>****************************<br>";
-                $result = $loader->loadAndDecryptUsingKey($jose_string, $jwk_privKey, $jwt_header->alg, $arr_allowed_content_encr_alg);
+                $result = $loader->loadAndDecryptUsingKey($jose_string,
+                                                          $jwk_privKey,
+                                                          $jwt_header->alg,
+                                                          $arr_allowed_content_encr_alg);
             }
             catch (Exception $exc) {
 //                $result = false;
