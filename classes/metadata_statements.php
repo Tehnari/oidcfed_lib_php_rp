@@ -194,7 +194,7 @@ class metadata_statements {
         if ($check00 === false || $check01 === false || $check02 === false) {
             throw new Exception('Recieved incorect parameters.');
         }
-
+        //TODO add verification here !!!
         return true;
     }
 
