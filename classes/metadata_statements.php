@@ -177,16 +177,32 @@ class metadata_statements {
         //TODO Need to check MS and verify signature(s)...
         $check05 = (self::verify_signature_keys_from_MS($jwt_string,
                                                         $claims['iss'], $keys));
+        if ($check05 === true) {
+            return claims;
+        }
+        else {
+            throw new Exception("Couldn't verify signature in JWT/JWS.");
+        }
     }
 
     public static function verify_signature_keys_from_MS($ms = false,
                                                          $pl = false,
                                                          $sign_keys = false) {
+        $check00 = (\is_string($ms) === true && \mb_strlen($ms) > 0);
+        $check01 = (\is_string($pl) === true && \mb_strlen($pl) > 0);
+        $check02 = (\is_array($sign_keys) === true && \count($sign_keys) > 0);
+        if ($check00 === false || $check01 === false || $check02 === false) {
+            throw new Exception('Recieved incorect parameters.');
+        }
 
+        return true;
     }
 
-    public static function validation_MS($param) {
-
+    public static function validation_MS($param = false) {
+        if ($param) {
+            return true;
+        }
+        return false;
     }
 
 //    public static function verify_signature_keys_from_jwks_uri($param) {
