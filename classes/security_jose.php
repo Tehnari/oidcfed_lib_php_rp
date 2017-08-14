@@ -447,11 +447,16 @@ class security_jose {
         $jwt_header      = self::get_jose_jwt_header_to_object($jose_string);
         $jwt_signatures  = $jose_obj_loaded->getSignatures();
         $check00a        = ($privSignatureKey instanceof \Jose\Object\JWK);
-        $privKey_woPass  = \oidcfed\security_keys::get_private_key_without_passphrase($privSignatureKey,
-                                                                                      $passPhrase);
-        $jwk_privKey     = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privKey_woPass,
-                                                                                              $passPhrase);
-        $check00b        = ($jwk_privKey instanceof \Jose\Object\JWK);
+        if ($check00a === true) {
+            $jwk_privKey = $privSignatureKey;
+        }
+        else {
+            $privKey_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($privSignatureKey,
+                                                                                         $passPhrase);
+            $jwk_privKey    = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privKey_woPass,
+                                                                                                 $passPhrase);
+        }
+        $check00b = ($jwk_privKey instanceof \Jose\Object\JWK);
         if ($check00b === false) {
             throw new Exception("Private key wasn't provided...");
         }
