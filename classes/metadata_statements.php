@@ -113,8 +113,15 @@ class metadata_statements {
         }
         else {
             //verify signature
-            return self::verify_signature_keys_from_MS($jwt_string,
-                                                       $claims['iss'], $keys);
+            $signature_object = self::verify_signature_keys_from_MS($jwt_string,
+                                                                    $claims['iss'],
+                                                                    $keys);
+            if (is_object($signature_object) === true) {
+                return $claims;
+            }
+            else {
+                throw new Exception("Couldn't verify siganture.");
+            }
         }
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /*
@@ -169,7 +176,13 @@ class metadata_statements {
         if ($check04 === true) {
             $ms_tmp = [];
             foreach ($ms_arr as $msaval) {
-                $ms_tmp[] = self::unpack_MS($msaval, $sign_keys);
+                try {
+                    $ms_tmp[] = self::unpack_MS($msaval, $sign_keys);
+                }
+                catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                    continue;
+                }
             }
         }
         $claims['metadata_statements'] = $ms_tmp;
@@ -194,8 +207,39 @@ class metadata_statements {
         if ($check00 === false || $check01 === false || $check02 === false) {
             throw new Exception('Recieved incorect parameters.');
         }
-        //TODO add verification here !!!
-        return true;
+        $jwk = false;
+        foreach ($sign_keys as $skkey => $skval) {
+            $check03  = (\is_array($skval) === true && \count($skval) > 0);
+            $check04a = ($check03 === true && \array_key_exists('iss', $skval));
+            $check04b = ($check03 === true && \array_key_exists('kid', $skval));
+            if ($check04a === true && $check04b === false) {
+                $skval['iss'] = $iss_kid;
+            }
+            else if ($check04a === false && $check04b === true) {
+                $skval['kid'] = $iss_kid;
+            }
+            else {
+                continue;
+            }
+            $jwk     = \oidcfed\security_jose::create_jwk_from_values($skval,
+                                                                      true);
+            $check05 = ($jwk instanceof \Jose\Object\JWK);
+            if ($check05 === false) {
+                continue;
+            }
+            try {
+                $result = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms,
+                                                                                              $jwk);
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+                continue;
+            }
+            if (\is_object($result) === true) {
+                return $result;
+            }
+        }
+        return false;
     }
 
     public static function validation_MS($param = false) {
