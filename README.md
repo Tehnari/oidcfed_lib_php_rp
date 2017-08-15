@@ -29,6 +29,12 @@ P.S.: An other idea is to use / continue:
         OR
         #   https://bitbucket.org/PEOFIAMP/phpoidc/overview
 
+In file README_Lib_Require you can see requirements for OIDCFED library implementation.
+Not all for this requirements was implemented in this library. Part of requirements was
+implemented in projects: krisrandall/OpenID-Connect-PHP and Spomky-Labs/jose.
+
+But later will try to implement/merge all in one code.
+If someone want to complete this code: you can send a patch or you should create an issue.
 
 Some examples:
 
