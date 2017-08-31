@@ -201,13 +201,14 @@ class security_jose {
         return $jwks;
     }
 
-    public static function create_jwks_from_uri($param) {
+    public static function create_jwks_from_uri($param,
+                                                $allow_unsecured_connection = true) {
         $check00 = (\is_string($param) === true && \mb_strlen($param) > 0);
         $check01 = (\parse_url($param) !== false);
         if ($check00 === false || $check01 === false) {
             throw new Exception('Not an URL provided for JWK creation');
         }
-        $jwks = JWKFactory::createFromJKU($param, true);
+        $jwks = JWKFactory::createFromJKU($param, $allow_unsecured_connection);
         return $jwks;
     }
 
@@ -525,6 +526,59 @@ class security_jose {
             }
         }
         return $signArr;
+    }
+
+    public static function verify_jws_from_uri($ms_url, $jwks_url,
+                                               $allow_unsecured_connection = true) {
+        // We load the key set from an URL
+        $jwks = self::create_jwks_from_uri($jwks_url,
+                                           $allow_unsecured_connection);
+
+        $check01 = ($jwks instanceof \Jose\Object\JWKSets);
+        if ($check01 === false) {
+            throw new Exception("Verification failed. Bad JWKS.");
+        }
+        // We create our loader.
+        $loader = new Loader();
+        // Getting MS from url
+        try {
+            // This is the input we want to load verify.
+            $input = \oidcfed\configure::getUrlContent($ms_url);
+        }
+        catch (Exception $exc) {
+            //            echo $exc->getTraceAsString();
+            echo $exc->getTraceAsString();
+            throw new Exception("Verification failed. MS not found. Error: " . $exc->getTraceAsString());
+        }
+        try {
+            $ms_header = self::get_jose_jwt_header_to_object($input);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            throw new Exception("Verification failed. JWKS not found. Error: " . $exc->getTraceAsString());
+        }
+        foreach ($jwks as $jwks_key => $jwks_val) {
+            $exc_jws = false;
+            $check02 = ((\is_object($jwks_val) === true) || (\is_array($jwks_val) === true));
+            if ($check02 === false) {
+                continue;
+            }
+            $signature_index = $jwks_key;
+            try {
+                // The signature is verified using our key set.
+                $jws = $loader->loadAndVerifySignatureUsingKeySet(
+                        $input, $jwks, [$ms_header->alg], $signature_index
+                );
+                return $jws;
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+                $exc_jws = $exc;
+            }
+        }
+        // If we don't have JWS, we will throw an Exception
+//        return $exc_jws;
+        throw new Exception("Verification failed. JWS not found or not signed.");
     }
 
 }

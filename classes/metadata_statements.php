@@ -242,6 +242,51 @@ class metadata_statements {
         return false;
     }
 
+    /**
+     * This function can verify Metadata Statements (MS) on FO site
+     * @param type $base_url
+     * @param type $fo_iss
+     * @param type $ms
+     * @param type $jwks
+     * @return type
+     * @throws Exception
+     */
+    public static function verify_MS_on_site($base_url, $fo_iss, $ms, $jwks) {
+        $check00 = (\is_string($base_url) === true && \mb_strlen($base_url) > 0);
+        $check01 = ($check00 === true && (\is_array(\pathinfo($base_url)) === true));
+        if ($check01 === false) {
+            throw new Exception("Verification failed. Bad parameter base_url for FO.");
+        }
+        $check02 = (\is_string($fo_iss) === true && \mb_strlen($fo_iss) > 0);
+        if ($check02 === false) {
+            throw new Exception("Verification failed. Bad parameter iss for FO.");
+        }
+        $check03 = (\is_string($ms) === true && \mb_strlen($ms) > 0);
+        $check04 = ($check03 === true && \explode(".", $ms) === false);
+        if ($check04 === false) {
+            throw new Exception("Verification failed. Bad MS.");
+        }
+        $check05 = ($jwks instanceof \Jose\Object\JWKSets);
+        if ($check05 === true) {
+            $jwks = \json_encode($jwks, JSON_PARTIAL_OUTPUT_ON_ERROR);
+        }
+        $check06 = ($check05 === false && (\is_string($jwks) === true && \mb_strlen($jwks)
+                > 0));
+        $check07 = ($check06 === true && (\is_array((\json_decode($jwks, true)) === true)));
+        if ($check07 === false) {
+            throw new Exception("Verification failed. Bad JWKS.");
+            ;
+        }
+        try {
+            $params_arr = ['iss' => $fo_iss, 'ms' => $ms, 'jwks' => $jwks];
+            $result     = \oidcfed\configure::curl_get($base_url, $params_arr);
+            return $result;
+        }
+        catch (Exception $exc) {
+            echo $exc->getTraceAsString();
+        }
+    }
+
     public static function validation_MS($param = false) {
         if ($param) {
             return true;
