@@ -24,6 +24,8 @@ Some requirements:
     #	https://github.com/Spomky-Labs/jose
     #	https://github.com/krisrandall/OpenID-Connect-PHP
 
+Tests using site: https://agaton-sax.com:8080/
+
 P.S.: An other idea is to use / continue:
         #   https://github.com/ritou/php-Akita_OpenIDConnect
         OR

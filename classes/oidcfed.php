@@ -2,11 +2,11 @@
 
 /**
  * OIDCFED Library for PHP
- * 
+ *
  * @abstract OIDCFED Library for PHP
- * 
- *  PHP version 5 
- * 
+ *
+ *  PHP version 5
+ *
  * @category  PHP
  * @package   OIDCFED_Lib_PHP_RP
  * @author    Constantin Sclifos <sclifcon@gmail.com>
@@ -35,7 +35,6 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 namespace oidcfed;
 
 /**
@@ -54,7 +53,7 @@ class oidcfed {
             return false;
         }
 //----------
-        $curl = \curl_init($url_oidc_config);
+        $curl        = \curl_init($url_oidc_config);
         \curl_setopt($curl, \CURLOPT_FAILONERROR, true);
         \curl_setopt($curl, \CURLOPT_FOLLOWLOCATION, true);
         \curl_setopt($curl, \CURLOPT_RETURNTRANSFER, true);
@@ -82,7 +81,34 @@ class oidcfed {
         unset($result_curl);
         return $result_output;
 //----------
+    }
 
+    public static function get_webfinger_data_op($base_url, $param = null,
+                                                 $default = null) {
+        $check00 = (\is_string($base_url) === true && \is_array(\pathinfo($base_url)) === true
+                && \count(\pathinfo($base_url)) > 0 );
+        if ($check00 === false) {
+            throw new Exception("Failed to get data. Bad url.");
+        }
+        $well_known_config_url = rtrim($base_url, "/") . "/.well-known/openid-configuration";
+        $wf_json_data          = \oidcfed\configure::getUrlContent($well_known_config_url);
+        //Get OIDC web finger data
+        $wellKnown             = \json_decode($wf_json_data, true); //We will use (internal) associative arrays.
+        $check01               = (\is_array($wellKnown) === true || \is_object($wellKnown) === true);
+        $check02               = ($check01 === true && \count((array) $wellKnown)
+                > 0);
+        if ($check02 === false) {
+            throw new Exception("Failed to get data. Bad data received.");
+        }
+        $check03 = (isset($param) === true && \is_string($param)===true && ((array) isset($wellKnown[$param]) === true));
+        $check04 = (isset($default) === true );
+        if($check03 ===true) {
+            return $wellKnown[$param];
+        } else if($check04===true){
+            return $default;
+        } else {
+            return $wellKnown;
+        }
     }
 
 }
