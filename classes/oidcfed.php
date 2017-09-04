@@ -90,7 +90,7 @@ class oidcfed {
         if ($check00 === false) {
             throw new Exception("Failed to get data. Bad url.");
         }
-        $well_known_config_url = rtrim($base_url, "/") . "/.well-known/openid-configuration";
+        $well_known_config_url = \rtrim($base_url, "/") . "/.well-known/openid-configuration";
         $wf_json_data          = \oidcfed\configure::getUrlContent($well_known_config_url);
         //Get OIDC web finger data
         $wellKnown             = \json_decode($wf_json_data, true); //We will use (internal) associative arrays.
