@@ -251,7 +251,7 @@ class metadata_statements {
      * @return type
      * @throws Exception
      */
-    public static function verify_MS_on_site($base_url, $fo_iss, $ms, $jwks) {
+    public static function verify_MS_from_url($base_url, $fo_iss, $ms, $jwks) {
         $check00 = (\is_string($base_url) === true && \mb_strlen($base_url) > 0);
         $check01 = ($check00 === true && (\is_array(\pathinfo($base_url)) === true));
         if ($check01 === false) {
