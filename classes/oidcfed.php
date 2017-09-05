@@ -44,6 +44,14 @@ namespace oidcfed;
  */
 class oidcfed {
 
+    /**
+     * This function can help with getting and saving oidc config (or other json files)
+     * @param type $url_oidc_config
+     * @param type $show_config
+     * @param type $filename
+     * @param type $return_pretty
+     * @return boolean
+     */
     public static function get_oidc_config($url_oidc_config = false,
                                            $show_config = false,
                                            $filename = false,
@@ -84,14 +92,14 @@ class oidcfed {
     }
 
     public static function get_webfinger_data_op($base_url, $param = null,
-                                                 $default = null) {
+                                                 $default = null, $cert_verify = true) {
         $check00 = (\is_string($base_url) === true && \is_array(\pathinfo($base_url)) === true
                 && \count(\pathinfo($base_url)) > 0 );
         if ($check00 === false) {
             throw new Exception("Failed to get data. Bad url.");
         }
         $well_known_config_url = \rtrim($base_url, "/") . "/.well-known/openid-configuration";
-        $wf_json_data          = \oidcfed\configure::getUrlContent($well_known_config_url);
+        $wf_json_data          = \oidcfed\configure::getUrlContent($well_known_config_url, $cert_verify);
         //Get OIDC web finger data
         $wellKnown             = \json_decode($wf_json_data, true); //We will use (internal) associative arrays.
         $check01               = (\is_array($wellKnown) === true || \is_object($wellKnown) === true);

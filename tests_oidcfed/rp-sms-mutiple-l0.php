@@ -32,14 +32,18 @@ echo "Full url:<br>";
 echo $full_url;
 
 try {
-    $openid_known = \oidcfed\oidcfed::get_webfinger_data_op($full_url);
-    echo $openid_known;
+    $openid_known = \oidcfed\oidcfed::get_webfinger_data_op($full_url, false);
+    echo "<pre>";
+    //We should have an array with data, if not we have a problem cap!
+//    echo $openid_known;
+    print_r($openid_known);
+//var_dump($openid_known);
+    echo "</pre>";
 }
 catch (Exception $exc) {
     echo $exc->getTraceAsString();
+    $openid_known = false;
 }
 
-//print_r($openid_known);
-//var_dump($openid_known);
 //$oidc = new OpenIDConnectClient($full_url);
 

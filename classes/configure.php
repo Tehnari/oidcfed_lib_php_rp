@@ -275,23 +275,34 @@ class configure {
         return true;
     }
 
-    static function getUrlContent($url) {
-        $ch       = \curl_init();
+    static function getUrlContent($url, $cert_verify = true) {
+        $ch = \curl_init();
         \curl_setopt($ch, \CURLOPT_URL, $url);
         \curl_setopt($ch, \CURLOPT_USERAGENT,
                      'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.1.4322)');
         \curl_setopt($ch, \CURLOPT_RETURNTRANSFER, 1);
         \curl_setopt($ch, \CURLOPT_CONNECTTIMEOUT, 5);
         \curl_setopt($ch, \CURLOPT_TIMEOUT, 5);
-        $data     = \curl_exec($ch);
-        $httpcode = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+        if ($cert_verify !== false) {
+            \curl_setopt($ch, \CURLOPT_SSL_VERIFYPEER, false);
+        }
+        $data         = \curl_exec($ch);
+//        $httpcode = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+        $curl_getinfo = \curl_getinfo($ch);
+        if (\is_array($curl_getinfo) === true && \array_key_exists('http_code',
+                                                                   $curl_getinfo) === true) {
+            $http_code = $curl_getinfo["http_code"];
+        }
+        else {
+            throw new Exception("Failed to get data from url.");
+        }
         \curl_close($ch);
-        return ($httpcode >= 200 && $httpcode < 300) ? $data : false;
+        return ($http_code >= 200 && $http_code < 300) ? $data : false;
     }
 
     // Source php.net docs comments of: David from Code2Design.com (28-Jun-2010 04:44)
     /**
-     * Send a POST requst using cURL
+     * Send a POST request using cURL
      * @param string $url to request
      * @param array $post values to send
      * @param array $options for cURL
