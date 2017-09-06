@@ -86,11 +86,29 @@ class metadata_statements {
 
     }
 
-    public static function unpack_MS($jwt_string, $sign_keys, $keys = []) {
-        $claims          = \oidcfed\security_jose::get_jwt_claims($jwt_string);
-        $ms_str          = false;
-        $ms_arr          = [];
-        $check00         = (\is_array($claims) === true && \count($claims) > 0);
+    public static function unpack_MS($jwt_string, $signing_keys,
+                                     $signing_keys_bundle = [],
+                                     $claim_iss = false, $cert_verify = true) {
+        $claims                     = \oidcfed\security_jose::get_jwt_claims($jwt_string);
+        $ms_str                     = false;
+        $ms_arr                     = [];
+        $claim_kid                  = false;
+        //Allowing unsecure connection is opposite for cert_verify
+        $allow_unsecure_connections = !$cert_verify;
+        $check00_issuer             = (\is_string($claim_iss) === true && \mb_strlen($claim_iss)
+                > 0);
+        $check00                    = (\is_array($claims) === true && \count($claims)
+                > 0);
+        $check01_iss                = ($check00_issuer === false && $check00 === true
+                && \array_key_exists('iss', $claims) === true);
+        $check01_kid                = ($check00 === true && \array_key_exists('kid',
+                                                                              $claims) === true);
+        if ($check01_iss === true) {
+            $claim_iss = $claims['iss'];
+        }
+        if ($check01_kid === true) {
+            $claim_kid = $claims['kid'];
+        }
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //
         // metadata_statement = MS
@@ -109,59 +127,56 @@ class metadata_statements {
         }
         else if ($check01_MS_uris === true) {
             $tmp_ms = $claims['metadata_statement_uris'];
-            $ms_str = \oidcfed\configure::getUrlContent($tmp_ms);
+            $ms_str = \oidcfed\configure::getUrlContent($tmp_ms, $cert_verify);
         }
         else {
-            //verify signature
-            $signature_object = self::verify_signature_keys_from_MS($jwt_string,
-                                                                    $claims['iss'],
-                                                                    $keys);
-            if (is_object($signature_object) === true) {
-                return $claims;
-            }
-            else {
-                throw new Exception("Couldn't verify siganture.");
-            }
+            $ms_str = false;
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        /*
-          $claim_iss            = false;
-          $claim_kid            = false;
-          $check01_iss          = ($check00 === true && \array_key_exists('iss', $claims) === true);
-          $check01_kid          = ($check00 === true && \array_key_exists('kid', $claims) === true);
-          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          if ($check01_iss === true) {
-          $claim_iss = $claims['iss'];
-          }
-          if ($check01_kid === true) {
-          $claim_kid = $claims['kid'];
-          }
-         */
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        $check01_signing_keys = ($check00 === true && \array_key_exists('signing_keys',
-                                                                        $claims) === true);
-        $check_arr_sk         = (\is_array($sign_keys) === true && \count($sign_keys)
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//        $check01_signed_jwks_uri  = ($check00 === true && \array_key_exists('signed_jwks_uri',
+//                                                                            $claims) === true);
+//        $check01_jwks_uri         = ($check00 === true && \array_key_exists('jwks_uri',
+//                                                                            $claims) === true);
+//        $check01_jwks             = ($check00 === true && \array_key_exists('jwks',
+//                                                                            $claims) === true);
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //If we have $signing_keys specified we will skip checks for claims
+        $check_arr_sk = (\is_array($signing_keys) === true && \count($signing_keys)
                 > 0);
-        $check_arr_csk        = (\is_array($claims['signing_keys']) === true && \count($claims['signing_keys'])
+
+        $check01_signing_keys     = ($check00 === true && $check_arr_sk === false
+                && \array_key_exists('signing_keys', $claims) === true);
+        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        //Will work with claims["signing_keys_uri"] only if we don't have other solutions
+        $check01_signing_keys_uri = ($check00 === true && $check_arr_sk === false
+                && \array_key_exists('signing_keys_uri', $claims) === true);
+        if ($check01_signing_keys === false && $check01_signing_keys_uri === true) {
+            //We will store JWKS structure as needed for security_jose
+            $signing_keys = \oidcfed\security_jose::create_jwks_from_uri($claims["signing_keys_uri"],
+                                                                         $allow_unsecure_connections);
+        }
+        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        $check_arr_csk = (\is_array($claims['signing_keys']) === true && \count($claims['signing_keys'])
                 > 0);
         if ($check01_signing_keys === true && $check_arr_sk === true && $check_arr_csk === true) {
-            $keys_tmp = \array_merge_recursive($claims['signing_keys'],
-                                               $sign_keys);
+            $signing_keys_tmp = \array_merge_recursive($claims['signing_keys'],
+                                                       $signing_keys);
         }
         else if ($check01_signing_keys === true && $check_arr_csk === true && $check_arr_sk === false) {
-            $keys_tmp = $claims['signing_keys'];
+            $signing_keys_tmp = $claims['signing_keys'];
         }
         else {
-            $keys_tmp = $sign_keys;
+            $signing_keys_tmp = $signing_keys;
         }
-        if (\is_array($keys_tmp) === true) {
-            $keys = \array_merge_recursive($keys_tmp, $keys);
+        if (\is_array($signing_keys_tmp) === true) {
+            $signing_keys_bundle = \array_merge_recursive($signing_keys_tmp,
+                                                          $signing_keys_bundle);
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         $check02 = (\is_string($ms_str) === true && \mb_strlen($ms_str) > 0);
         if ($check02 === true) {
             try {
-                $ms_arr = json_decode($ms_str, true);
+                $ms_arr = \json_decode($ms_str, true);
             }
             catch (Exception $exc) {
 //                echo $exc->getTraceAsString();
@@ -177,30 +192,34 @@ class metadata_statements {
             $ms_tmp = [];
             foreach ($ms_arr as $msaval) {
                 try {
-                    $ms_tmp[] = self::unpack_MS($msaval, $sign_keys);
+                    $ms_tmp[] = self::unpack_MS($msaval, $signing_keys);
                 }
                 catch (Exception $exc) {
 //                    echo $exc->getTraceAsString();
                     continue;
                 }
             }
-        }
-        $claims['metadata_statements'] = $ms_tmp;
-
-        //TODO Need to check MS and verify signature(s)...
-        $check05 = (self::verify_signature_keys_from_MS($jwt_string,
-                                                        $claims['iss'], $keys));
-        if ($check05 === true) {
-            return claims;
+            $claims['metadata_statements'] = $ms_tmp;
+            //TODO Need to check MS and verify signature(s)...
+            $check05                       = (self::verify_signature_keys_from_MS($jwt_string,
+                                                                                  $claim_iss,
+                                                                                  $signing_keys_bundle));
+            if ($check05 === true) {
+                return claims;
+            }
+            else {
+                throw new Exception("Couldn't verify signature in JWT/JWS.");
+            }
         }
         else {
-            throw new Exception("Couldn't verify signature in JWT/JWS.");
+            //If we don't have MS we just return claims
+            return claims;
         }
     }
 
     public static function verify_signature_keys_from_MS($ms = false,
                                                          $iss_kid = false,
-                                                         $sign_keys = false) {
+                                                         $sign_keys = []) {
         $check00 = (\is_string($ms) === true && \mb_strlen($ms) > 0);
         $check01 = (\is_string($iss_kid) === true && \mb_strlen($iss_kid) > 0);
         $check02 = (\is_array($sign_keys) === true && \count($sign_keys) > 0);
@@ -208,7 +227,14 @@ class metadata_statements {
             throw new Exception('Recieved incorect parameters.');
         }
         $jwk = false;
+        //If we have JWKS (based assoc. array, where exist property keys)
+        if ($check02 === true && (\array_key_exists("keys", $sign_keys) === true
+                && \is_array($sign_keys["keys"]) === true) && \count($sign_keys["keys"])
+                > 0) {
+            $sign_keys = $sign_keys["keys"];
+        }
         foreach ($sign_keys as $skkey => $skval) {
+            //In these case we will check all keys (for these realization, but MUST be changed later)
             $check03  = (\is_array($skval) === true && \count($skval) > 0);
             $check04a = ($check03 === true && \array_key_exists('iss', $skval));
             $check04b = ($check03 === true && \array_key_exists('kid', $skval));
@@ -221,10 +247,16 @@ class metadata_statements {
             else {
                 continue;
             }
-            $jwk     = \oidcfed\security_jose::create_jwk_from_values($skval,
+            $check05a = ($skval instanceof \Jose\Object\JWK);
+            if ($check05a === true) {
+                $jwk = $skval;
+            }
+            else {
+                $jwk = \oidcfed\security_jose::create_jwk_from_values($skval,
                                                                       true);
-            $check05 = ($jwk instanceof \Jose\Object\JWK);
-            if ($check05 === false) {
+            }
+            $check05b = ($jwk instanceof \Jose\Object\JWK);
+            if ($check05b === false) {
                 continue;
             }
             try {
