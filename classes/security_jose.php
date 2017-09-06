@@ -49,6 +49,8 @@ use \Jose\Factory\KeyFactory;
 use \Jose\Factory\LoaderFactory;
 use \Jose\Factory\VerifierFactory;
 use \Jose\Object\JWSInterface;
+use \Jose\Object\JKUJWKSet;
+use \Jose\Object\DownloadedJWKSet;
 use \Jose\Object\JWKSet;
 use \Jose\Object\JWKSetInterface;
 use \Jose\Object\JWKInterface;
@@ -201,14 +203,27 @@ class security_jose {
         return $jwks;
     }
 
-    public static function create_jwks_from_uri($param,
+    public static function create_jwks_from_uri($jwks_url,
                                                 $allow_unsecured_connection = true) {
-        $check00 = (\is_string($param) === true && \mb_strlen($param) > 0);
-        $check01 = (\parse_url($param) !== false);
+        $check00 = (\is_string($jwks_url) === true && \mb_strlen($jwks_url) > 0);
+        $check01 = (\parse_url($jwks_url) !== false);
         if ($check00 === false || $check01 === false) {
             throw new Exception('Not an URL provided for JWK creation');
         }
-        $jwks = JWKFactory::createFromJKU($param, $allow_unsecured_connection);
+        $cert_verify = !$allow_unsecured_connection;
+        try {
+            $json_str = \json_decode(\oidcfed\configure::getUrlContent($jwks_url,
+                                                                       $cert_verify),
+                                                                       true);
+        }
+        catch (Exception $exc) {
+            throw new Exception("Bad URL. Error: " . $exc->getTraceAsString());
+        }
+        $check00 = (\is_array($json_str) === true && \count($json_str) > 0);
+        if ($check00 === false) {
+            throw new Exception("Bad Data received from URL.");
+        }
+        $jwks = self::create_jwks_from_values($json_str);
         return $jwks;
     }
 
@@ -534,6 +549,7 @@ class security_jose {
         $jwks = self::create_jwks_from_uri($jwks_url,
                                            $allow_unsecured_connection);
 
+//        $check00 = ($jwks instanceof \Jose\Object\JWKUJWKSet);
         $check01 = ($jwks instanceof \Jose\Object\JWKSets);
         if ($check01 === false) {
             throw new Exception("Verification failed. Bad JWKS.");

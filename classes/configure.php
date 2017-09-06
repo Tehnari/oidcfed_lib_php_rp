@@ -283,9 +283,9 @@ class configure {
         \curl_setopt($ch, \CURLOPT_RETURNTRANSFER, 1);
         \curl_setopt($ch, \CURLOPT_CONNECTTIMEOUT, 5);
         \curl_setopt($ch, \CURLOPT_TIMEOUT, 5);
-        if ($cert_verify !== false) {
+        if (\boolval($cert_verify) === false) {
             \curl_setopt($ch, \CURLOPT_SSL_VERIFYPEER, false);
-        }
+        } 
         $data         = \curl_exec($ch);
 //        $httpcode = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
         $curl_getinfo = \curl_getinfo($ch);
