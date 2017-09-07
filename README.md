@@ -22,7 +22,7 @@ JOSE or JSON Object Signing and Encryption, more info about JOSE can be found by
 
 Some requirements:
     #	https://github.com/Spomky-Labs/jose
-    #	https://github.com/krisrandall/OpenID-Connect-PHP
+    #   https://github.com/kdoyen/openid-connect-php
 
 Tests using site: https://agaton-sax.com:8080/
 

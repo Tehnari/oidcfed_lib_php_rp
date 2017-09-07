@@ -3,7 +3,7 @@
     "description": "This project is an attempt to create Relying Party (RP) using the OIDCFED (OpenID Connect Federation) specification, developed as a PHP language / platform library. It is in development and is currently not recommended for use in production.",
     "type": "library",
     "require": {
-        "jumbojett/openid-connect-php": "^0.3.0",
+        "kdoyen/openid-connect-php": "^0.1.1",
         "spomky-labs/jose": "^6.1@dev"
     },
     "license": "MIT",
@@ -13,5 +13,23 @@
             "email": "sclifcon@vle.ase.md"
         }
     ],
+    "keywords": [
+        "openid",
+        "openid connect",
+        "claim",
+        "oauth",
+        "oauth",
+        "oauth2",
+        "oauth 2",
+        "oauth 2.0",
+        "jwt",
+        "jose",
+        "auth"
+    ],
+    "autoload": {
+        "psr-4": {
+            "oidcfed\\": "classes/"
+        }
+    },
     "minimum-stability": "dev"
 }
