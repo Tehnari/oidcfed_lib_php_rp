@@ -22,9 +22,8 @@ require '../parameters.php';
 
 $base_url  = 'https://agaton-sax.com:8080';
 $tester_id = '/oidcfed-lib-php';
-$test_id   = '/rp-sms-single-l0';
-//$test_id = '/rp-sms-single-l1';
-//$test_id = '/rp-sms-single-l2';
+$test_id   = '/rp-sms-mutiple-l0';
+//$test_id = '/rp-sms-multiple-l1';
 $full_url  = $base_url . $tester_id . $test_id;
 echo "Full url:<br>";
 echo $full_url;
@@ -92,11 +91,17 @@ if ($check01 === false && $check02 === true) {
 unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
-    $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value,
-                                                         null, $jwks->getPayload()["bundle"],
+    $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
+                                                         $jwks->getPayload()["bundle"],
                                                          false, false);
-    echo "<pre>";
-    print_r($jws_struc);
-    echo "</pre>";
+    if ($jws_struc) {
+        echo "===>>> Verified MS index: $ms_key <<<===";
+        echo "<pre>";
+        print_r($jws_struc);
+        echo "</pre>";
+    } else {
+        echo "Have some dificulties";
+    }
 }
+
 
