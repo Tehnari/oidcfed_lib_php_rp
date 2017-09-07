@@ -42,7 +42,6 @@ require 'parameters.php';
 echo "";
 
 $oidc_site_url = "https://rp.certification.openid.net:8080/$client_id/rp-response_type-code";
-//$oidc = new OpenIDConnectClient("https://rp.certification.openid.net:8080");
 $oidc = new OpenIDConnectClient($oidc_site_url);
 
 try {
