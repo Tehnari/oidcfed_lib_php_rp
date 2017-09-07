@@ -23,7 +23,7 @@ require '../parameters.php';
 $base_url  = 'https://agaton-sax.com:8080';
 $tester_id = '/oidcfed-lib-php';
 //$test_id   = '/rp-sms-multiple-l0';
-$test_id = '/rp-sms-mutiple-l1';
+$test_id   = '/rp-sms-mutiple-l1';
 $full_url  = $base_url . $tester_id . $test_id;
 echo "Full url:<br>";
 echo $full_url;
@@ -99,7 +99,8 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "<pre>";
         print_r($jws_struc);
         echo "</pre>";
-    } else {
+    }
+    else {
         echo "Have some dificulties";
     }
 }
