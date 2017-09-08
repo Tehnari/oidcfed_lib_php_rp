@@ -182,6 +182,24 @@ class configure {
         "path_keys"              => "/keys",
         "configure_filename"     => 'oidcfed_lib_configure.json'
     ];
+    /*
+      CONSUMER_CONFIG = {
+      "authz_page": "/authz",
+      "scope": ["openid", "email", "phone", "profile"],
+      "response_type": ["code"],
+      # "user_info": {
+      #     "name": None,
+      #     "email": None,
+      #     "nickname": None
+      # },
+      # "request_method": "param"
+      }
+     */
+    public static $oidcfed_consumer_config = '{
+    "authz_page": "/authz",
+    "scope": ["openid", "email", "phone", "profile"],
+    "response_type": ["code"]
+    }';
 
     /**
      * This function will get configure date for this lib
@@ -285,7 +303,7 @@ class configure {
         \curl_setopt($ch, \CURLOPT_TIMEOUT, 5);
         if (\boolval($cert_verify) === false) {
             \curl_setopt($ch, \CURLOPT_SSL_VERIFYPEER, false);
-        } 
+        }
         $data         = \curl_exec($ch);
 //        $httpcode = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
         $curl_getinfo = \curl_getinfo($ch);

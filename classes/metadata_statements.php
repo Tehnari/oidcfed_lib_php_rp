@@ -82,8 +82,8 @@ class metadata_statements {
 
     }
 
-    public static function merge_two_MS($param) {
-
+    public static function merge_two_MS($ms1=false, $ms2=false) {
+        return false;
     }
 
     public static function unpack_MS($jwt_string, $signing_keys,

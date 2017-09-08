@@ -91,15 +91,18 @@ class oidcfed {
 //----------
     }
 
-    public static function get_webfinger_data_op($base_url, $param = null,
-                                                 $default = null, $cert_verify = true) {
+    public static function get_well_known_openid_config_data($base_url,
+                                                             $param = null,
+                                                             $default = null,
+                                                             $cert_verify = true) {
         $check00 = (\is_string($base_url) === true && \is_array(\pathinfo($base_url)) === true
                 && \count(\pathinfo($base_url)) > 0 );
         if ($check00 === false) {
             throw new Exception("Failed to get data. Bad url.");
         }
         $well_known_config_url = \rtrim($base_url, "/") . "/.well-known/openid-configuration";
-        $wf_json_data          = \oidcfed\configure::getUrlContent($well_known_config_url, $cert_verify);
+        $wf_json_data          = \oidcfed\configure::getUrlContent($well_known_config_url,
+                                                                   $cert_verify);
         //Get OIDC web finger data
         $wellKnown             = \json_decode($wf_json_data, true); //We will use (internal) associative arrays.
         $check01               = (\is_array($wellKnown) === true || \is_object($wellKnown) === true);
@@ -108,15 +111,24 @@ class oidcfed {
         if ($check02 === false) {
             throw new Exception("Failed to get data. Bad data received.");
         }
-        $check03 = (isset($param) === true && \is_string($param)===true && ((array) isset($wellKnown[$param]) === true));
+        $check03 = (isset($param) === true && \is_string($param) === true && ((array) isset($wellKnown[$param]) === true));
         $check04 = (isset($default) === true );
-        if($check03 ===true) {
+        if ($check03 === true) {
             return $wellKnown[$param];
-        } else if($check04===true){
+        }
+        else if ($check04 === true) {
             return $default;
-        } else {
+        }
+        else {
             return $wellKnown;
         }
+    }
+
+    public static function get_well_known_webfinger_data($base_url,
+                                                         $param = null,
+                                                         $default = null,
+                                                         $cert_verify = true) {
+        
     }
 
 }
