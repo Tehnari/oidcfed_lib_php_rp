@@ -43,6 +43,7 @@ namespace oidcfed;
  * @author constantin
  */
 class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient{
+//class oidcfedClient {
 
     /**
      * (static) This static function can help with getting and saving oidc config (or other json files)

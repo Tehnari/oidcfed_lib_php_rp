@@ -40,20 +40,21 @@
 //\oidcfed\autoloader::init();
 require 'parameters.php';
 echo "";
-
-$oidc_site_url = "https://rp.certification.openid.net:8080/$client_id/rp-response_type-code";
-$oidc = new OpenIDConnectClient($oidc_site_url);
-
-try {
-    $oidc->register();
-    $client_id     = $oidc->getClientID();
-    $client_secret = $oidc->getClientSecret();
-}
-catch (Exception $exc) {
-    echo "<pre>";
-    echo $exc->getTraceAsString();
-    echo "</pre>";
-}
+//use \OpenIdConnectClient\OpenIdConnectClient;
+//
+//$oidc_site_url = "https://rp.certification.openid.net:8080/$client_id/rp-response_type-code";
+//$oidc = new OpenIDConnectClient($oidc_site_url);
+//
+//try {
+//    $oidc->register();
+//    $client_id     = $oidc->getClientID();
+//    $client_secret = $oidc->getClientSecret();
+//}
+//catch (Exception $exc) {
+//    echo "<pre>";
+//    echo $exc->getTraceAsString();
+//    echo "</pre>";
+//}
 
 
 

@@ -29,8 +29,10 @@ $full_url  = $base_url . $tester_id . $test_id;
 echo "Full url:<br>";
 echo $full_url;
 try {
-    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url, null,
-                                                            null, false);
+    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url,
+                                                                              null,
+                                                                              null,
+                                                                              false);
     echo "<pre>";
     echo "<br>=============All Claims=============<br>";
     //We should have an array with data, if not we have a problem cap!
@@ -100,14 +102,29 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "===>>> Verified MS index: $ms_key <<<===";
         echo "<pre>";
         print_r($jws_struc);
-        $ms_arr[]=$jws_struc;
+        $ms_arr[] = $jws_struc;
         echo "</pre>";
-    } else {
+    }
+    else {
         echo "Have some dificulties";
     }
 }
 echo "<br>=============Register client=============<br>";
-$openid = new \oidcfed\oidcfedClient();
-//$openid->
+
+$openid = new \oidcfed\oidcfedClient([
+    'provider_url'  => $openid_known['registration_endpoint'],
+    'client_id'     => $openid_known['issuer'],
+    'client_secret' => $passphrase
+        ]);
+try {
+    $openid->setCertPath($sigkey_url);
+    $openid->authenticate();
+    $name = $oidc->requestUserInfo('given_name');
+}
+catch (Exception $exc) {
+    echo "<br>".$exc->getMessage()."<br>";
+    echo $exc->getTraceAsString();
+}
+
 echo "";
 

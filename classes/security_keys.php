@@ -200,21 +200,30 @@ class security_keys {
 
 //=========================================================================
     /**
-     * This will help to generate certificate
+     * This will generate certificate
      */
     public static function generate_csr($dn = [], $res_privkey = '',
-                                        $ndays = false) {
-        $check00 = (\is_array($dn) === true);
-        $check01 = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
+                                        $ndays = false, $path_to_save = false) {
+        $check00  = (\is_array($dn) === true);
+        $check01  = (\is_string($res_privkey) === true && \mb_strlen($res_privkey)
                 > 0);
+        $str_cert = "";
         if ($check00 === true && $check01 === true) {
             $res_csr = \openssl_csr_new($dn, $res_privkey);
         }
         else {
             $res_csr = false;
         }
+        $check02 = (\is_array(\pathinfo($path_to_save)) === true && \count(\pathinfo($path_to_save))
+                > 3);
         if ($res_csr !== false && ($ndays !== false && \is_numeric($ndays) === true)) {
             $res_cert = \openssl_csr_sign($res_csr, null, $res_privkey, $ndays);
+            if ($check02) {
+                $path_arr         = \pathinfo($path_to_save);
+                $filename_and_ext = $path_arr["filename"] . "." . $path_arr["extension"];
+                \openssl_x509_export($res_cert, $str_cert);
+                \file_put_contents($filename_and_ext, $str_cert);
+            }
             return $res_cert;
         }
         else {
@@ -368,7 +377,7 @@ class security_keys {
 //=========================================================================
     public static function get_csr($key_data = false, $dn = [],
                                    $res_privkey = false, $ndays = 365,
-                                   $path_save_key = '') {
+                                   $path_save_key = false) {
         $check00       = (\is_string($key_data) === true && \mb_strlen($key_data)
                 > 0 && ($res_privkey !== false));
         $check01       = (\is_string($path_save_key) === true && \mb_strlen($path_save_key)
@@ -380,12 +389,13 @@ class security_keys {
         if ($check00 === true) {
             $key_contents = self::get_filekey_contents($key_data);
         }
-        else if ($check00 === true) {
-            $key_contents = $key_data; //Check what is this string !!!
-        }
-        else {
+        else if ($res_privkey !== false) {
             $res_cert = self::generate_csr($dn, $res_privkey, $ndays);
             \openssl_x509_export($res_cert, $key_contents);
+        }
+        $check04=(\is_string($key_contents)===true && \mb_strlen($key_contents)>0);
+        if($check04===false){
+            throw new Exception("Failed to get/generate Certificate.");
         }
         if ($check01 === true && $check02 === false && $check03 === true) {
             self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
@@ -411,8 +421,8 @@ class security_keys {
         $path_parts_sk = \pathinfo($path_save_key);
         $check03       = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
 
-        $check04 = ((\is_array($path_parts) === false));
-        $check05 = ($check00 === true && $check04 === true);
+        $check04      = ((\is_array($path_parts) === false));
+        $check05      = ($check00 === true && $check04 === true);
         $key_contents = false;
         if ($check00 === true && $check02 === true && ( \count($path_parts) > 3)
                 && $check03 === true) {
