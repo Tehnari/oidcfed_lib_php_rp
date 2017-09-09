@@ -38,6 +38,9 @@ implemented in projects: krisrandall/OpenID-Connect-PHP and Spomky-Labs/jose.
 But later will try to implement/merge all in one code.
 If someone want to complete this code: you can send a patch or you should create an issue.
 
+In this code using oidcfed as namespace and you should begin with class: oidcfedClient.
+All classes are in directory classes.
+
 Some examples:
 
 
