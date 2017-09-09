@@ -42,7 +42,7 @@ namespace oidcfed;
  *
  * @author constantin
  */
-class oidcfed {
+class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient{
 
     /**
      * This function can help with getting and saving oidc config (or other json files)
@@ -128,7 +128,7 @@ class oidcfed {
                                                          $param = null,
                                                          $default = null,
                                                          $cert_verify = true) {
-        
+
     }
 
 }

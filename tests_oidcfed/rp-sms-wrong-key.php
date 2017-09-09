@@ -27,7 +27,7 @@ $full_url  = $base_url . $tester_id . $test_id;
 echo "Full url:<br>";
 echo $full_url;
 try {
-    $openid_known = \oidcfed\oidcfed::get_well_known_openid_config_data($full_url, null,
+    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url, null,
                                                             null, false);
     echo "<pre>";
     echo "<br>=============All Claims=============<br>";
