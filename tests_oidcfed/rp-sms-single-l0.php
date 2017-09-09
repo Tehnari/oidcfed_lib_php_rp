@@ -91,6 +91,7 @@ if ($check01 === false && $check02 === true) {
 }
 unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
+$ms_arr = [];
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
                                                          $jwks->getPayload()["bundle"],
@@ -99,9 +100,14 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "===>>> Verified MS index: $ms_key <<<===";
         echo "<pre>";
         print_r($jws_struc);
+        $ms_arr[]=$jws_struc;
         echo "</pre>";
     } else {
         echo "Have some dificulties";
     }
 }
+echo "<br>=============Register client=============<br>";
+$openid = new \oidcfed\oidcfedClient();
+//$openid->
+echo "";
 

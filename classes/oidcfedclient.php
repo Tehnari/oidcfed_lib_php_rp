@@ -45,11 +45,11 @@ namespace oidcfed;
 class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient{
 
     /**
-     * This function can help with getting and saving oidc config (or other json files)
-     * @param type $url_oidc_config
-     * @param type $show_config
-     * @param type $filename
-     * @param type $return_pretty
+     * (static) This static function can help with getting and saving oidc config (or other json files)
+     * @param string $url_oidc_config
+     * @param bool $show_config
+     * @param string $filename
+     * @param bool $return_pretty
      * @return boolean
      */
     public static function get_oidc_config($url_oidc_config = false,
@@ -91,6 +91,15 @@ class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient{
 //----------
     }
 
+    /**
+     * (static) This static function can get openid configuration from /.well_known link
+     * @param string $base_url
+     * @param string $param
+     * @param type $default
+     * @param bool $cert_verify
+     * @return type
+     * @throws Exception
+     */
     public static function get_well_known_openid_config_data($base_url,
                                                              $param = null,
                                                              $default = null,
@@ -124,6 +133,14 @@ class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient{
         }
     }
 
+    /**
+     * (static) This static function can be used in case of webfinger needs
+     * @param string $base_url
+     * @param type $param
+     * @param type $default
+     * @param bool $cert_verify
+     *
+     */
     public static function get_well_known_webfinger_data($base_url,
                                                          $param = null,
                                                          $default = null,
