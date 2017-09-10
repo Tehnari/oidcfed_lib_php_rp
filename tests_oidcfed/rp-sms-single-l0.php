@@ -111,18 +111,39 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
 }
 echo "<br>=============Register client=============<br>";
 
-$openid = new \oidcfed\oidcfedClient([
+echo "Variable: path_dataDir_real: <br>";
+print_r($path_dataDir_real);
+echo "Getting or prepare certificate to use with OIDCFED Client...<br>";
+$certificateLocal_content = \oidcfed\security_keys::get_csr(false, $dn,
+                                                            $priv_key_woPass,
+                                                            $ndays,
+                                                            $path_dataDir_real);
+echo "<br>";
+echo "<pre>";
+print_r($certificateLocal_content);
+echo "<br>";
+print_r(openssl_x509_parse($certificateLocal_content));
+echo "</pre>";
+$certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path();
+$openid                   = new \oidcfed\oidcfedClient([
     'provider_url'  => $openid_known['registration_endpoint'],
     'client_id'     => $openid_known['issuer'],
     'client_secret' => $passphrase
         ]);
 try {
-    $openid->setCertPath($sigkey_url);
+    /*
+     * "end_session_endpoint"   => $openid_known['end_session_endpoint'],
+        "token_endpoint"         => $openid_known['token_endpoint']
+     */
+    $openid->setProviderConfigParams(["authorization_endpoint" => $openid_known['authorization_endpoint'],
+        ]);
+    $openid->setProviderUrl($client_id);
+    $openid->setCertPath($certificateLocal_path);
     $openid->authenticate();
     $name = $oidc->requestUserInfo('given_name');
 }
 catch (Exception $exc) {
-    echo "<br>".$exc->getMessage()."<br>";
+    echo "<br>" . $exc->getMessage() . "<br>";
     echo $exc->getTraceAsString();
 }
 

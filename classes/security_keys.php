@@ -85,8 +85,9 @@ class security_keys {
         return $path_dataDir_real;
     }
 
-    public static $privateKeyName = "privateKey.pem";
-    public static $publicKeyName  = "publicKey.pem";
+    public static $privateKeyName       = "privateKey.pem";
+    public static $publicKeyName        = "publicKey.pem";
+    public static $certificateLocalName = "certificateLocal.crt";
 
     public static function keys_path_real($path, $filename) {
         $path_dataDir_real = \realpath($path);
@@ -103,6 +104,12 @@ class security_keys {
     public static function public_key_path() {
         $path_data = self::$path_dataDir;
         $filename  = self::$publicKeyName;
+        return self::keys_path_real($path_data, $filename);
+    }
+
+    public static function public_certificateLocal_path() {
+        $path_data = self::$path_dataDir;
+        $filename  = self::$certificateLocalName;
         return self::keys_path_real($path_data, $filename);
     }
 
@@ -385,7 +392,13 @@ class security_keys {
         $path_parts    = \pathinfo($key_data);
         $check02       = ((\is_array($path_parts) === true && \count($path_parts) >= 3));
         $path_parts_sk = \pathinfo($path_save_key);
-        $check03       = ((\is_array($path_parts_sk) === true && \count($path_parts_sk) >= 3));
+        $check03       = (\is_array($path_parts_sk) === true);
+        $check03a      = ($check03 === true && \count($path_parts_sk) > 3);
+        $check03b      = ($check03 === true && \count($path_parts_sk) <= 3);
+//        $check03c       = ($check03===true && \count($path_parts_sk) <= 2);
+        if ($check03b === true && $check03a === false) {
+            $path_save_key = self::public_certificateLocal_path();
+        }
         if ($check00 === true) {
             $key_contents = self::get_filekey_contents($key_data);
         }
@@ -393,8 +406,12 @@ class security_keys {
             $res_cert = self::generate_csr($dn, $res_privkey, $ndays);
             \openssl_x509_export($res_cert, $key_contents);
         }
-        $check04=(\is_string($key_contents)===true && \mb_strlen($key_contents)>0);
-        if($check04===false){
+        else {
+            throw new Exception("Failed to get private key for certificate generation.");
+        }
+        $check04 = (\is_string($key_contents) === true && \mb_strlen($key_contents)
+                > 0);
+        if ($check04 === false) {
             throw new Exception("Failed to get/generate Certificate.");
         }
         if ($check01 === true && $check02 === false && $check03 === true) {
