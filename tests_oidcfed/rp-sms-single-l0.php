@@ -138,6 +138,8 @@ try {
     $openid->setProviderConfigParams(["authorization_endpoint" => $openid_known['authorization_endpoint'],
         ]);
     $openid->setProviderUrl($client_id);
+    // $openid->setVerifyHost(false);
+    // $openid->setVerifyPeer(false);
     $openid->setCertPath($certificateLocal_path);
     $openid->authenticate();
     $name = $oidc->requestUserInfo('given_name');
