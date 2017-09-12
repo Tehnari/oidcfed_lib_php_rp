@@ -128,7 +128,8 @@ $certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path
 $openid                   = new \oidcfed\oidcfedClient([
     'provider_url'  => $openid_known['registration_endpoint'],
     'client_id'     => $openid_known['issuer'],
-    'client_secret' => $passphrase
+    'client_secret' => $passphrase,
+    'clientName' => 'oidcfed_lib_rp'
         ]);
 try {
     /*
