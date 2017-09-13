@@ -29,11 +29,14 @@ $configargs        = \oidcfed\configure::configargs();
 $dn                = [];
 $ndays             = 365;
 // CLIENT ID is below:
-$client_id         = \oidcfed\configure::client_id();
-$private_key       = \oidcfed\configure::private_key();
-$priv_key_woPass   = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
-                                                                                $passphrase);
-$public_key        = \oidcfed\configure::public_key(
+if (!$client_id) {
+    $client_id = \oidcfed\configure::client_id();
+}
+$client_secret   = false;
+$private_key     = \oidcfed\configure::private_key();
+$priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
+                                                                              $passphrase);
+$public_key      = \oidcfed\configure::public_key(
                 $priv_key_woPass, $public_key_path, $dn, $ndays,
                 $path_dataDir_real . '/keys');
 echo "";
