@@ -91,20 +91,27 @@ if ($check01 === false && $check02 === true) {
 }
 unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
+$ms = [];
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
-    $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
+//    $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
+    $ms[] = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
                                                          $jwks->getPayload()["bundle"],
                                                          false, false);
-    if ($jws_struc) {
+//    if ($jws_struc) {
+    $ms_length = \count($ms);
+    if ($ms[$ms_length-1]) {
         echo "===>>> Verified MS index: $ms_key <<<===";
         echo "<pre>";
-        print_r($jws_struc);
+//        print_r($jws_struc);
+        print_r($ms[$ms_length-1]);
         echo "</pre>";
     }
     else {
         echo "Have some dificulties";
     }
 }
+echo "<br>=============Check for policy error=============<br>";
+
 //echo "<br>=============Register client=============<br>";
 //
 //echo "Variable: path_dataDir_real: <br>";
