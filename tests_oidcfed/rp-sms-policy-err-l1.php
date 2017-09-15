@@ -94,16 +94,16 @@ echo "=============Metadata Statements=============<br>";
 $ms = [];
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
 //    $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
+    $ms_length = \count($ms);
     $ms[] = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
                                                          $jwks->getPayload()["bundle"],
                                                          false, false);
 //    if ($jws_struc) {
-    $ms_length = \count($ms);
-    if ($ms[$ms_length-1]) {
+    if ($ms[$ms_length]) {
         echo "===>>> Verified MS index: $ms_key <<<===";
         echo "<pre>";
 //        print_r($jws_struc);
-        print_r($ms[$ms_length-1]);
+        print_r($ms[$ms_length]);
         echo "</pre>";
     }
     else {
@@ -111,6 +111,7 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     }
 }
 echo "<br>=============Check for policy error=============<br>";
+
 
 //echo "<br>=============Register client=============<br>";
 //

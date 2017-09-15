@@ -92,6 +92,10 @@ if ($check01 === false && $check02 === true) {
 unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
+    echo "MS string: <br>";
+    echo "<pre>";
+    print_r($ms_value);
+    echo "</pre>";
     $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
                                                          $jwks->getPayload()["bundle"],
                                                          false, false);

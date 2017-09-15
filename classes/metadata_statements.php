@@ -82,7 +82,7 @@ class metadata_statements {
 
     }
 
-    public static function merge_two_MS($ms1=false, $ms2=false) {
+    public static function merge_two_MS($ms1 = false, $ms2 = false) {
         return false;
     }
 
@@ -138,10 +138,15 @@ class metadata_statements {
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //        $check01_signed_jwks_uri  = ($check00 === true && \array_key_exists('signed_jwks_uri',
 //                                                                            $claims) === true);
-//        $check01_jwks_uri         = ($check00 === true && \array_key_exists('jwks_uri',
-//                                                                            $claims) === true);
-//        $check01_jwks             = ($check00 === true && \array_key_exists('jwks',
-//                                                                            $claims) === true);
+        $check01_jwks_uri = ($check00 === true && \array_key_exists('jwks_uri',
+                                                                    $claims) === true);
+        $check01_jwks     = ($check00 === true && \array_key_exists('jwks',
+                                                                    $claims) === true);
+        if ($check01_jwks === false && $check01_jwks_uri === true) {
+            $claims["jwks"] = \oidcfed\configure::getUrlContent($claims["jwks_uri"],
+                                                                $cert_verify);
+        }
+
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //If we have $signing_keys specified we will skip checks for claims
         $check_arr_sk = (\is_array($signing_keys) === true && \count($signing_keys)
@@ -208,7 +213,7 @@ class metadata_statements {
         }
         else {
             //If we don't have MS we should check if we have signature to check,
-            //in toher case just return claims
+            //in other case just return claims
 //            $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($jwt_string);
             if (\is_array($signing_keys_bundle) === true && \array_key_exists($claim_iss,
                                                                               $signing_keys_bundle) === true) {
@@ -231,12 +236,10 @@ class metadata_statements {
                                                          $iss_kid = false,
                                                          $sign_keys = []) {
         $check00  = (\is_string($ms) === true && \mb_strlen($ms) > 0);
-//        $check01 = (\is_string($iss_kid) === true && \mb_strlen($iss_kid) > 0);
         unset($iss_kid);
         $check02a = (\is_array($sign_keys) === true && \count($sign_keys) > 0);
         $check02b = ($sign_keys instanceof \Jose\Object\JWKSet);
-//        $check02 = ($check02a === true || $check02b === true);
-//        if ($check00 === false || $check01 === false || $check02 === false) {
+        $check02c = ($sign_keys instanceof \Jose\Object\JWK);
         if ($check00 === false || ($check02a === false && $check02b === false)) {
             throw new Exception('Recieved incorect parameters.');
         }
@@ -264,24 +267,13 @@ class metadata_statements {
                 $sign_keys[] = $sks_value;
             }
         }
+        else if ($check02c === true) {
+            //We working below with arrays, and in this case we add JWK to array
+            $sign_keys_tmp = [$sign_keys];
+            $sign_keys = $sign_keys_tmp;
+        }
         $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms);
         foreach ($sign_keys as $skkey => $skval) {
-            //In these case we will check all keys (for these realization, but MUST be changed later)
-//            $check03 = (\is_array($skval) === true && \count($skval) > 0);
-//            $check04a = ($check03 === true && \array_key_exists('iss', $skval));
-//            $check04b = ($check03 === true && \array_key_exists('kid', $skval));
-//            if ($check04a === true && $check04b === false) {
-//                $skval['iss'] = $iss_kid;
-//            }
-//            else if ($check04a === false && $check04b === true) {
-//                $skval['kid'] = $iss_kid;
-//            }
-//            else {
-//                continue;
-//            }
-//            if ($check03 === false && $check05a ===false) {
-//                continue;
-//            }
             $check05a = ($skval instanceof \Jose\Object\JWK);
             if ($check05a === true) {
                 $jwk = $skval;
@@ -293,7 +285,7 @@ class metadata_statements {
             else {
                 continue;
             }
-            $check05b = ($jwk instanceof \Jose\Object\JWK);
+            $check05b = ($jwk instanceof \Jose\Object\JWK); //Check if it is a key values
             if ($check05b === false) {
                 continue;
             }
