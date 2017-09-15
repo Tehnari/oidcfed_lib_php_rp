@@ -106,6 +106,7 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "Have some dificulties";
     }
 }
+
 echo "<br>=============Register client=============<br>";
 
 echo "Variable: path_dataDir_real: <br>";

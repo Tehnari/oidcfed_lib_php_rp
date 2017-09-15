@@ -27,8 +27,10 @@ $full_url  = $base_url . $tester_id . $test_id;
 echo "Full url:<br>";
 echo $full_url;
 try {
-    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url, null,
-                                                            null, false);
+    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url,
+                                                                              null,
+                                                                              null,
+                                                                              false);
     echo "<pre>";
     echo "<br>=============All Claims=============<br>";
     //We should have an array with data, if not we have a problem cap!
@@ -103,5 +105,63 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "Have some dificulties";
     }
 }
+//echo "<br>=============Register client=============<br>";
+//
+//echo "Variable: path_dataDir_real: <br>";
+//print_r($path_dataDir_real);
+//echo "Getting or prepare certificate to use with OIDCFED Client...<br>";
+//$certificateLocal_content = \oidcfed\security_keys::get_csr(false, $dn,
+//                                                            $priv_key_woPass,
+//                                                            $ndays,
+//                                                            $path_dataDir_real);
+//echo "<br>";
+//echo "<pre>";
+//print_r($certificateLocal_content);
+//echo "<br>";
+////print_r(openssl_x509_parse($certificateLocal_content));
+//echo "</pre>";
+//$certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path();
+//$openid                   = new \oidcfed\oidcfedClient([
+////    'provider_url'  => $openid_known['registration_endpoint'],
+//    'provider_url'        => $full_url,
+//    'client_id'           => $openid_known['issuer'],
+//    'client_secret'       => $passphrase,
+//    'clientName'          => 'oidcfed_lib_rp',
+//    'metadata_statements' => $openid_known['metadata_statements']
+//        ]);
+//$openid->addScopes(['openid', 'email', 'profile']);
+//if (!$client_secret) {
+//    $openid->register();
+////Using this  client_id and client_secret
+//    $client_id     = $openid->getClientID();
+//    $client_secret = $openid->getClientSecret();
+//}
+//if ($client_secret) {
+//    echo "";
+//    //If we have defined $client _secret we can continue
+//    //But for this example we just stop
+//    echo "Here we have registered client with ID: " . $client_id . "<br>";
+//    echo "And client secret: " . $client_secret . "<br>";
+////    try {
+////        /*
+////         * "end_session_endpoint"   => $openid_known['end_session_endpoint'],
+////          "token_endpoint"         => $openid_known['token_endpoint']
+////         */
+////        $openid->setProviderConfigParams(["authorization_endpoint" => $openid_known['authorization_endpoint'],
+////        ]);
+//////    $openid->setProviderUrl($client_id);
+////        // $openid->setVerifyHost(false);
+////        // $openid->setVerifyPeer(false);
+////        $openid->setCertPath($certificateLocal_path);
+////        //
+//////    $openid->authenticate();
+////        $name = $oidc->requestUserInfo('given_name');
+////    }
+////    catch (Exception $exc) {
+////        echo "<br>" . $exc->getMessage() . "<br>";
+////        echo $exc->getTraceAsString();
+////    }
+//}
+//echo "";
 
 
