@@ -27,10 +27,8 @@ $full_url  = $base_url . $tester_id . $test_id;
 echo "Full url:<br>";
 echo $full_url;
 try {
-    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url,
-                                                                              null,
-                                                                              null,
-                                                                              false);
+    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url, null,
+                                                            null, false);
     echo "<pre>";
     echo "<br>=============All Claims=============<br>";
     //We should have an array with data, if not we have a problem cap!
@@ -91,19 +89,26 @@ if ($check01 === false && $check02 === true) {
 }
 unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
-$ms = [];
+$ms_arr = [];
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
-//    $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
-    $ms_length = \count($ms);
-    $ms[] = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
+    echo "MS string: <br>";
+    echo "<pre>";
+    print_r($ms_value);
+    echo "</pre>";
+    echo "<br>";
+    $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms_value);
+    echo "<pre>";
+    echo "MS Header <br>";
+    print_r($ms_header);
+    echo "</pre>";
+    $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
                                                          $jwks->getPayload()["bundle"],
                                                          false, false);
-//    if ($jws_struc) {
-    if ($ms[$ms_length]) {
+    if ($jws_struc) {
         echo "===>>> Verified MS index: $ms_key <<<===";
         echo "<pre>";
-//        print_r($jws_struc);
-        print_r($ms[$ms_length]);
+        print_r($jws_struc);
+        $ms_arr[] = $jws_struc;
         echo "</pre>";
     }
     else {
@@ -111,7 +116,6 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     }
 }
 echo "<br>=============Check for policy error=============<br>";
-
 
 //echo "<br>=============Register client=============<br>";
 //
@@ -148,8 +152,8 @@ echo "<br>=============Check for policy error=============<br>";
 //    echo "";
 //    //If we have defined $client _secret we can continue
 //    //But for this example we just stop
-//    echo "Here we have registered client with ID: " . $client_id . "<br>";
-//    echo "And client secret: " . $client_secret . "<br>";
+//    echo "Here we have registered client with ID: ". $client_id."<br>";
+//    echo "And client secret: ". $client_secret."<br>";
 ////    try {
 ////        /*
 ////         * "end_session_endpoint"   => $openid_known['end_session_endpoint'],
@@ -164,12 +168,11 @@ echo "<br>=============Check for policy error=============<br>";
 ////        //
 //////    $openid->authenticate();
 ////        $name = $oidc->requestUserInfo('given_name');
-////    }
+////}
 ////    catch (Exception $exc) {
 ////        echo "<br>" . $exc->getMessage() . "<br>";
 ////        echo $exc->getTraceAsString();
-////    }
+////}
 //}
-//echo "";
-
+echo "";
 
