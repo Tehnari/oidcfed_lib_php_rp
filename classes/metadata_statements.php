@@ -136,17 +136,16 @@ class metadata_statements {
             $ms_str = false;
         }
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//        $check01_signed_jwks_uri  = ($check00 === true && \array_key_exists('signed_jwks_uri',
-//                                                                            $claims) === true);
-        $check01_jwks_uri = ($check00 === true && \array_key_exists('jwks_uri',
-                                                                    $claims) === true);
-        $check01_jwks     = ($check00 === true && \array_key_exists('jwks',
-                                                                    $claims) === true);
-        if ($check01_jwks === false && $check01_jwks_uri === true) {
-            $claims["jwks"] = \oidcfed\configure::getUrlContent($claims["jwks_uri"],
-                                                                $cert_verify);
-        }
-
+////        $check01_signed_jwks_uri  = ($check00 === true && \array_key_exists('signed_jwks_uri',
+////                                                                            $claims) === true);
+//        $check01_jwks_uri = ($check00 === true && \array_key_exists('jwks_uri',
+//                                                                    $claims) === true);
+//        $check01_jwks     = ($check00 === true && \array_key_exists('jwks',
+//                                                                    $claims) === true);
+//        if ($check01_jwks === false && $check01_jwks_uri === true) {
+//            $claims["jwks"] = \oidcfed\configure::getUrlContent($claims["jwks_uri"],
+//                                                                $cert_verify);
+//        }
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //If we have $signing_keys specified we will skip checks for claims
         $check_arr_sk = (\is_array($signing_keys) === true && \count($signing_keys)
@@ -212,9 +211,6 @@ class metadata_statements {
             $claims['metadata_statements'] = $ms_tmp;
         }
         else {
-            //If we don't have MS we should check if we have signature to check,
-            //in other case just return claims
-//            $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($jwt_string);
             if (\is_array($signing_keys_bundle) === true && \array_key_exists($claim_iss,
                                                                               $signing_keys_bundle) === true) {
                 return self::verify_signature_keys_from_MS($jwt_string,
@@ -229,7 +225,34 @@ class metadata_statements {
             //At this moment returning claims if nothing else found
 //            return $claims;
         }
-        return $claims;
+        $verify_sign_result = false;
+        if (\is_array($signing_keys_bundle) === true && \array_key_exists($claim_iss,
+                                                                          $signing_keys_bundle) === true) {
+            try {
+
+                $verify_sign_result = self::verify_signature_keys_from_MS($jwt_string,
+                                                                          $claim_iss,
+                                                                          $signing_keys_bundle[$claim_iss]);
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+                return null;
+            }
+        }
+        else {
+            try {
+                $verify_sign_result = self::verify_signature_keys_from_MS($jwt_string,
+                                                                          $claim_iss,
+                                                                          $signing_keys_bundle);
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+                return null;
+            }
+        }
+        if ($verify_sign_result !== false) {
+            return $claims;
+        }
     }
 
     public static function verify_signature_keys_from_MS($ms = false,
@@ -237,6 +260,10 @@ class metadata_statements {
                                                          $sign_keys = []) {
         $check00  = (\is_string($ms) === true && \mb_strlen($ms) > 0);
         unset($iss_kid);
+//        $check00a = (\is_string($iss_kid)===true && \is_array($sign_keys)===true && isset($sign_keys[$iss_kid]));
+//        if(\is_string($iss_kid)===true && $check00a === false){
+//            throw new Exception("Didn't found signature key.");
+//        }
         $check02a = (\is_array($sign_keys) === true && \count($sign_keys) > 0);
         $check02b = ($sign_keys instanceof \Jose\Object\JWKSet);
         $check02c = ($sign_keys instanceof \Jose\Object\JWK);
@@ -270,7 +297,7 @@ class metadata_statements {
         else if ($check02c === true) {
             //We working below with arrays, and in this case we add JWK to array
             $sign_keys_tmp = [$sign_keys];
-            $sign_keys = $sign_keys_tmp;
+            $sign_keys     = $sign_keys_tmp;
         }
         $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms);
         foreach ($sign_keys as $skkey => $skval) {
@@ -279,6 +306,7 @@ class metadata_statements {
                 $jwk = $skval;
             }
             else if (\is_array($skval) === true && \count($skval) > 0) {
+                //TODO Check for error here
                 $jwk = \oidcfed\security_jose::create_jwk_from_values($skval,
                                                                       true);
             }

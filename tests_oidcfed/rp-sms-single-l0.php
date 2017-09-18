@@ -95,6 +95,16 @@ unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
 $ms_arr = [];
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
+    echo "MS string: <br>";
+    echo "<pre>";
+    print_r($ms_value);
+    echo "</pre>";
+    echo "<br>";
+    $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms_value);
+    echo "<pre>";
+    echo "MS Header <br>";
+    print_r($ms_header);
+    echo "</pre>";
     $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
                                                          $jwks->getPayload()["bundle"],
                                                          false, false);
@@ -144,8 +154,8 @@ if ($client_secret) {
     echo "";
     //If we have defined $client _secret we can continue
     //But for this example we just stop
-    echo "Here we have registered client with ID: ". $client_id."<br>";
-    echo "And client secret: ". $client_secret."<br>";
+    echo "Here we have registered client with ID: " . $client_id . "<br>";
+    echo "And client secret: " . $client_secret . "<br>";
 //    try {
 //        /*
 //         * "end_session_endpoint"   => $openid_known['end_session_endpoint'],

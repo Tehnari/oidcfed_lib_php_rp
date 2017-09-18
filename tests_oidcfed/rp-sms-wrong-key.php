@@ -96,9 +96,15 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     echo "<pre>";
     print_r($ms_value);
     echo "</pre>";
+    echo "<br>";
+    $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms_value);
+    echo "<pre>";
+    echo "MS Header";
+    print_r($ms_header);
+    echo "</pre>";
     $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
                                                          $jwks->getPayload()["bundle"],
-                                                         false, false);
+                                                         $ms_key, false);
     if ($jws_struc) {
         echo "===>>> Verified MS index: $ms_key <<<===";
         echo "<pre>";
@@ -106,7 +112,7 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "</pre>";
     }
     else {
-        echo "Have some dificulties";
+        echo "Have some dificulties with signature verification!";
     }
 }
 //echo "<br>=============Register client=============<br>";

@@ -121,6 +121,15 @@ class security_jose {
     public static function create_jwk_from_values(array $param,
                                                   $returnToPublic = false,
                                                   $returnPEM = false) {
+        if (\is_string($param) && \mb_strlen($param) > 0) {
+            try {
+                $param = \json_decode($param, true);
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+                throw new Exception("Not a json structure provided. " . $exc->getMessage());
+            }
+        }
         if (\is_object($param) === true) {
             $param = (array) $param;
         }
@@ -137,6 +146,17 @@ class security_jose {
             $jwk = $jwk->toPEM();
         }
         return $jwk;
+    }
+
+    public static function create_jwks_from_values_in_json($values_str = false,
+                                                           $return_array = false) {
+        $jwks = self::create_jwk_from_values_in_json($values_str);
+        if ($return_array) {
+            return (array) $jwks;
+        }
+        else {
+            return $jwks;
+        }
     }
 
     public static function create_jwk_from_values_in_json($values_str = false,
@@ -158,7 +178,8 @@ class security_jose {
         $kid_jwk = \oidcfed\security_jose::create_jwk_from_values($values_arr);
         $check01 = ($kid_jwk instanceof \Jose\Object\JWKInterface);
         $check02 = ($kid_jwk instanceof \Jose\Object\JWK);
-        if ($check01 === false && $check02 === false) {
+        $check03 = ($kid_jwk instanceof \Jose\Object\JWKSet);
+        if ($check01 === false && $check02 === false && $check03 === false) {
             throw new Exception("Couldn't generate JWK object.");
         }
         return $kid_jwk;
@@ -181,8 +202,8 @@ class security_jose {
         }
         else if ($check02 === true) {
             foreach ($values_str as $msPKvalue) {
-                $check00 = (is_array($msPKvalue) === true && array_key_exists('kid',
-                                                                              $msPKvalue));
+                $check00 = (\is_array($msPKvalue) === true && \array_key_exists('kid',
+                                                                                $msPKvalue));
                 $check01 = ($check00 === true && $msPKvalue['kid'] === $kid_to_search);
                 if ($check01 === false) {
                     continue;
@@ -190,12 +211,21 @@ class security_jose {
                 $key_values_arr = $msPKvalue;
             }
         }
-        $check03 = (\is_array($key_values_arr) === true && \count($key_values_arr)
-                > 0 && \array_key_exists('kid', $key_values_arr) === true && $key_values_arr['kid'] === $kid_to_search);
-        if ($check02 === false && $check03 === false) {
+        $check03a = (\is_array($key_values_arr) === true && \count($key_values_arr)
+                > 0);
+        $check03  = ($check03a === true && \array_key_exists('kid',
+                                                             $key_values_arr) === true
+                && $key_values_arr['kid'] === $kid_to_search && $kid_to_search !== false);
+        if ($check02 === false && $check03 === false && $check03a === true) {
             throw new Exception('ClientID not found!');
         }
-        return $key_values_arr;
+        else if ($check02 === false && $check03 === true && $check03a === true) {
+            return $key_values_arr;
+        }
+        else if ($check02 === false && $check03 === false && $check03a === false) {
+            //if it's not $kid_to_search  provided
+            return $values_str;
+        }
     }
 
     public static function create_jwks_from_values(array $param) {
@@ -595,6 +625,65 @@ class security_jose {
         // If we don't have JWS, we will throw an Exception
 //        return $exc_jws;
         throw new Exception("Verification failed. JWS not found or not signed.");
+    }
+
+    public static function verify_jws_or_jwt_using_jwks_staticFunc($input,
+                                                                   $jwk_set) {
+        $algorithm = [];
+        $ms_header = null;
+        //Here should be JWS/JWT String
+        $check00   = (\is_string($input) === true && \mb_strlen($input) > 0);
+        $check01   = ($jwk_set instanceof \Jose\Object\JWKSets);
+        $check01a  = ($jwk_set instanceof \Jose\Object\JWKSet);
+        if ($check00 === true) {
+            $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($input);
+            if (isset($ms_header->alg)) {
+                $algorithm[] = $ms_header->alg;
+            }
+        }
+        $check01b = ($check01 === false && $check01a === false);
+        $check02  = (\is_array($algorithm) === true && \count($algorithm) > 0);
+        $check03  = ($check00 === false || ($check01b === false) || $check02 === false);
+        if ($check03 === false) {
+            throw new Exception("Bad parameters recieved. Not a JWS_String, JWKSet or algorithms array.");
+        }
+        // We load the key set from an URL
+        //        $jwk_set = JWKFactory::createFromJKU('https://www.googleapis.com/oauth2/v3/certs');
+        // We create our loader.
+        $loader = new Loader();
+
+        // This is the input we want to load verify.
+        //        $input = $input;
+        // The signature is verified using our key set.
+        //Algorithm array should be like e.g.: ['RS256']
+//        try {
+            $keys_arr   = $jwk_set->getKeys();
+            $count_keys = $jwk_set->countKeys();
+            foreach ($keys_arr as $ka_key => $ka_value) {
+                echo "";
+                $values = $ka_value->getAll();
+                if($values["kid"] !== $ms_header->kid){
+                    continue;
+                }
+                unset($ka_value);unset($values);
+                try {
+                    $jws = $loader->loadAndVerifySignatureUsingKeySet(
+                            $input, $jwk_set, $algorithm, $ka_key
+                    );
+                }
+                catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                    continue;
+                }
+                if ($jws instanceof \Jose\Object\JWS) {
+                    return $jws;
+                }
+            }
+//        }
+//        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+//        }
+        throw new Exception("Couldn't verify JWS/JWT.");
     }
 
 }
