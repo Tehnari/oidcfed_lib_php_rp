@@ -533,7 +533,7 @@ class security_jose {
         }
     }
 
-    public static function get_jwt_claims($jose_string) {
+    public static function get_jwt_claims_from_string($jose_string) {
         // We create our loader.
         $loader          = new Loader();
         $jose_obj_loaded = $loader->load($jose_string);
@@ -543,6 +543,19 @@ class security_jose {
             return $pl;
         }
         else {
+            throw new Exception("Claims not found.");
+        }
+    }
+
+    public static function get_jws_claims_from_structure($jwt=false){
+        $check00=($jwt instanceof \Jose\Object\JWS);
+        if($check00 === false){
+            throw new Exception("Not a JWS provided as a parameter.");
+        }
+        if($jwt->hasClaims() === true){
+            $claims = $jwt->getClaims();
+            return $claims;
+        } else {
             throw new Exception("Claims not found.");
         }
     }

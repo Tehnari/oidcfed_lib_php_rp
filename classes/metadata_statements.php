@@ -82,20 +82,35 @@ class metadata_statements {
 
     }
 
-    public static function merge_two_MS($ms1 = false, $ms2 = false,
-                                        $openid_known = false) {
+    public static function merge_two_MS($jwt1 = false, $ms_compound = []) {
         echo "";
-        if ($ms1 === false || $ms2 === false || $openid_known === false) {
+        if ($jwt1 === false || \is_array($ms_compound) === false) {
             throw new Exception("Bad parameters recieved!");
         }
+        try {
+            $jwt1_claims = \oidcfed\security_jose::get_jws_claims_from_structure($jwt1);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            throw new Exception($exc->getMessage() . " Trace:" . $exc->getTraceAsString());
+        }
+
         echo "";
         return false;
     }
-
+    public function get_compound_ms($jwt1 = false, $ms_compound = []) {
+        try {
+            return self::merge_two_MS($jwt1, $ms_compound);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            echo 'Caught exception: ',  $exc->getMessage(), "\n";
+        }
+    }
     public static function unpack_MS($jwt_string, $signing_keys,
                                      $signing_keys_bundle = [],
                                      $claim_iss = false, $cert_verify = true) {
-        $claims                     = \oidcfed\security_jose::get_jwt_claims($jwt_string);
+        $claims                     = \oidcfed\security_jose::get_jwt_claims_from_string($jwt_string);
         $ms_str                     = false;
         $ms_arr                     = [];
         $claim_kid                  = false;

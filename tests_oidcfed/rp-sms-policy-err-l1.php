@@ -118,20 +118,11 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "Have some dificulties with signature checks.";
     }
     echo "";
-//    $check03      = (\is_array($ms_compound) === true && \count($ms_compound) > 0);
-//    $ms_arr_count = \count($ms_arr);
-//    $check04      = (\is_array($ms_arr) === true && $ms_arr_count > 0);
-//    if ($check03 === true && $check04 === true) {
-//        $ms_compound = \oidcfed\metadata_statements::merge_two_MS($ms_arr[$ms_arr_count
-//                        - 1], $ms_compound, $openid_known);
-//    }
-//    else if ($check03 === false && $check04 === true && $ms_arr_count > 1) {
-//        $ms_compound = \oidcfed\metadata_statements::merge_two_MS($ms_arr[$ms_arr_count
-//                        - 1], ms_arr[$ms_arr_count - 2], $openid_known);
-//    }
 }
-//echo "<br>=============Check for policy error=============<br>";
 
+//echo "<br>=============Check for policy error=============<br>";
+$ms_compound_result = \oidcfed\metadata_statements::merge_two_MS($ms_arr, $ms_compound);
+echo "";
 //echo "<br>=============Register client=============<br>";
 //
 //echo "Variable: path_dataDir_real: <br>";
