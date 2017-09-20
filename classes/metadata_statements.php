@@ -82,7 +82,13 @@ class metadata_statements {
 
     }
 
-    public static function merge_two_MS($ms1 = false, $ms2 = false) {
+    public static function merge_two_MS($ms1 = false, $ms2 = false,
+                                        $openid_known = false) {
+        echo "";
+        if ($ms1 === false || $ms2 === false || $openid_known === false) {
+            throw new Exception("Bad parameters recieved!");
+        }
+        echo "";
         return false;
     }
 

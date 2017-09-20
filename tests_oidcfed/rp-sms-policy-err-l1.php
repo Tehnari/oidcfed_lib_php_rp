@@ -27,8 +27,10 @@ $full_url  = $base_url . $tester_id . $test_id;
 echo "Full url:<br>";
 echo $full_url;
 try {
-    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url, null,
-                                                            null, false);
+    $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url,
+                                                                              null,
+                                                                              null,
+                                                                              false);
     echo "<pre>";
     echo "<br>=============All Claims=============<br>";
     //We should have an array with data, if not we have a problem cap!
@@ -89,7 +91,8 @@ if ($check01 === false && $check02 === true) {
 }
 unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
-$ms_arr = [];
+$ms_arr      = [];
+$ms_compound = [];
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     echo "MS string: <br>";
     echo "<pre>";
@@ -112,10 +115,22 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "</pre>";
     }
     else {
-        echo "Have some dificulties";
+        echo "Have some dificulties with signature checks.";
     }
+    echo "";
+//    $check03      = (\is_array($ms_compound) === true && \count($ms_compound) > 0);
+//    $ms_arr_count = \count($ms_arr);
+//    $check04      = (\is_array($ms_arr) === true && $ms_arr_count > 0);
+//    if ($check03 === true && $check04 === true) {
+//        $ms_compound = \oidcfed\metadata_statements::merge_two_MS($ms_arr[$ms_arr_count
+//                        - 1], $ms_compound, $openid_known);
+//    }
+//    else if ($check03 === false && $check04 === true && $ms_arr_count > 1) {
+//        $ms_compound = \oidcfed\metadata_statements::merge_two_MS($ms_arr[$ms_arr_count
+//                        - 1], ms_arr[$ms_arr_count - 2], $openid_known);
+//    }
 }
-echo "<br>=============Check for policy error=============<br>";
+//echo "<br>=============Check for policy error=============<br>";
 
 //echo "<br>=============Register client=============<br>";
 //
