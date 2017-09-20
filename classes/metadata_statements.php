@@ -82,31 +82,65 @@ class metadata_statements {
 
     }
 
-    public static function merge_two_MS($jwt1 = false, $ms_compound = []) {
+    public static function merge_two_MS($ms1 = false, $ms_compound = []) {
         echo "";
-        if ($jwt1 === false || \is_array($ms_compound) === false) {
+        if ($ms1 === false || \is_array($ms_compound) === false) {
             throw new Exception("Bad parameters recieved!");
         }
-        try {
-            $jwt1_claims = \oidcfed\security_jose::get_jws_claims_from_structure($jwt1);
+        if (\is_array($ms1) === true) {
+            $ms1_claims = $ms1;
         }
-        catch (Exception $exc) {
+        else if ($ms1 instanceof \Jose\Object\JWS) {
+            try {
+                $ms1_claims = \oidcfed\security_jose::get_jws_claims_from_structure($ms1);
+            }
+            catch (Exception $exc) {
 //            echo $exc->getTraceAsString();
-            throw new Exception($exc->getMessage() . " Trace:" . $exc->getTraceAsString());
+                throw new Exception($exc->getMessage() . " Trace:" . $exc->getTraceAsString());
+            }
         }
+        $check00 = (\is_array($ms1_claims) === true && \count($ms1_claims) > 0);
+        if ($check00 === false) {
+            throw new Exception("Have a problem with getting claims from MS.");
+        }
+        $check01 = (isset($ms1_claims[0]["iat"]) === true);
+        $check01a = (isset($ms1_claims["iat"]) === true);
+        if ($check01 === true) {
+            foreach ($ms1_claims as $ms1_cl_keys => $ms1_cl_val) {
+                $check02 = (\is_array($ms1_cl_val) === true && \count($ms1_cl_val)
+                        > 0);
+                if ($check02 === false) {
+                    continue;
+                }
+                //TODO Please CHECK the code below!!!
+                $check03  = (isset($ms1_cl_val[0]["iat"]) === true);
+                $check03a = (isset($ms1_cl_val[0]["metadata_statements"]) === true);
+                $check04  = (isset($ms1_cl_val["iat"]) === true);
+                $check04a = (isset($ms1_cl_val["metadata_statements"]) === true);
+                if ($check03 === true && $check03a===true) {
+                    //TODO Add a loop here...
+                }
+                else if ($check04 === true && $check04a===true) {
+                    //TODO Need to prepare a compound MS here
+                }
+            }
+        } else if($check01a===true){
 
+        }
         echo "";
         return false;
     }
+
     public function get_compound_ms($jwt1 = false, $ms_compound = []) {
         try {
             return self::merge_two_MS($jwt1, $ms_compound);
         }
         catch (Exception $exc) {
 //            echo $exc->getTraceAsString();
-            echo 'Caught exception: ',  $exc->getMessage(), "\n";
+            echo 'Caught exception: ', $exc->getMessage(), "\n";
         }
     }
+
     public static function unpack_MS($jwt_string, $signing_keys,
                                      $signing_keys_bundle = [],
                                      $claim_iss = false, $cert_verify = true) {
