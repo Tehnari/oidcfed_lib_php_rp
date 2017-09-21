@@ -82,7 +82,105 @@ class metadata_statements {
 
     }
 
-    public static function merge_two_MS($ms1 = false, $ms_compound = []) {
+    public static function merge_two_ms($ms1 = [], $ms_compound = [],
+                                        $ms_claim_skip = true) {
+        $check00  = (\is_array($ms1) === true && \count($ms1) > 0);
+        $check01  = (\is_array($ms_compound) === true );
+//        $check01a = ($check01 && \count($ms_compound) > 0);
+        $check02  = ($check00 === false && $check01 === true);
+        $check02a = ($check00 === false || $check01 === false);
+        if ($check02) {
+            return $ms_compound;
+        }
+        else if ($check02a === false) {
+            throw new Exception("Bad parameters recieved: Not an Array type!");
+        }
+        //TODO Please CHECK the code below!!!
+        echo "";
+        foreach ($ms1 as $ms1_key => $ms1_value) {
+            //Skipping metadata statements
+            if ($ms_claim_skip && $ms1_key === "metadata_statements") {
+                continue;
+            }
+            $check03 = (\array_key_exists($ms1_key, $ms_compound));
+            if ($check03 === false) {
+                $ms_compound[$ms1_key] = $ms1_value;
+                continue;
+            }
+            // Check if is a subset
+            //String
+            $check04  = (\is_string($ms1_value));
+            $check04a = (\is_string($ms_compound[$ms1_key]));
+            $check04b = ($check04 && $check04a && $ms1_value === $ms_compound[$ms1_key]);
+            $check04c = ($check04 && $check04a && $check04b === false);
+            if ($check04b) {
+                throw new Exception("Error: A bad subset value found for " . ((string) $ms1_key));
+            }
+            else if ($check04c) {
+                //If is not a subset we can add a value
+                $ms_compound[$ms1_key] = $ms1_value;
+                continue;
+            }
+
+            //Simple list
+            $check05  = (\is_array($ms1_value) && \oidcfed\arrays_funct::isArrayWithOnlyIntKeys($ms1_value));
+            $check05a = (\is_array($ms_compound[$ms1_key]) && \oidcfed\arrays_funct::isArrayWithOnlyIntKeys($ms_compound[$ms1_key]));
+            $check05b = (($check05 && \count($ms1_value) > 0) && ($check05a && \count($ms_compound[$ms1_key])
+                    > 0) && \count($ms1_value) < \count($ms_compound[$ms1_key]));
+            $check05c = (($check05 && \count($ms1_value) > 0) && ($check05a && \count($ms_compound[$ms1_key])
+                    > 0) && \count($ms1_value) >= \count($ms_compound[$ms1_key]) );
+            if ($check05b) {
+                //If is not a subset we can add a value
+                $ms_compound[$ms1_key] = $ms1_value;
+                continue;
+            }
+            else if ($check05c && \count(\array_intersect($ms1_value,
+                                                          $ms_compound[$ms1_key])) === \count($ms1_value)) {
+                throw new Exception("Error: A bad subset value found for " . ((string) $ms1_key));
+            }
+
+            //Booleans
+            $check06  = (\is_bool($ms1_value));
+            $check06a = (\is_bool($ms_compound[$ms1_key]));
+            $check06b = ($check06 && $check06a && \boolval($ms1_value) === \boolval($ms_compound[$ms1_key]));
+            $check06c = ($check06 && $check06a && $check06b === false);
+            if ($check06b) {
+                throw new Exception("Error: A bad subset value found for " . ((string) $ms1_key));
+            }
+            else if ($check06c) {
+                //If is not a subset we can add a value
+                $ms_compound[$ms1_key] = $ms1_value;
+                continue;
+            }
+
+            //Integer/Floats
+            $check07  = (\is_numeric($ms1_value));
+            $check07a = (\is_numeric($ms_compound[$ms1_key]));
+            $check07b = ($check07 && $check07a && $ms1_value >= $ms_compound[$ms1_key]);
+            $check07c = ($check07 && $check07a && $check07b === false);
+            if ($check07b) {
+                throw new Exception("Error: A bad subset value found for " . ((string) $ms1_key));
+            }
+            else if ($check07c) {
+                //If is not a subset we can add a value
+                $ms_compound[$ms1_key] = $ms1_value;
+                continue;
+            }
+
+            //Assoc. arrays/dictionary
+            $check08 = (true);
+            //TODO Need to finish here and debug !!!
+
+            //If not a subset we can replace the value in ms_compound from ms1
+        }
+
+
+
+        return $ms_compound;
+    }
+
+    public static function get_compound_ms_static($ms1 = false,
+                                                  $ms_compound = []) {
         echo "";
         if ($ms1 === false || \is_array($ms_compound) === false) {
             throw new Exception("Bad parameters recieved!");
@@ -103,8 +201,9 @@ class metadata_statements {
         if ($check00 === false) {
             throw new Exception("Have a problem with getting claims from MS.");
         }
-        $check01 = (isset($ms1_claims[0]["iat"]) === true);
+        $check01  = (isset($ms1_claims[0]["iat"]) === true);
         $check01a = (isset($ms1_claims["iat"]) === true);
+        $check01b = (isset($ms1_claims["metadata_statements"]) === true);
         if ($check01 === true) {
             foreach ($ms1_claims as $ms1_cl_keys => $ms1_cl_val) {
                 $check02 = (\is_array($ms1_cl_val) === true && \count($ms1_cl_val)
@@ -117,23 +216,73 @@ class metadata_statements {
                 $check03a = (isset($ms1_cl_val[0]["metadata_statements"]) === true);
                 $check04  = (isset($ms1_cl_val["iat"]) === true);
                 $check04a = (isset($ms1_cl_val["metadata_statements"]) === true);
-                if ($check03 === true && $check03a===true) {
-                    //TODO Add a loop here...
+                if ($check03 === true && $check03a === true) {
+                    foreach ($ms1_cl_val[0]["metadata_statements"] as
+                                $ms1_cl_vkey => $ms1_cl_vval2) {
+                        $check05 = (\is_array($ms1_cl_vval2) === true && \count($ms1_cl_vval2)
+                                > 0);
+                        if ($check05 === false) {
+                            continue;
+                        }
+                        $ms_compound = self::get_compound_ms_static($ms1_cl_vval2,
+                                                                    $ms_compound);
+                    }
                 }
-                else if ($check04 === true && $check04a===true) {
-                    //TODO Need to prepare a compound MS here
+                else if ($check04 === true && $check04a === true) {
+                    foreach ($ms1_cl_val["metadata_statements"] as $ms1_cl_vkey3 =>
+                                $ms1_cl_vval3) {
+                        $check05 = ($ms1_cl_vval3 instanceof \Jose\Object\JWS);
+                        $check06 = (\is_array($ms1_cl_vval3) === true && \count($ms1_cl_vval3)
+                                > 0);
+                        if ($check05 === true) {
+//                            try {
+//                                $ms_payload = $ms1_cl_vval3->getPayload();
+//                            }
+//                            catch (Exception $exc) {
+//                                echo $exc->getTraceAsString();
+//                            }
+                            try {
+                                $ms_claims = $ms1_cl_vval3->getClaims();
+                            }
+                            catch (Exception $exc) {
+                                echo $exc->getTraceAsString();
+                            }
+                            $ms_compound = self::get_compound_ms_static($ms_claims,
+                                                                        $ms_compound);
+                        }
+                        else if ($check06 === true) {
+                            $ms_compound = self::get_compound_ms_static($ms1_cl_vval3,
+                                                                        $ms_compound);
+                        }
+                        else if ($check06 === false) {
+                            continue;
+                        }
+                    }
                 }
             }
-        } else if($check01a===true){
-
+        }
+        else if ($check01a === true && $check01b === true) {
+            foreach ($ms1_claims["metadata_statements"] as $ms1_cl_key4 =>
+                        $ms1_cl_vval4) {
+                $check05 = (\is_array($ms1_cl_vval4) === true && \count($ms1_cl_vval4)
+                        > 0);
+                if ($check05 === false) {
+                    continue;
+                }
+                $ms_compound = self::get_compound_ms_static($ms1_cl_vval4,
+                                                            $ms_compound);
+            }
+        }
+        else if ($check01a === true && $check01b === false) {
+            $ms_compound = self::merge_two_ms($ms1_claims, $ms_compound);
         }
         echo "";
-        return false;
+        return $ms_compound;
     }
 
     public function get_compound_ms($jwt1 = false, $ms_compound = []) {
         try {
-            return self::merge_two_MS($jwt1, $ms_compound);
+            return self::get_compound_ms_static($jwt1, $ms_compound);
         }
         catch (Exception $exc) {
 //            echo $exc->getTraceAsString();
@@ -361,7 +510,6 @@ class metadata_statements {
                 $jwk = $skval;
             }
             else if (\is_array($skval) === true && \count($skval) > 0) {
-                //TODO Check for error here
                 $jwk = \oidcfed\security_jose::create_jwk_from_values($skval,
                                                                       true);
             }

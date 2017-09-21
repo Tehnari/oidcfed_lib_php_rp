@@ -121,7 +121,7 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
 }
 
 //echo "<br>=============Check for policy error=============<br>";
-$ms_compound_result = \oidcfed\metadata_statements::merge_two_MS($ms_arr, $ms_compound);
+$ms_compound_result = \oidcfed\metadata_statements::get_compound_ms_static($ms_arr, $ms_compound);
 echo "";
 //echo "<br>=============Register client=============<br>";
 //
