@@ -33,7 +33,9 @@ P.S.: An other idea is to use / continue:
 
 In file README_Lib_Require you can see requirements for OIDCFED library implementation.
 Not all for this requirements was implemented in this library. Part of requirements was
-implemented in projects: krisrandall/OpenID-Connect-PHP and Spomky-Labs/jose.
+implemented in projects: kdoyen/openid-connect-php and Spomky-Labs/jose.
+
+For OpenID Connect instructions you can also see examples on project kdoyen/openid-connect-php .
 
 But later will try to implement/merge all in one code.
 If someone want to complete this code: you can send a patch or you should create an issue.
