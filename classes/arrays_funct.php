@@ -130,4 +130,139 @@ class arrays_funct {
         return true;
     }
 
+    /**
+     * This function will help with intersect keys and values recursively
+     * without array key reordering
+     * Source from php docs , element in docs: array_intersect,
+     * author: caffinated, date: 10-Nov-2012 09:13
+     *
+     * @param type $array1
+     * @param type $array2
+     * @return type
+     */
+    public static function array_intersect_recursive($array1, $array2) {
+        foreach ($array1 as $key => $value) {
+            if (!isset($array2[$key])) {
+                unset($array1[$key]);
+            }
+            else {
+                if (\is_array($array1[$key])) {
+                    $array1[$key] = self::array_intersect_recursive($array1[$key],
+                                                                    $array2[$key]);
+                }
+                elseif ($array2[$key] !== $value) {
+                    unset($array1[$key]);
+                }
+            }
+        }
+        return $array1;
+    }
+
+    /**
+     * This function will help to compare two objects or arrays and give
+     * response for each element.
+     * Source from php docs , element in docs: array_diff_assoc,
+     * author: shadow_games at abv dot bg , date: 12-Jun-2014 12:45
+     *
+     * @param type $object_1
+     * @param type $object_2
+     * @param type $object_1_Identifier
+     * @param type $object_2_Identifier
+     * @return type
+     */
+    public static function compare_two_object_recursive($object_1, $object_2,
+                                                        $object_1_Identifier = false,
+                                                        $object_2_Identifier = false) {
+        $object1 = (array) $object_1;
+        $object2 = (array) $object_2;
+        $object3 = array();
+
+        $o1i = $object_1_Identifier ? $object_1_Identifier : 1;
+        $o2i = $object_2_Identifier ? $object_2_Identifier : 2;
+
+        foreach ($object1 as $key => $value) {
+            if (is_object($object1[$key])) {
+                $object1[$key] = (array) $object1[$key];
+                $object2[$key] = (array) $object2[$key];
+                $object3[$key] = (object) self::compare_two_object_recursive($object1[$key],
+                                                                             $object2[$key],
+                                                                             $o1i,
+                                                                             $o2i);
+            }
+            elseif (is_array($object1[$key])) {
+                $object3[$key] = self::compare_two_object_recursive($object1[$key],
+                                                                    $object2[$key],
+                                                                    $o1i, $o2i);
+            }
+            else {
+                if ($object1[$key] == $object2[$key]) {
+                    $object3[$key]['comparison_status'] = "SAME";
+                }
+                else {
+                    $object3[$key]['comparison_status'] = "NOT THE SAME";
+                    $object3[$key][$o1i]                = $object1[$key];
+                    $object3[$key][$o2i]                = $object2[$key];
+                }
+            }
+        }
+        return $object3;
+    }
+
+    /**
+     * This function will compare two objects or arrays and will return a boolean
+     * or will throw a exception in a case of error
+     * @param type $object_1
+     * @param type $object_2
+     * @param type $compare_arr
+     * @return boolean
+     * @throws Exception
+     */
+    public static function get_compare_results_for_two_objects($object_1 = [],
+                                                               $object_2 = [],
+                                                               $compare_arr = false) {
+        $result  = true;
+        $check00 = (\is_array($compare_arr) === true && \count($compare_arr) > 0);
+        if (\count($object_1) > 0 && \count($object_2) > 0 && $compare_arr === false) {
+            $compare_arr = self::compare_two_object_recursive($object_1,
+                                                              $object_2);
+        }
+        else if ($check00 === false) {
+            throw new Exception("Bad parameters recieved.");
+        }
+
+        foreach ($compare_arr as $c_key => $c_value) {
+            if (empty($c_value) || \is_array($c_value) === false) {
+                continue;
+            }
+            if (\is_object($compare_arr[$c_key])) {
+                $compare_arr[$c_key] = (array) $compare_arr[$c_key];
+                try {
+                    $compare_arr[$c_key] = self::compare_two_object_recursive([],
+                                                                              [],
+                                                                              $compare_arr[$c_key]);
+                }
+                catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                }
+            }
+            else if (\is_array($compare_arr[$c_key])) {
+//                $compare_arr[$c_key] = (array) $compare_arr[$c_key];
+                try {
+                    $compare_arr[$c_key] = self::compare_two_object_recursive([],
+                                                                              [],
+                                                                              $compare_arr[$c_key]);
+                }
+                catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                }
+            }
+
+            if (\array_key_exists("comparison_status", $c_value) === true && \is_string($c_value["comparison_status"]) === true
+                    && \mb_strtolower($c_value["comparison_status"]) !== "same") {
+                $result = false;
+            }
+        }
+        return $result;
+    }
+
 }

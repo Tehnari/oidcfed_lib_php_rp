@@ -93,7 +93,8 @@ if ($check01 === false && $check02 === true) {
 }
 unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
-$ms_arr = [];
+$ms_arr      = [];
+$ms_compound = [];
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     echo "MS string: <br>";
     echo "<pre>";
@@ -118,6 +119,34 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     else {
         echo "Have some dificulties";
     }
+}
+echo "<br>=============Check for policy error=============<br>";
+$ms_compound_result = \oidcfed\metadata_statements::get_compound_ms_static($ms_arr,
+                                                                           $ms_compound);
+echo "Compound MS<br>";
+$check_scopes       = null;
+//Check if is a claim/parameter: scopes_supported
+if (isset($ms_arr[0]["scopes_supported"]) && isset($ms_compound_result["scopes_supported"])) {
+    try {
+        $check_scopes = \oidcfed\metadata_statements::check_MS_scopes_supported($ms_compound_result,
+                                                                                $ms_arr[0]);
+        if (!$check_scopes) {
+            echo "Problem with scopes checking.";
+//            echo $exc->getTraceAsString();
+//            throw new Exception("Problem with scopes checking.");
+        }
+    }
+    catch (Exception $exc) {
+        echo $exc->getMessage();
+//                    echo $exc->getTraceAsString();
+//        throw new Exception($exc->getMessage());
+    }
+}
+if (\is_bool($check_scopes) && $check_scopes === true) {
+    echo "<pre>";
+    print_r($ms_compound_result);
+    echo "</pre>";
+    echo "<br>";
 }
 echo "<br>=============Register client=============<br>";
 

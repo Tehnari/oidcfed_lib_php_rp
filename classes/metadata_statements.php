@@ -82,6 +82,46 @@ class metadata_statements {
 
     }
 
+    public static function check_MS_scopes_supported($ms1 = [],
+                                                     $ms2_example = [
+    ]) {
+        $check00 = (\is_array($ms1) && \array_key_exists("scopes_supported",
+                                                         $ms1));
+        $check01 = (\is_array($ms2_example) && \array_key_exists("scopes_supported",
+                                                                 $ms2_example));
+        if ($check00 === false || $check01 === false) {
+            throw new Exception("Bad parameters, or scopes_supported parameter not found.");
+        }
+        $ms1_scopes_supported = $ms1["scopes_supported"];
+        $ms2_scopes_supported = $ms2_example["scopes_supported"];
+        if (\is_object($ms1_scopes_supported)) {
+            $ms1_scopes_supported = (array) $ms1_scopes_supported;
+        }
+        if (\is_object($ms2_scopes_supported)) {
+            $ms2_scopes_supported = (array) $ms2_scopes_supported;
+        }
+        if (\is_array($ms1_scopes_supported) === false || \is_array($ms2_scopes_supported) === false) {
+            throw new Exception("Bad parameter as scopes_supported provided.");
+        }
+        try {
+            $intersect = \array_intersect($ms1_scopes_supported,
+                                          $ms2_scopes_supported);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            throw new Exception($exc->getMessage());
+        }
+
+        if (\count($intersect) === \count($ms1["scopes_supported"])) {
+            return true;
+        }
+        else {
+            return false;
+//            throw new Exception("Scopes not found in the provided list.");
+//            throw new Exception("Problems with scopes when checking provided scopes supported list.");
+        }
+    }
+
     public static function merge_two_ms($ms1 = [], $ms_compound = [],
                                         $ms_claim_skip = true) {
         $check00  = (\is_array($ms1) === true && \count($ms1) > 0);
@@ -92,7 +132,7 @@ class metadata_statements {
         if ($check02) {
             return $ms_compound;
         }
-        else if ($check02a === false) {
+        else if ($check02a === true) {
             throw new Exception("Bad parameters recieved: Not an Array type!");
         }
         //TODO Please CHECK the code below!!!
@@ -106,6 +146,21 @@ class metadata_statements {
             if ($check03 === false) {
                 $ms_compound[$ms1_key] = $ms1_value;
                 continue;
+            }
+            //Check if is a claim/parameter: scopes_supported
+            if (isset($ms1_key) && $ms1_key === "scopes_supported" && isset($ms_compound["scopes_supported"])) {
+                try {
+                    $check_scopes = \oidcfed\metadata_statements::check_MS_scopes_supported($ms1_value,
+                                                                                            $ms_compound);
+                    if (!$check_scopes) {
+//                        throw new Exception("Problem with scopes checking.");
+                        echo "Problem with scopes checking.";
+                    }
+                }
+                catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                    throw new Exception($exc->getMessage());
+                }
             }
             // Check if is a subset
             //String
@@ -168,10 +223,32 @@ class metadata_statements {
             }
 
             //Assoc. arrays/dictionary
-            $check08 = (true);
+            $check08  = (\is_array($ms1_value));
+            $check08a = (\is_array($ms_compound[$ms1_key]));
+            $check08b = (($check08 && \count($ms1_value) > 0) && ($check08a && \count($ms_compound[$ms1_key])
+                    > 0) && \count($ms1_value) < \count($ms_compound[$ms1_key]));
+            $check08c = (($check08 && \count($ms1_value) > 0) && ($check08a && \count($ms_compound[$ms1_key])
+                    > 0) && \count($ms1_value) >= \count($ms_compound[$ms1_key]) );
+            if ($check08b) {
+                //If is not a subset we can add a value
+                $ms_compound[$ms1_key] = $ms1_value;
+                continue;
+            }
+            else if ($check08c) {
+                $arr_intersect  = \array_intersect($ms1_value,
+                                                   $ms_compound[$ms1_key]);
+                $compare_result = \oidcfed\arrays_funct::get_compare_results_for_two_objects($arr_intersect,
+                                                                                             $ms1_value);
+                if (!$compare_result) {
+                    throw new Exception("Error: A bad subset value found for " . ((string) $ms1_key));
+                }
+                else {
+                    //If is not a subset we can add a value
+                    $ms_compound[$ms1_key] = $ms1_value;
+                    continue;
+                }
+            }
             //TODO Need to finish here and debug !!!
-
-            //If not a subset we can replace the value in ms_compound from ms1
         }
 
 
