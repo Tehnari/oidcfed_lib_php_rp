@@ -6,13 +6,15 @@
 
 This project is an attempt to create Relying Party (RP) using the OIDCFED (OpenID Connect Federation)
  specification, developed as a PHP language / platform library.
-It is in development and is currently not recommended for use in production.
+It is in development and is currently not recommended for use in production
+OR in other words do if you know what yu do.
 
 --- ROMANIAN ---
 
 Acest proiect reprezintă o tentativă de creare a Relying Party (RP) cu utilizarea specificației
 OIDCFED (OpenID Connect Federation), elaborată ca librărie pentru limbajul/platforma PHP.
-Este în elaborare și la moment nu este recomandat pentru a fi utilizat în producție.
+Este în elaborare și la moment nu este recomandat pentru a fi utilizat în producție
+Sau cu alte cuvinte utilizați numai dacă cunoașteți ce faceți.
 
 
 ---
