@@ -47,7 +47,6 @@ All classes are in directory classes.
 
 Some examples:
 
-
 For generating key use openssl, ex.:
 
 openssl genrsa -out foo.key 2048

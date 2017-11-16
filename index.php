@@ -40,6 +40,19 @@
 //\oidcfed\autoloader::init();
 require 'parameters.php';
 echo "";
+
+
+echo "<form action=\"index.php\" method=\"post\">";
+//echo "Provider url: <input type=\"text\" name=\"provider_url\"><br>";
+echo "Provider url (List): <input type=\"text\" name=\"provider_url_list\"><br>";
+echo "<datalist id=\"provider_url_list\">";
+echo "  <option></option>";
+echo "  <option></option>";
+echo "</datalist>";
+echo "Client ID: <input type=\"text\" name=\"client_id\"><br>";
+echo "Client Secret: <input type=\"password\" name=\"client_secret\"><br>";
+echo "<input type=\"submit\">";
+echo "</form>";
 //use \OpenIdConnectClient\OpenIdConnectClient;
 //
 //$oidc_site_url = "https://rp.certification.openid.net:8080/$client_id/rp-response_type-code";
