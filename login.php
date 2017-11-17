@@ -41,45 +41,30 @@
 require 'parameters.php';
 echo "";
 $post_in = NULL;
-//if(is_array($_POST) && count($_POST)>0){
-////    $post = $_POST;
-//    $post_in = filter_input_array(INPUT_POST);
-//}
+$oidcFedRp    = NULL;
+$oidc_site_url = null;
+if (is_array($_POST) && count($_POST) > 0) {
+    $post_in = filter_input_array(INPUT_POST);
+}
 
-echo "<form action=\"login.php\" method=\"post\">";
-//echo "Provider url: <input type=\"text\" name=\"provider_url\"><br>";
-echo "<p>Provider url (List): <input list=\"provider_url_list\" type=\"text\" name=\"provider_url\"></p>";
-echo "<datalist id=\"provider_url_list\">";
-$check00 = (is_array($provider_url_list) && count($provider_url_list) > 0) ;
-if ($check00) {
-    foreach ($provider_url_list as $plval) {
-        if (is_object($plval) && property_exists($plval, "key") && property_exists($plval,
-                                                                                   "value")) {
-            echo "  <option value=\"" . $plval->value . "\" >" . $plval->key . "</option>";
-        }
+
+if($post_in !== null && is_array($post_in) && array_key_exists("provider_url", $post_in)) {
+    $oidc_site_url = $post_in["provider_url"];
+}
+if(is_string($oidc_site_url) && mb_strlen($oidc_site_url)>0) {
+    $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
+
+    try {
+        $oidcFedRp->register();
+        $client_id     = $oidcFedRp->getClientID();
+        $client_secret = $oidcFedRp->getClientSecret();
+    }
+    catch (Exception $exc) {
+        echo "<pre>";
+        echo $exc->getTraceAsString();
+        echo "</pre>";
     }
 }
-echo "  <option value=\"http://url1\">Provider1</option>";
-echo "</datalist>";
-echo "Client ID: <input type=\"text\" name=\"client_id\"><br>";
-echo "Client Secret: <input type=\"password\" name=\"client_secret\"><br>";
-echo "<input type=\"submit\">";
-echo "</form>";
-//use \OpenIdConnectClient\OpenIdConnectClient;
-//
-//$oidc_site_url = "https://rp.certification.openid.net:8080/$client_id/rp-response_type-code";
-//$oidc = new OpenIDConnectClient($oidc_site_url);
-//
-//try {
-//    $oidc->register();
-//    $client_id     = $oidc->getClientID();
-//    $client_secret = $oidc->getClientSecret();
-//}
-//catch (Exception $exc) {
-//    echo "<pre>";
-//    echo $exc->getTraceAsString();
-//    echo "</pre>";
-//}
 
 
 
