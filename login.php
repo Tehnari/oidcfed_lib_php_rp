@@ -72,6 +72,7 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
         try {
 //            $oidcFedRp->setCertPath('/path/to/my.cert');
             $oidcFedRp->setCertPath($certificateLocal_path);
+            $responseTypes = $oidcFedRp->getResponseTypes();
             $openid_known  = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
                                                                                        null,
                                                                                        null,
