@@ -59,7 +59,7 @@ if ($check00) {
         }
     }
 }
-echo "  <option value=\"http://url1\">Provider1</option>";
+//echo "  <option value=\"http://url1\">Provider1</option>";
 echo "</datalist>";
 echo "Client ID: <input type=\"text\" name=\"client_id\"><br>";
 echo "Client Secret: <input type=\"password\" name=\"client_secret\"><br>";
