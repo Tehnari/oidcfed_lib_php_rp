@@ -708,18 +708,23 @@ class metadata_statements {
         if (!$check00a && !$check00b) {
             throw new Exception("Bad public key provided...");
         }
-        if ($check00b && \array_key_exists("keys", $pubKeyJwks) && isset($pubKeyJwks["keys"])) {
-            foreach ($pubKeyJwks["keys"] as $pkjvalue) {
+        if ($check00b) {
+            $keysTmp  = $pubKeyJwks->getKeys();
+            foreach ($keysTmp as $pkjvalue) {
+                if($jkws != null){
+                    continue;
+                }
                 try {
                     $jwks = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_jwt,
                                                                                                 $pkjvalue);
+                    echo "";
                 }
                 catch (Exception $exc) {
 //                    echo $exc->getTraceAsString();
                 }
             }
         }
-        else if ($check00a) {
+        else if (!$check00b && $check00a) {
             $jwks = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_jwt,
                                                                                         $pubKeyJwks);
         }
