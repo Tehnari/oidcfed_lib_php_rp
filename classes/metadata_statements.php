@@ -673,7 +673,49 @@ class metadata_statements {
         return false;
     }
 
-//    public static function verify_signature_keys_from_jwks_uri($param) {
-//
-//    }
+    /**
+     * Decodes, verifies and flattens a compounded MS for a specific federation operator
+     * P.S.: Based on function from  https://github.com/alejandro-perez/OIDCFederatedMetadataStatement/blob/master/src/main/java/org/geant/oidcfed/FederatedMetadataStatement.java
+     * @param string $ms_jwt
+     * @param string $fo_op
+     * @param array $root_keys
+     */
+    public static function verifyMetadataStatement($ms_jwt, $fo_op, $root_keys) {
+        $check00 = (\is_string($ms_jwt) && \mb_strlen($ms_jwt) > 0);
+        $check01 = (\is_string($fo_op) && \mb_strlen($fo_op) > 0);
+        $check02 = (\is_array($root_keys) && \count($root_keys) > 0);
+        if (!$check00 || !$check01 || !$check02) {
+            throw new Exception("Bad parameters received!");
+        }
+        //Get pub sigkey for $ms_jwt
+        $pubkeysArr = null;
+        if (\array_key_exists($fo_op, $root_keys) && \array_key_exists("keys",
+                                                                       $root_keys[$fo_op])) {
+            $pubkeysArr = $root_keys[$fo_op];
+        }
+        if ($pubkeysArr === null || (\is_array($pubkeysArr) && count($pubkeysArr) === 0)) {
+            throw new Exception("Public Keys not found for " . $fo_op);
+        }
+        try {
+            $pubKeyJwks = \oidcfed\security_jose::create_jwks_from_values($pubkeysArr);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            throw new Exception("Problems with Public Keys search for " . $fo_op);
+        }
+        $check00a        = ($pubKeyJwks instanceof \Jose\Object\JWK);
+        if(!$check00a){
+            throw new Exception("Bad public key provided...");
+        }
+        $jwks         = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_jwt,
+                                                                                            $pubKeyJwks);
+        $jwks_payload = null;
+        if ($jwks instanceof \Jose\Object\JWS) {
+//            echo "<br>=============Verify (Keys Bundle) signature result=============<br>";
+//            print_r($jwks->getPayload());
+            $jwks_payload = $jwks->getPayload();
+        }
+        echo "";
+    }
+
 }

@@ -128,7 +128,7 @@ $ms_compound_result = \oidcfed\metadata_statements::get_compound_ms_static($ms_a
 echo "Compound MS<br>";
 $check_scopes       = null;
 //Check if is a claim/parameter: scopes_supported
-$check03 = (is_array($ms_compound_result) && count($ms_compound)>0);
+$check03 = (is_array($ms_compound_result) && count($ms_compound_result)>0);
 $check04 = (is_array($ms_arr) && is_array($ms_arr[0]) && count($ms_arr[0])>0);
 $check05 = ($check03 && $check04);
 if ($check05 && isset($ms_arr[0]["scopes_supported"]) && isset($ms_compound_result["scopes_supported"])) {

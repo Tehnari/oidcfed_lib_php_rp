@@ -71,9 +71,12 @@ try {
 catch (Exception $exc) {
     echo $exc->getTraceAsString();
     $openid_known = false;
+    $jwks_payload = false;
 }
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-$check00 = (\is_array($openid_known) === true);
+$check00a = (\is_array($openid_known) === true);
+$check00b = ($jwks_payload);
+$check00  = ($check00a && $check00b);
 $check01 = ($check00 === true && \array_key_exists('metadata_statements',
                                                    $openid_known) === true && \is_array($openid_known['metadata_statements']) === true
         && \count($openid_known['metadata_statements']) > 0);
@@ -115,63 +118,93 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "Have some dificulties with signature verification!";
     }
 }
-//echo "<br>=============Register client=============<br>";
-//
-//echo "Variable: path_dataDir_real: <br>";
-//print_r($path_dataDir_real);
-//echo "Getting or prepare certificate to use with OIDCFED Client...<br>";
-//$certificateLocal_content = \oidcfed\security_keys::get_csr(false, $dn,
-//                                                            $priv_key_woPass,
-//                                                            $ndays,
-//                                                            $path_dataDir_real);
-//echo "<br>";
-//echo "<pre>";
-//print_r($certificateLocal_content);
-//echo "<br>";
-////print_r(openssl_x509_parse($certificateLocal_content));
-//echo "</pre>";
-//$certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path();
-//$openid                   = new \oidcfed\oidcfedClient([
-////    'provider_url'  => $openid_known['registration_endpoint'],
-//    'provider_url'        => $full_url,
-//    'client_id'           => $openid_known['issuer'],
-//    'client_secret'       => $passphrase,
-//    'clientName'          => 'oidcfed_lib_rp',
-//    'metadata_statements' => $openid_known['metadata_statements']
-//        ]);
-//$openid->addScopes(['openid', 'email', 'profile']);
-//if (!$client_secret) {
-//    $openid->register();
-////Using this  client_id and client_secret
-//    $client_id     = $openid->getClientID();
-//    $client_secret = $openid->getClientSecret();
-//}
-//if ($client_secret) {
-//    echo "";
-//    //If we have defined $client _secret we can continue
-//    //But for this example we just stop
-//    echo "Here we have registered client with ID: " . $client_id . "<br>";
-//    echo "And client secret: " . $client_secret . "<br>";
-////    try {
-////        /*
-////         * "end_session_endpoint"   => $openid_known['end_session_endpoint'],
-////          "token_endpoint"         => $openid_known['token_endpoint']
-////         */
-////        $openid->setProviderConfigParams(["authorization_endpoint" => $openid_known['authorization_endpoint'],
-////        ]);
-//////    $openid->setProviderUrl($client_id);
-////        // $openid->setVerifyHost(false);
-////        // $openid->setVerifyPeer(false);
-////        $openid->setCertPath($certificateLocal_path);
-////        //
-//////    $openid->authenticate();
-////        $name = $oidc->requestUserInfo('given_name');
-////    }
-////    catch (Exception $exc) {
-////        echo "<br>" . $exc->getMessage() . "<br>";
-////        echo $exc->getTraceAsString();
-////    }
-//}
-//echo "";
+echo "<br>=============Check for policy error=============<br>";
+$ms_compound_result = \oidcfed\metadata_statements::get_compound_ms_static($ms_arr,
+                                                                           $ms_compound);
+echo "Compound MS<br>";
+$check_scopes       = null;
+//Check if is a claim/parameter: scopes_supported
+$check03 = (is_array($ms_compound_result) && count($ms_compound_result)>0);
+$check04 = (is_array($ms_arr) && is_array($ms_arr[0]) && count($ms_arr[0])>0);
+$check05 = ($check03 && $check04);
+if ($check05 && isset($ms_arr[0]["scopes_supported"]) && isset($ms_compound_result["scopes_supported"])) {
+    try {
+        $check_scopes = \oidcfed\metadata_statements::check_MS_scopes_supported($ms_compound_result,
+                                                                                $ms_arr[0]);
+        if (!$check_scopes) {
+            echo "Problem with scopes checking.";
+//            echo $exc->getTraceAsString();
+//            throw new Exception("Problem with scopes checking.");
+        }
+    }
+    catch (Exception $exc) {
+        echo $exc->getMessage();
+//                    echo $exc->getTraceAsString();
+//        throw new Exception($exc->getMessage());
+    }
+}
+if (\is_bool($check_scopes) && $check_scopes === true) {
+    echo "<pre>";
+    print_r($ms_compound_result);
+    echo "</pre>";
+    echo "<br>";
+}
+echo "<br>=============Register client=============<br>";
 
+echo "Variable: path_dataDir_real: <br>";
+print_r($path_dataDir_real);
+echo "Getting or prepare certificate to use with OIDCFED Client...<br>";
+$certificateLocal_content = \oidcfed\security_keys::get_csr(false, $dn,
+                                                            $priv_key_woPass,
+                                                            $ndays,
+                                                            $path_dataDir_real);
+echo "<br>";
+echo "<pre>";
+print_r($certificateLocal_content);
+echo "<br>";
+//print_r(openssl_x509_parse($certificateLocal_content));
+echo "</pre>";
+$certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path();
+$openid                   = new \oidcfed\oidcfedClient([
+//    'provider_url'  => $openid_known['registration_endpoint'],
+    'provider_url'        => $full_url,
+    'client_id'           => $openid_known['issuer'],
+    'client_secret'       => $passphrase,
+    'clientName'          => 'oidcfed_lib_rp',
+    'metadata_statements' => $openid_known['metadata_statements']
+        ]);
+$openid->addScopes(['openid', 'email', 'profile']);
+if (!$client_secret) {
+    $openid->register();
+//Using this  client_id and client_secret
+    $client_id     = $openid->getClientID();
+    $client_secret = $openid->getClientSecret();
+}
+if ($client_secret) {
+    echo "";
+    //If we have defined $client _secret we can continue
+    //But for this example we just stop
+    echo "Here we have registered client with ID: " . $client_id . "<br>";
+    echo "And client secret: " . $client_secret . "<br>";
+//    try {
+//        /*
+//         * "end_session_endpoint"   => $openid_known['end_session_endpoint'],
+//          "token_endpoint"         => $openid_known['token_endpoint']
+//         */
+//        $openid->setProviderConfigParams(["authorization_endpoint" => $openid_known['authorization_endpoint'],
+//        ]);
+////    $openid->setProviderUrl($client_id);
+//        // $openid->setVerifyHost(false);
+//        // $openid->setVerifyPeer(false);
+//        $openid->setCertPath($certificateLocal_path);
+//        //
+////    $openid->authenticate();
+//        $name = $oidc->requestUserInfo('given_name');
+//}
+//    catch (Exception $exc) {
+//        echo "<br>" . $exc->getMessage() . "<br>";
+//        echo $exc->getTraceAsString();
+//}
+}
+echo "";
 
