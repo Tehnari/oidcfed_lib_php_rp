@@ -37,6 +37,10 @@
 
 namespace oidcfed;
 
+
+require_once 'autoloader.php';
+\oidcfed\autoloader::init();
+
 define('__ROOT__', dirname(dirname(__FILE__)));
 require_once(__ROOT__.'/parameters.php');
 //require '../parameters.php';

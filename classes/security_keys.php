@@ -66,6 +66,7 @@ class security_keys {
             $path_dataDir_real = realpath($path_dataDir);
         }
         //=============================================================================
+        //TODO Something is wrong here!!!
         try {
             if (\is_dir($path_dataDir_real) === false) {
                 \mkdir($path_dataDir_real, 0777, true);
