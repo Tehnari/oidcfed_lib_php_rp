@@ -37,7 +37,9 @@
 
 namespace oidcfed;
 
-require '../parameters.php';
+define('__ROOT__', dirname(dirname(__FILE__)));
+require_once(__ROOT__.'/parameters.php');
+//require '../parameters.php';
 
 /**
  * Description of oidcfed
