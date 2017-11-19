@@ -37,12 +37,14 @@
 
 namespace oidcfed;
 
+require '../parameters.php';
+
 /**
  * Description of oidcfed
  *
  * @author constantin
  */
-class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient{
+class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient {
 //class oidcfedClient {
 
     /**
@@ -147,6 +149,127 @@ class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient{
                                                          $default = null,
                                                          $cert_verify = true) {
 
+    }
+
+    public static function VerifySignatureAndInterpretProviderInfo($full_url) {
+
+        try {
+            $openid_known = \oidcfed\oidcfedClient::get_well_known_openid_config_data($full_url,
+                                                                                      null,
+                                                                                      null,
+                                                                                      false);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            $openid_known = false;
+        }
+        $keys_bundle_url = null;
+        $sigkey_url      = null;
+        $jwks            = null;
+        $jwks_payload    = null;
+        $jws_struc       = null;
+        $pre_check00     = (\is_string($keys_bundle_url) && \mb_strlen($keys_bundle_url)
+                > 0);
+        $pre_check01     = (\is_string($sigkey_url) && \mb_strlen($sigkey_url) > 0);
+        if ($pre_check00 && $pre_check01) {
+            try {
+                $keys_bundle   = \oidcfed\configure::getUrlContent($keys_bundle_url,
+                                                                   false);
+                $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey_url,
+                                                                   false);
+                $jwks_bundle   = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
+                                                                              true);
+                $jwks          = \oidcfed\metadata_statements::verify_signature_keys_from_MS($keys_bundle,
+                                                                                             false,
+                                                                                             $jwks_bundle);
+                if ($jwks instanceof \Jose\Object\JWS) {
+                    $jwks_payload = $jwks->getPayload();
+                }
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+                $jwks_payload = false;
+                $openid_known = false;
+//                throw new Exception("Have some dificulties with JWKS Payload");
+            }
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            $check00a = (\is_array($openid_known) === true);
+            $check00b = ($jwks_payload);
+            $check00  = ($check00a && $check00b);
+            $check01  = ($check00 === true && \array_key_exists('metadata_statements',
+                                                                $openid_known) === true
+                    && \is_array($openid_known['metadata_statements']) === true && \count($openid_known['metadata_statements'])
+                    > 0);
+            $check02  = ($check00 === true && \array_key_exists('metadata_statement_uris',
+                                                                $openid_known) === true
+                    && \is_array($openid_known['metadata_statement_uris']) === true
+                    && \count($openid_known['metadata_statement_uris']) > 0);
+            $ms_tmp   = false;
+            if ($check01 === false && $check02 === true) {
+                $ms_tmp = $openid_known['metadata_statement_uris'];
+                foreach ($ms_tmp as $ms_tmp_key => $ms_tmp_val) {
+                    $ms_tmp[$ms_tmp_key] = \oidcfed\configure::getUrlContent($ms_tmp_val,
+                                                                             false);
+                }
+                $openid_known['metadata_statements'] = $ms_tmp;
+            }
+            unset($ms_tmp);
+            foreach ($openid_known['metadata_statements'] as $ms_key =>
+                        $ms_value) {
+//                $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms_value);
+//                unset($ms_header);
+                $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value,
+                                                                     null,
+                                                                     $jwks->getPayload()["bundle"],
+                                                                     false,
+                                                                     false);
+                if (!$jws_struc) {
+//        echo "Have some dificulties";
+//                    throw new Exception("Have some dificulties with JWS Structure");
+                    $jws_struc = false;
+                }
+            }
+
+            $result                   = new \stdClass();
+            $certificateLocal_content = \oidcfed\security_keys::get_csr(false,
+                                                                        $dn,
+                                                                        $priv_key_woPass,
+                                                                        $ndays,
+                                                                        $path_dataDir_real);
+
+            $certificateLocal_path   = \oidcfed\security_keys::public_certificateLocal_path();
+            $openidFedClient         = new \oidcfed\oidcfedClient([
+//    'provider_url'  => $openid_known['registration_endpoint'],
+                'provider_url'        => $full_url,
+                'client_id'           => $openid_known['issuer'],
+                'client_secret'       => $passphrase,
+                'clientName'          => 'oidcfed_lib_rp',
+                'metadata_statements' => $openid_known['metadata_statements']
+            ]);
+            $result->openidFecClient = $openidFedClient;
+            $openidFedClient->addScopes(['openid', 'email', 'profile']);
+            if (!$client_secret) {
+                $openidFedClient->register();
+//Using this  client_id and client_secret
+                $client_id     = $openidFedClient->getClientID();
+                $client_secret = $openidFedClient->getClientSecret();
+            }
+            if ($client_id) {
+                $result->client_id = $client_id;
+            }
+            else {
+                $result->client_id = null;
+            }
+            if ($client_secret) {
+                $result->client_secret = $client_secret;
+            }
+            else {
+                $result->client_secret = null;
+            }
+            return $result;
+        }
+//        return false;
+        throw new Exception("Verification failed, nothing failed...");
     }
 
 }

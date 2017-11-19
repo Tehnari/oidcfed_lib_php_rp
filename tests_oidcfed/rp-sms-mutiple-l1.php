@@ -48,7 +48,7 @@ $keys_bundle_url = 'https://agaton-sax.com:8080/bundle';
 $sigkey_url      = 'https://agaton-sax.com:8080/bundle/sigkey';
 try {
     $keys_bundle   = \oidcfed\configure::getUrlContent($keys_bundle_url, false);
-    $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey, false);
+    $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey_url, false);
     $jwks_bundle   = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
                                                                   true);
     echo "<pre>";
@@ -72,9 +72,12 @@ try {
 catch (Exception $exc) {
     echo $exc->getTraceAsString();
     $openid_known = false;
+    $jwks_payload = false;
 }
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-$check00 = (\is_array($openid_known) === true);
+$check00a = (\is_array($openid_known) === true);
+$check00b = ($jwks_payload);
+$check00  = ($check00a && $check00b);
 $check01 = ($check00 === true && \array_key_exists('metadata_statements',
                                                    $openid_known) === true && \is_array($openid_known['metadata_statements']) === true
         && \count($openid_known['metadata_statements']) > 0);
@@ -92,6 +95,8 @@ if ($check01 === false && $check02 === true) {
 }
 unset($ms_tmp);
 echo "=============Metadata Statements=============<br>";
+$ms_arr      = [];
+$ms_compound = [];
 foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     echo "MS string: <br>";
     echo "<pre>";
@@ -110,13 +115,44 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
         echo "===>>> Verified MS index: $ms_key <<<===";
         echo "<pre>";
         print_r($jws_struc);
+        $ms_arr[] = $jws_struc;
         echo "</pre>";
     }
     else {
         echo "Have some dificulties";
     }
 }
-
+echo "<br>=============Check for policy error=============<br>";
+$ms_compound_result = \oidcfed\metadata_statements::get_compound_ms_static($ms_arr,
+                                                                           $ms_compound);
+echo "Compound MS<br>";
+$check_scopes       = null;
+//Check if is a claim/parameter: scopes_supported
+$check03 = (is_array($ms_compound_result) && count($ms_compound)>0);
+$check04 = (is_array($ms_arr) && is_array($ms_arr[0]) && count($ms_arr[0])>0);
+$check05 = ($check03 && $check04);
+if ($check05 && isset($ms_arr[0]["scopes_supported"]) && isset($ms_compound_result["scopes_supported"])) {
+    try {
+        $check_scopes = \oidcfed\metadata_statements::check_MS_scopes_supported($ms_compound_result,
+                                                                                $ms_arr[0]);
+        if (!$check_scopes) {
+            echo "Problem with scopes checking.";
+//            echo $exc->getTraceAsString();
+//            throw new Exception("Problem with scopes checking.");
+        }
+    }
+    catch (Exception $exc) {
+        echo $exc->getMessage();
+//                    echo $exc->getTraceAsString();
+//        throw new Exception($exc->getMessage());
+    }
+}
+if (\is_bool($check_scopes) && $check_scopes === true) {
+    echo "<pre>";
+    print_r($ms_compound_result);
+    echo "</pre>";
+    echo "<br>";
+}
 echo "<br>=============Register client=============<br>";
 
 echo "Variable: path_dataDir_real: <br>";
@@ -175,5 +211,4 @@ if ($client_secret) {
 //    }
 }
 echo "";
-
 

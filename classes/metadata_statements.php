@@ -262,7 +262,7 @@ class metadata_statements {
         if ($ms1 === false || \is_array($ms_compound) === false) {
             throw new Exception("Bad parameters recieved!");
         }
-        if (\is_array($ms1) === true) {
+        if (\is_array($ms1) === true && count($ms1) > 0) {
             $ms1_claims = $ms1;
         }
         else if ($ms1 instanceof \Jose\Object\JWS) {
@@ -278,9 +278,13 @@ class metadata_statements {
         if ($check00 === false) {
             throw new Exception("Have a problem with getting claims from MS.");
         }
-        $check01  = (isset($ms1_claims[0]["iat"]) === true);
-        $check01a = (isset($ms1_claims["iat"]) === true);
-        $check01b = (isset($ms1_claims["metadata_statements"]) === true);
+        $check01  = (is_array($ms1_claims[0]) && array_key_exists("iat",
+                                                                  $ms1_claims[0])
+                && isset($ms1_claims[0]["iat"]) === true);
+        $check01a = (is_array($ms1_claims) && array_key_exists("iat",
+                                                               $ms1_claims) && isset($ms1_claims["iat"]) === true);
+        $check01b = (is_array($ms1_claims) && array_key_exists("metadata_statements",
+                                                               $ms1_claims) && isset($ms1_claims["metadata_statements"]) === true);
         if ($check01 === true) {
             foreach ($ms1_claims as $ms1_cl_keys => $ms1_cl_val) {
                 $check02 = (\is_array($ms1_cl_val) === true && \count($ms1_cl_val)
@@ -353,7 +357,7 @@ class metadata_statements {
         else if ($check01a === true && $check01b === false) {
             $ms_compound = self::merge_two_ms($ms1_claims, $ms_compound);
         }
-        echo "";
+//        echo "";
         return $ms_compound;
     }
 

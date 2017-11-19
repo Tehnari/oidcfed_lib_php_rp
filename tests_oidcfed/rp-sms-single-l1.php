@@ -49,7 +49,7 @@ $keys_bundle_url = 'https://agaton-sax.com:8080/bundle';
 $sigkey_url      = 'https://agaton-sax.com:8080/bundle/sigkey';
 try {
     $keys_bundle   = \oidcfed\configure::getUrlContent($keys_bundle_url, false);
-    $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey, false);
+    $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey_url, false);
     $jwks_bundle   = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
                                                                   true);
     echo "<pre>";
@@ -73,9 +73,12 @@ try {
 catch (Exception $exc) {
     echo $exc->getTraceAsString();
     $openid_known = false;
+    $jwks_payload = false;
 }
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-$check00 = (\is_array($openid_known) === true);
+$check00a = (\is_array($openid_known) === true);
+$check00b = ($jwks_payload);
+$check00  = ($check00a && $check00b);
 $check01 = ($check00 === true && \array_key_exists('metadata_statements',
                                                    $openid_known) === true && \is_array($openid_known['metadata_statements']) === true
         && \count($openid_known['metadata_statements']) > 0);
@@ -126,7 +129,10 @@ $ms_compound_result = \oidcfed\metadata_statements::get_compound_ms_static($ms_a
 echo "Compound MS<br>";
 $check_scopes       = null;
 //Check if is a claim/parameter: scopes_supported
-if (isset($ms_arr[0]["scopes_supported"]) && isset($ms_compound_result["scopes_supported"])) {
+$check03 = (is_array($ms_compound_result) && count($ms_compound)>0);
+$check04 = (is_array($ms_arr) && is_array($ms_arr[0]) && count($ms_arr[0])>0);
+$check05 = ($check03 && $check04);
+if ($check05 && isset($ms_arr[0]["scopes_supported"]) && isset($ms_compound_result["scopes_supported"])) {
     try {
         $check_scopes = \oidcfed\metadata_statements::check_MS_scopes_supported($ms_compound_result,
                                                                                 $ms_arr[0]);

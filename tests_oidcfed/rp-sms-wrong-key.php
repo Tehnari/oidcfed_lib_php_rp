@@ -47,7 +47,7 @@ $keys_bundle_url = 'https://agaton-sax.com:8080/bundle';
 $sigkey_url      = 'https://agaton-sax.com:8080/bundle/sigkey';
 try {
     $keys_bundle   = \oidcfed\configure::getUrlContent($keys_bundle_url, false);
-    $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey, false);
+    $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey_url, false);
     $jwks_bundle   = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
                                                                   true);
     echo "<pre>";
