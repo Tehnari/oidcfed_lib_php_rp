@@ -703,12 +703,26 @@ class metadata_statements {
 //            echo $exc->getTraceAsString();
             throw new Exception("Problems with Public Keys search for " . $fo_op);
         }
-        $check00a        = ($pubKeyJwks instanceof \Jose\Object\JWK);
-        if(!$check00a){
+        $check00a = ($pubKeyJwks instanceof \Jose\Object\JWK);
+        $check00b = ($pubKeyJwks instanceof \Jose\Object\JWKSet);
+        if (!$check00a && !$check00b) {
             throw new Exception("Bad public key provided...");
         }
-        $jwks         = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_jwt,
-                                                                                            $pubKeyJwks);
+        if ($check00b && \array_key_exists("keys", $pubKeyJwks) && isset($pubKeyJwks["keys"])) {
+            foreach ($pubKeyJwks["keys"] as $pkjvalue) {
+                try {
+                    $jwks = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_jwt,
+                                                                                                $pkjvalue);
+                }
+                catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                }
+            }
+        }
+        else if ($check00a) {
+            $jwks = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_jwt,
+                                                                                        $pubKeyJwks);
+        }
         $jwks_payload = null;
         if ($jwks instanceof \Jose\Object\JWS) {
 //            echo "<br>=============Verify (Keys Bundle) signature result=============<br>";

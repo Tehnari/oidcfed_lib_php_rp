@@ -437,6 +437,14 @@ class security_jose {
         return $jose_jwt_json_payload_obj;
     }
 
+    /**
+     * Verify and create JWT/JWS structure based on JWK structure or key array
+     * 
+     * @param type $jose_string
+     * @param JWK $pubSignatureKey
+     * @return \Jose\Object\JWS
+     * @throws Exception
+     */
     public static function jwt_async_verify_sign_from_string_base64enc(
     $jose_string, $pubSignatureKey = false
     ) {
