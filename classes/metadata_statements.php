@@ -708,26 +708,16 @@ class metadata_statements {
         if (!$check00a && !$check00b) {
             throw new Exception("Bad public key provided...");
         }
-        if ($check00b) {
-            $keysTmp  = $pubKeyJwks->getKeys();
-            foreach ($keysTmp as $pkjvalue) {
-                if($jkws != null){
-                    continue;
-                }
-                try {
-                    $jwks = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_jwt,
-                                                                                                $pkjvalue);
-                    echo "";
-                }
-                catch (Exception $exc) {
-//                    echo $exc->getTraceAsString();
-                }
-            }
-        }
-        else if (!$check00b && $check00a) {
+//            $keysTmp = $pubKeyJwks->getKeys();
+        try {
             $jwks = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms_jwt,
                                                                                         $pubKeyJwks);
+            echo "";
         }
+        catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+        }
+
         $jwks_payload = null;
         if ($jwks instanceof \Jose\Object\JWS) {
 //            echo "<br>=============Verify (Keys Bundle) signature result=============<br>";

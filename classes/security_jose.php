@@ -439,7 +439,7 @@ class security_jose {
 
     /**
      * Verify and create JWT/JWS structure based on JWK structure or key array
-     * 
+     *
      * @param type $jose_string
      * @param JWK $pubSignatureKey
      * @return \Jose\Object\JWS
@@ -454,40 +454,42 @@ class security_jose {
         $jwt_header      = self::get_jose_jwt_header_to_object($jose_string);
         $jwt_signatures  = $jose_obj_loaded->getSignatures();
         $check00a        = ($pubSignatureKey instanceof \Jose\Object\JWK);
-        if ($check00a === true) {
+        $check00a2       = ($pubSignatureKey instanceof \Jose\Object\JWKSet);
+        if ($check00a2) {
             $jwk_pubKey = $pubSignatureKey;
         }
-        else {
+        else if ($check00a === true) {
+            $jwk_pubKey = $pubSignatureKey;
+        }
+        else if (!$check00a2) {
             $jwk_pubKey = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubSignatureKey);
         }
         $check00b = ($jwk_pubKey instanceof \Jose\Object\JWK);
-        if ($check00b === false) {
+        $check00c = ($jwk_pubKey instanceof \Jose\Object\JWKSet);
+        if (!$check00b && !$check00c) {
             throw new Exception("Public key wasn't provided...");
         }
         //TODO Need to search clientid in claims from jwt signatures
         $result = false;
-        foreach ($jwt_signatures as $jwt_skey => $jwt_sval) {
-            $check01 = ($jwt_sval instanceof \Jose\Object\Signature);
-            if ($check01 === false) {
-                continue;
-            }
             try {
 //                echo "<br>****************************<br>";
-                $result = $loader->loadAndVerifySignatureUsingKey(
-                        $jose_string, $pubSignatureKey, [$jwt_header->alg],
-                        $jwt_sval
-                );
+                if ($check00b) {
+                    $result = $loader->loadAndVerifySignatureUsingKey($jose_string,
+                                                                      $jwk_pubKey,
+                                                                      [$jwt_header->alg]);
+                }
+                else if ($check00c) {
+                    $result = $loader->loadAndVerifySignatureUsingKeySet($jose_string,
+                                                                         $jwk_pubKey,
+                                                                         [$jwt_header->alg]);
+                };
             }
             catch (Exception $exc) {
 //                $result = false;
 //                echo $exc->getTraceAsString();
 //                echo "<br>";
             }
-            $check02 = ($result instanceof \Jose\Object\JWS);
-            if ($check02 === true) {
-                return $result;
-            }
-        }
+            return $result;
     }
 
     public static function jwt_sync_decrypt_from_string_base64enc(
@@ -555,15 +557,16 @@ class security_jose {
         }
     }
 
-    public static function get_jws_claims_from_structure($jwt=false){
-        $check00=($jwt instanceof \Jose\Object\JWS);
-        if($check00 === false){
+    public static function get_jws_claims_from_structure($jwt = false) {
+        $check00 = ($jwt instanceof \Jose\Object\JWS);
+        if ($check00 === false) {
             throw new Exception("Not a JWS provided as a parameter.");
         }
-        if($jwt->hasClaims() === true){
+        if ($jwt->hasClaims() === true) {
             $claims = $jwt->getClaims();
             return $claims;
-        } else {
+        }
+        else {
             throw new Exception("Claims not found.");
         }
     }
@@ -678,28 +681,29 @@ class security_jose {
         // The signature is verified using our key set.
         //Algorithm array should be like e.g.: ['RS256']
 //        try {
-            $keys_arr   = $jwk_set->getKeys();
-            $count_keys = $jwk_set->countKeys();
-            foreach ($keys_arr as $ka_key => $ka_value) {
-                echo "";
-                $values = $ka_value->getAll();
-                if($values["kid"] !== $ms_header->kid){
-                    continue;
-                }
-                unset($ka_value);unset($values);
-                try {
-                    $jws = $loader->loadAndVerifySignatureUsingKeySet(
-                            $input, $jwk_set, $algorithm, $ka_key
-                    );
-                }
-                catch (Exception $exc) {
-//                    echo $exc->getTraceAsString();
-                    continue;
-                }
-                if ($jws instanceof \Jose\Object\JWS) {
-                    return $jws;
-                }
+        $keys_arr   = $jwk_set->getKeys();
+        $count_keys = $jwk_set->countKeys();
+        foreach ($keys_arr as $ka_key => $ka_value) {
+            echo "";
+            $values = $ka_value->getAll();
+            if ($values["kid"] !== $ms_header->kid) {
+                continue;
             }
+            unset($ka_value);
+            unset($values);
+            try {
+                $jws = $loader->loadAndVerifySignatureUsingKeySet(
+                        $input, $jwk_set, $algorithm, $ka_key
+                );
+            }
+            catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                continue;
+            }
+            if ($jws instanceof \Jose\Object\JWS) {
+                return $jws;
+            }
+        }
 //        }
 //        catch (Exception $exc) {
 //            echo $exc->getTraceAsString();
