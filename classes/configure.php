@@ -168,7 +168,7 @@ class configure {
         return $public_key;
     }
 
-    public static $config_template = [
+    public static $config_template         = [
         "countryName"            => 'XX',
         "stateOrProvinceName"    => 'State',
         "localityName"           => 'SomewhereCity',
@@ -294,7 +294,14 @@ class configure {
     }
 
     static function getUrlContent($url, $cert_verify = true) {
-        $ch = \curl_init();
+        $ch      = \curl_init();
+        $options = [
+            \CURLOPT_USERAGENT      => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.1.4322)',
+            \CURLOPT_RETURNTRANSFER => 1,
+            \CURLOPT_CONNECTTIMEOUT => 5,
+            \CURLOPT_TIMEOUT        => 5,
+            \CURLOPT_HEADER         => false
+        ];
         \curl_setopt($ch, \CURLOPT_URL, $url);
         \curl_setopt($ch, \CURLOPT_USERAGENT,
                      'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.1.4322)');
@@ -303,8 +310,11 @@ class configure {
         \curl_setopt($ch, \CURLOPT_TIMEOUT, 5);
         if (\boolval($cert_verify) === false) {
             \curl_setopt($ch, \CURLOPT_SSL_VERIFYPEER, false);
+            $options[\CURLOPT_SSL_VERIFYPEER] = false;
         }
         $data         = \curl_exec($ch);
+        $data2        = self::curl_get($url, $get          = null, $options);
+//        $data3 =
 //        $httpcode = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
         $curl_getinfo = \curl_getinfo($ch);
         if (\is_array($curl_getinfo) === true && \array_key_exists('http_code',
