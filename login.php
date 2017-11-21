@@ -38,7 +38,8 @@
 //require 'classes/autoloader.php';
 ////Loading classes
 //\oidcfed\autoloader::init();
-require 'parameters.php';
+
+require (dirname(__FILE__) . '/parameters.php');
 echo "";
 $post_in       = NULL;
 $oidcFedRp     = NULL;
@@ -65,41 +66,70 @@ $certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path
 $check05                  = is_string($certificateLocal_path) && is_readable($certificateLocal_path);
 if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     //Static registration TEST
-    if ($check03 && $check04 && $check05) {
-        $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url,
-                                                $post_in["client_id"],
-                                                $post_in["client_secret"]);
+//    if ($check03 && $check04 && $check05) {
+//        $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url,
+//                                                $post_in["client_id"],
+//                                                $post_in["client_secret"]);
+//        try {
+////            $oidcFedRp->setCertPath('/path/to/my.cert');
+//            $oidcFedRp->setCertPath($certificateLocal_path);
+//            $responseTypes = $oidcFedRp->getResponseTypes();
+//            $openid_known  = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
+//                                                                                       null,
+//                                                                                       null,
+//                                                                                       false);
+////            $oidcFedRp->authenticate();
+////            $oidcFedRp->getAuthParams();
+////            $client_id     = $oidcFedRp->getClientID();
+////            $client_secret = $oidcFedRp->getClientSecret();
+//        }
+//        catch (Exception $exc) {
+//            echo "<pre>";
+//            echo $exc->getTraceAsString();
+//            echo "</pre>";
+//        }
+//        if(is_array($openid_known)){
+//            foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
+//                $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value, $ms_key, $jwks->getPayload()["bundle"]);
+//                echo "";
+//            }
+//        }
+//    }
+    //Dynamic registration TEST
+    $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
+    $oidcFedRp->setVerifyHost(false);
+    $oidcFedRp->setVerifyPeer(false);
+    try {
+        $oidcFedRp->register();
+        $client_id     = $oidcFedRp->getClientID();
+        $client_secret = $oidcFedRp->getClientSecret();
+    }
+    catch (Exception $exc) {
+        echo "<pre>";
+        echo $exc->getTraceAsString();
+        echo "</pre>";
+    }
+    if ($check05) {
         try {
-//            $oidcFedRp->setCertPath('/path/to/my.cert');
             $oidcFedRp->setCertPath($certificateLocal_path);
-            $responseTypes = $oidcFedRp->getResponseTypes();
             $openid_known  = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
                                                                                        null,
                                                                                        null,
                                                                                        false);
-            $oidcFedRp->authenticate();
-            $oidcFedRp->getAuthParams();
-            $client_id     = $oidcFedRp->getClientID();
-            $client_secret = $oidcFedRp->getClientSecret();
+//            $responseTypes = $oidcFedRp->VerifySignatureAndInterpretProviderInfo($oidc_site_url);
         }
         catch (Exception $exc) {
             echo "<pre>";
             echo $exc->getTraceAsString();
             echo "</pre>";
         }
+//        if(is_array($openid_known)){
+//            foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
+//                $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value, $ms_key, $jwks->getPayload()["bundle"]);
+//                echo "";
+//            }
+//        }
     }
-    //Dynamic registration TEST
-//    $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
-//    try {
-//        $oidcFedRp->register();
-//        $client_id     = $oidcFedRp->getClientID();
-//        $client_secret = $oidcFedRp->getClientSecret();
-//    }
-//    catch (Exception $exc) {
-//        echo "<pre>";
-//        echo $exc->getTraceAsString();
-//        echo "</pre>";
-//    }
 }
 
 

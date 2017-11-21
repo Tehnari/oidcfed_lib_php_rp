@@ -38,7 +38,7 @@
 //require 'classes/autoloader.php';
 ////Loading classes
 //\oidcfed\autoloader::init();
-require 'parameters.php';
+require (dirname(__FILE__).'/parameters.php');
 echo "";
 $post_in = NULL;
 //if(is_array($_POST) && count($_POST)>0){
@@ -61,8 +61,8 @@ if ($check00) {
 }
 //echo "  <option value=\"http://url1\">Provider1</option>";
 echo "</datalist>";
-echo "Client ID: <input type=\"text\" name=\"client_id\"><br>";
-echo "Client Secret: <input type=\"password\" name=\"client_secret\"><br>";
+//echo "Client ID: <input type=\"text\" name=\"client_id\"><br>";
+//echo "Client Secret: <input type=\"password\" name=\"client_secret\"><br>";
 echo "<input type=\"submit\">";
 echo "</form>";
 //use \OpenIdConnectClient\OpenIdConnectClient;

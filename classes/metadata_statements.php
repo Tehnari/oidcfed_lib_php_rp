@@ -716,6 +716,7 @@ class metadata_statements {
         }
         catch (Exception $exc) {
 //                    echo $exc->getTraceAsString();
+            throw new Exception("Verification of the MS for $fo_op failed.");
         }
 
         $jwks_payload = null;
@@ -723,6 +724,9 @@ class metadata_statements {
 //            echo "<br>=============Verify (Keys Bundle) signature result=============<br>";
 //            print_r($jwks->getPayload());
             $jwks_payload = $jwks->getPayload();
+        }
+        else {
+            throw new Exception("Verification of the MS for $fo_op failed.");
         }
         echo "";
     }

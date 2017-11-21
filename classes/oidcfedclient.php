@@ -50,7 +50,7 @@ require_once(__ROOT__.'/parameters.php');
  *
  * @author constantin
  */
-class oidcfedClient extends \OpenIdConnectClient\OpenIdConnectClient {
+class oidcfedClient extends \OpenIDConnectClient {
 //class oidcfedClient {
 
     /**
