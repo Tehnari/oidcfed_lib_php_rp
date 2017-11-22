@@ -65,7 +65,11 @@ $certificateLocal_content = \oidcfed\security_keys::get_csr(false, $dn,
 $certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path();
 $check05                  = is_string($certificateLocal_path) && is_readable($certificateLocal_path);
 if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
-    //Static registration TEST
+    $useAuthType = "static";
+    $useAuthType = "dynamic";
+    switch ($useAuthType) {
+        case "static":
+            //Static registration TEST
 //    if ($check03 && $check04 && $check05) {
 //        $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url,
 //                                                $post_in["client_id"],
@@ -95,77 +99,84 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
 //            }
 //        }
 //    }
-    //Dynamic registration TEST
-    $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
+            break;
+        case "dynamic":
+            //Dynamic registration TEST
+            $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
 //    $oidcFedRp->setVerifyHost(false);
 //    $oidcFedRp->setVerifyPeer(false);
-    $oidcFedRp->setVerifyCert(false);
-    try {
-        $oidcFedRp->setCertPath($certificateLocal_path);
-    }
-    catch (Exception $exc) {
-        echo "<pre>";
-        echo $exc->getTraceAsString();
-        echo "</pre>";
-    }
+            $oidcFedRp->setVerifyCert(false);
+            try {
+                $oidcFedRp->setCertPath($certificateLocal_path);
+            }
+            catch (Exception $exc) {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+            }
 
-    if (isset($client_id) && is_string($client_id) && \mb_strlen($client_id) > 0) {
-        $oidcFedRp->setClientID($client_id);
-    }
+            if (isset($client_id) && is_string($client_id) && \mb_strlen($client_id)
+                    > 0) {
+                $oidcFedRp->setClientID($client_id);
+            }
 
-    try {
-        $oidcFedRp->register();
-        $client_id     = $oidcFedRp->getClientID();
-        $client_secret = $oidcFedRp->getClientSecret();
-    }
-    catch (Exception $exc) {
-        echo "<pre>";
-        echo $exc->getTraceAsString();
-        echo "</pre>";
-    }
-    if ($check05) {
-        try {
-            $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
-                                                                                              null,
-                                                                                              null,
-                                                                                              false);
+            try {
+                $oidcFedRp->register();
+                $client_id     = $oidcFedRp->getClientID();
+                $client_secret = $oidcFedRp->getClientSecret();
+            }
+            catch (Exception $exc) {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+            }
+            if ($check05) {
+                try {
+                    $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
+                                                                                                      null,
+                                                                                                      null,
+                                                                                                      false);
 //            $responseTypes = $oidcFedRp->VerifySignatureAndInterpretProviderInfo($oidc_site_url);
-        }
-        catch (Exception $exc) {
-            echo "<pre>";
-            echo $exc->getTraceAsString();
-            echo "</pre>";
-        }
+                }
+                catch (Exception $exc) {
+                    echo "<pre>";
+                    echo $exc->getTraceAsString();
+                    echo "</pre>";
+                }
 //        echo "<pre>";
 //        var_dump($oidcFedRp);
 //        echo "</pre>";
-        if (is_array($oidcFedRp->wellKnown)) {
-            $jwks = $oidcFedRp->get_jwks_from_wellKnown();
+                if (is_array($oidcFedRp->wellKnown)) {
+                    $jwks = $oidcFedRp->get_jwks_from_wellKnown();
 //            echo "";
-        }
-        else {
-            $jwks = false;
-        }
-        $keys_bundle_url = 'https://agaton-sax.com:8080/bundle';
-        $sigkey_url      = 'https://agaton-sax.com:8080/bundle/sigkey';
-        $verify_cert     = $oidcFedRp->verify_cert;
-        $keys_bundle     = \oidcfed\configure::getUrlContent($keys_bundle_url,
-                                                             false);
-        $sigkey_bundle   = \oidcfed\configure::getUrlContent($sigkey_url, false);
-        $jwks_bundle     = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
-                                                                        true);
-        $jwks = $jwks_bundle;
-
+                }
+                else {
+                    $jwks = false;
+                }
+//        $keys_bundle_url = 'https://agaton-sax.com:8080/bundle';
+//        $sigkey_url      = 'https://agaton-sax.com:8080/bundle/sigkey';
+//        $verify_cert     = $oidcFedRp->verify_cert;
+//        $keys_bundle     = \oidcfed\configure::getUrlContent($keys_bundle_url,
+//                                                             false);
+//        $sigkey_bundle   = \oidcfed\configure::getUrlContent($sigkey_url, false);
+//        $jwks_bundle     = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
+//                                                                        true);
+//        $jwks = $jwks_bundle;
 //        $lcobucciToken = \oidcfed\oidcfedClient::lcobucci_parseJwtString($keys_bundle);
-        if (is_array($oidcFedRp->wellKnown)) {
-            foreach ($oidcFedRp->wellKnown['metadata_statements'] as $ms_key =>
-                        $ms_value) {
-                $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,
-                                                                                          $ms_key,
-                                                                                          $jwks);
-                echo "";
+                if (is_array($oidcFedRp->wellKnown)) {
+                    foreach ($oidcFedRp->wellKnown['metadata_statements'] as
+                                $ms_key => $ms_value) {
+                        $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,
+                                                                                                  $ms_key,
+                                                                                                  $jwks);
+                        echo "";
+                    }
+                }
             }
-        }
+            break;
+
+        default:
+            break;
     }
 }
 

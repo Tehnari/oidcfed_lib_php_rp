@@ -18,7 +18,7 @@ use Lcobucci\JWT\Signer\Rsa\Sha256; // you can use Lcobucci\JWT\Signer\Ecdsa\Sha
  * @author constantin
  */
 
-class lcobucci_rsa {
+class lcobucci_hmac_384 {
 
     public function verifySignature($param) {
         $signer     = new Sha256();
