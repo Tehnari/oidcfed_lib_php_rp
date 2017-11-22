@@ -100,6 +100,19 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     $oidcFedRp->setVerifyHost(false);
     $oidcFedRp->setVerifyPeer(false);
     try {
+        $oidcFedRp->setCertPath($certificateLocal_path);
+    }
+    catch (Exception $exc) {
+        echo "<pre>";
+        echo $exc->getTraceAsString();
+        echo "</pre>";
+    }
+
+    if(isset($client_id) && is_string($client_id) && \mb_strlen($client_id)>0){
+        $oidcFedRp->setClientID($client_id);
+    }
+
+    try {
         $oidcFedRp->register();
         $client_id     = $oidcFedRp->getClientID();
         $client_secret = $oidcFedRp->getClientSecret();
@@ -111,11 +124,10 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     }
     if ($check05) {
         try {
-            $oidcFedRp->setCertPath($certificateLocal_path);
-            $openid_known  = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
-                                                                                       null,
-                                                                                       null,
-                                                                                       false);
+            $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
+                                                                                      null,
+                                                                                      null,
+                                                                                      false);
 //            $responseTypes = $oidcFedRp->VerifySignatureAndInterpretProviderInfo($oidc_site_url);
         }
         catch (Exception $exc) {
@@ -123,9 +135,16 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
             echo $exc->getTraceAsString();
             echo "</pre>";
         }
-//        if(is_array($openid_known)){
-//            foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
-//                $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value, $ms_key, $jwks->getPayload()["bundle"]);
+        echo "";
+        echo "<pre>";
+        var_dump($oidcFedRp);
+        echo "</pre>";
+//        if (is_array($oidcFedRp->wellKnown)) {
+//            foreach ($oidcFedRp->wellKnown['metadata_statements'] as $ms_key =>
+//                        $ms_value) {
+//                $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,
+//                                                                                          $ms_key,
+//                                                                                          $jwks->getPayload()["bundle"]);
 //                echo "";
 //            }
 //        }

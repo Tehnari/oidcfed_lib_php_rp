@@ -37,12 +37,11 @@
 
 namespace oidcfed;
 
-
 require_once 'autoloader.php';
 \oidcfed\autoloader::init();
 
 define('__ROOT__', dirname(dirname(__FILE__)));
-require_once(__ROOT__.'/parameters.php');
+require_once(__ROOT__ . '/parameters.php');
 //require '../parameters.php';
 
 /**
@@ -52,6 +51,11 @@ require_once(__ROOT__.'/parameters.php');
  */
 class oidcfedClient extends \OpenIDConnectClient {
 //class oidcfedClient {
+
+    /**
+     * @var mixed holds well-known openid server properties
+     */
+    public $wellKnown = false;
 
     /**
      * (static) This static function can help with getting and saving oidc config (or other json files)
@@ -129,7 +133,8 @@ class oidcfedClient extends \OpenIDConnectClient {
         if ($check02 === false) {
             throw new Exception("Failed to get data. Bad data received.");
         }
-        $check03 = (isset($param) === true && \is_string($param) === true && ((array) isset($wellKnown[$param]) === true));
+        $check03 = (isset($param) === true && $param !== null && \is_string($param) === true
+                && ((array) isset($wellKnown[$param]) === true));
         $check04 = (isset($default) === true );
         if ($check03 === true) {
             return $wellKnown[$param];
@@ -142,19 +147,64 @@ class oidcfedClient extends \OpenIDConnectClient {
         }
     }
 
-    /**
-     * (static) This static function can be used in case of webfinger needs
-     * @param string $base_url
-     * @param type $param
-     * @param type $default
-     * @param bool $cert_verify
-     *
-     */
-    public static function get_well_known_webfinger_data($base_url,
-                                                         $param = null,
-                                                         $default = null,
-                                                         $cert_verify = true) {
+    public function get_jwks_from_wellKnown() {
 
+        $check00 = (\is_array($this->wellKnown) && \count($this->wellKnown) > 0);
+        if (!$check00) {
+            throw new Exception("OIDC wellKnown not found!");
+        }
+        //Fetching signed_jwks_uri
+        try {
+            if ($this->wellKnown["signed_jwks_uri"]) {
+                $signed_jwks_uri = $this->wellKnown["signed_jwks_uri"];
+//                $jwks            = $this->fetchURL($signed_jwks_uri);
+                $jwks            = $this->fetchURL($signed_jwks_uri);
+            }
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            throw new Exception("Couldn't fetch signed_jwks_uri");
+        }
+        try {
+            $jws_assocArr = \json_decode($jwks, true);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            $jws_assocArr = false;
+        }
+        if (\is_array($jws_assocArr)) {
+            try {
+                $jws = \oidcfed\security_jose::create_jws($jwks);
+                return $jws;
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+                $jws = false;
+            }
+        }
+        //Fetching jwks
+        if ((!\is_array($jws_assocArr) && !$jws) && $this->wellKnown["jwks_uri"]) {
+            try {
+                $jwks_uri = $this->fetchURL($jwks_uri);
+                $jwks     = $this->fetchURL($jwks_uri);
+            }
+            catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+                throw new Exception("Couldn't fetch jwks_uri");
+            }
+        }
+        try {
+            $jwks_assocArr = \json_decode($jwks, true);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            $jwks_assocArr = false;
+        }
+        if (\is_array($jwks_assocArr)) {
+            $jwksStruct = \oidcfed\security_jose::create_jwks_from_values_in_json($jwks);
+            return $jwksStruct;
+        }
+        throw new Exception("JWKS not found!");
     }
 
     public static function VerifySignatureAndInterpretProviderInfo($full_url) {
@@ -179,15 +229,14 @@ class oidcfedClient extends \OpenIDConnectClient {
         $pre_check01     = (\is_string($sigkey_url) && \mb_strlen($sigkey_url) > 0);
         if ($pre_check00 && $pre_check01) {
             try {
-                $keys_bundle   = \oidcfed\configure::getUrlContent($keys_bundle_url,
-                                                                   false);
-                $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey_url,
-                                                                   false);
-                $jwks_bundle   = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
-                                                                              true);
-                $jwks          = \oidcfed\metadata_statements::verify_signature_keys_from_MS($keys_bundle,
-                                                                                             false,
-                                                                                             $jwks_bundle);
+                $keys_bundle = \oidcfed\configure::getUrlContent($keys_bundle_url,
+                                                                 false);
+//                $sigkey_bundle = \oidcfed\configure::getUrlContent($sigkey_url, false);
+                $jwks_bundle = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
+                                                                            true);
+                $jwks        = \oidcfed\metadata_statements::verify_signature_keys_from_MS($keys_bundle,
+                                                                                           false,
+                                                                                           $jwks_bundle);
                 if ($jwks instanceof \Jose\Object\JWS) {
                     $jwks_payload = $jwks->getPayload();
                 }
@@ -275,7 +324,7 @@ class oidcfedClient extends \OpenIDConnectClient {
             return $result;
         }
 //        return false;
-        throw new Exception("Verification failed, nothing failed...");
+        throw new Exception("Verification failed, nothing found...");
     }
 
 }
