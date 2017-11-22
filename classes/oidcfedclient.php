@@ -40,6 +40,14 @@ namespace oidcfed;
 require_once 'autoloader.php';
 \oidcfed\autoloader::init();
 
+use Lcobucci\Jose\Parsing\Parser;
+
+//use Lcobucci\JWT\Parser;
+//use Lcobucci\JWT\Signature;
+//use Lcobucci\JWT\Claim;
+//use Lcobucci\JWT\Token;
+//use Lcobucci\JWT\ValidationData;
+
 define('__ROOT__', dirname(dirname(__FILE__)));
 require_once(__ROOT__ . '/parameters.php');
 //require '../parameters.php';
@@ -55,7 +63,10 @@ class oidcfedClient extends \OpenIDConnectClient {
     /**
      * @var mixed holds well-known openid server properties
      */
-    public $wellKnown = false;
+    public $wellKnown   = false;
+    public $verify_host = false;
+    public $verify_peer = false;
+    public $verify_cert = true;
 
     /**
      * (static) This static function can help with getting and saving oidc config (or other json files)
@@ -147,6 +158,52 @@ class oidcfedClient extends \OpenIDConnectClient {
         }
     }
 
+    public function setVerifyCert($param) {
+        if (!\is_bool($param)) {
+            return false;
+        }
+        $this->verify_host = $param;
+        $this->verify_peer = $param;
+        $this->verify_cert = $param;
+        $this->setVerifyHost($param);
+        $this->setVerifyPeer($param);
+    }
+
+    public static function fetchURL_static($url, $post_body = null,
+                                           $headers = []) {
+        return $this->fetchURL($url, $post_body, $headers);
+    }
+
+    public function get_jwks_from_uri($url, $verifyCert = true) {
+        if (!\is_string($url)) {
+            throw new Exception("Bad url provided.");
+        }
+        try {
+            $jwks = \oidcfed\configure::getUrlContent($url, $verifyCert);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            throw new Exception("Couldn't fetch jwks_uri");
+        } // var_dump($jwks);
+        try {
+            $jwks_assocArr = \json_decode($jwks, true);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            $jwks_assocArr = false;
+        }
+        if (!$jwks_assocArr && $jwks && \is_string($jwks) && \mb_strlen($jwks)) {
+            $jwksStruct = \oidcfed\security_jose::check_jose_jwt_string_base64enc($jwks,
+                                                                                  true);
+            return $jwksStruct;
+        }
+        if (\is_array($jwks_assocArr)) {
+            $jwksStruct = \oidcfed\security_jose::create_jwks_from_values_in_json($jwks);
+            return $jwksStruct;
+        }
+        throw new Exception("JWKS not found!");
+    }
+
     public function get_jwks_from_wellKnown() {
 
         $check00 = (\is_array($this->wellKnown) && \count($this->wellKnown) > 0);
@@ -157,7 +214,6 @@ class oidcfedClient extends \OpenIDConnectClient {
         try {
             if ($this->wellKnown["signed_jwks_uri"]) {
                 $signed_jwks_uri = $this->wellKnown["signed_jwks_uri"];
-//                $jwks            = $this->fetchURL($signed_jwks_uri);
                 $jwks            = $this->fetchURL($signed_jwks_uri);
             }
         }
@@ -185,7 +241,7 @@ class oidcfedClient extends \OpenIDConnectClient {
         //Fetching jwks
         if ((!\is_array($jws_assocArr) && !$jws) && $this->wellKnown["jwks_uri"]) {
             try {
-                $jwks_uri = $this->fetchURL($jwks_uri);
+                $jwks_uri = $this->wellKnown["jwks_uri"];
                 $jwks     = $this->fetchURL($jwks_uri);
             }
             catch (Exception $exc) {
@@ -326,5 +382,25 @@ class oidcfedClient extends \OpenIDConnectClient {
 //        return false;
         throw new Exception("Verification failed, nothing found...");
     }
+
+//    public static function lcobucci_parseJwtString($stringJwt) {
+//        if (\is_string($stringJwt)) {
+//            $token = (new Parser())->parse((string) $stringJwt);
+//            return $token;
+//        }
+//        return null;
+//    }
+//
+//    public static function lcobucci_get_parts($token){
+//        $check00 = ($token instanceof \Lcobucci\JWT\Token);
+//        if($token ){
+//            throw new Exception("Bad parameter.");
+//        }
+//        $tokenObj = new \stdClass();
+//        $tokenObj->payload = $token->getPayload();
+//        $tokenObj->claims = $token->getClaims();
+//        $tokenObj->headers = $token->getHeaders();
+//        return $tokenObj;
+//    }
 
 }

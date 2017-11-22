@@ -43,7 +43,7 @@ $public_key      = \oidcfed\configure::public_key(
 // Below we have list of the OP to connect
 //----------------------------------------------------------------------------
 $provider_url_list = [];
-$provider_url_list[] = (object)["key"=>"localhost:8777", "value"=>"localhost:8777"];
+//$provider_url_list[] = (object)["key"=>"localhost:8777", "value"=>"localhost:8777"];
 $provider_url_list[] = (object)["key"=>"https://localhost:8777", "value"=>"https://localhost:8777/"];
 $provider_url_list[] = (object)["key"=>"oidcfed.inf.um.es:8777","value"=>"https://oidcfed.inf.um.es:8777/"];
 echo "";

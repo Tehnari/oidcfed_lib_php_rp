@@ -97,8 +97,9 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
 //    }
     //Dynamic registration TEST
     $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
-    $oidcFedRp->setVerifyHost(false);
-    $oidcFedRp->setVerifyPeer(false);
+//    $oidcFedRp->setVerifyHost(false);
+//    $oidcFedRp->setVerifyPeer(false);
+    $oidcFedRp->setVerifyCert(false);
     try {
         $oidcFedRp->setCertPath($certificateLocal_path);
     }
@@ -108,7 +109,7 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
         echo "</pre>";
     }
 
-    if(isset($client_id) && is_string($client_id) && \mb_strlen($client_id)>0){
+    if (isset($client_id) && is_string($client_id) && \mb_strlen($client_id) > 0) {
         $oidcFedRp->setClientID($client_id);
     }
 
@@ -125,9 +126,9 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     if ($check05) {
         try {
             $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
-                                                                                      null,
-                                                                                      null,
-                                                                                      false);
+                                                                                              null,
+                                                                                              null,
+                                                                                              false);
 //            $responseTypes = $oidcFedRp->VerifySignatureAndInterpretProviderInfo($oidc_site_url);
         }
         catch (Exception $exc) {
@@ -135,19 +136,36 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
             echo $exc->getTraceAsString();
             echo "</pre>";
         }
-        echo "";
-        echo "<pre>";
-        var_dump($oidcFedRp);
-        echo "</pre>";
-//        if (is_array($oidcFedRp->wellKnown)) {
-//            foreach ($oidcFedRp->wellKnown['metadata_statements'] as $ms_key =>
-//                        $ms_value) {
-//                $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,
-//                                                                                          $ms_key,
-//                                                                                          $jwks->getPayload()["bundle"]);
-//                echo "";
-//            }
-//        }
+//        echo "<pre>";
+//        var_dump($oidcFedRp);
+//        echo "</pre>";
+        if (is_array($oidcFedRp->wellKnown)) {
+            $jwks = $oidcFedRp->get_jwks_from_wellKnown();
+//            echo "";
+        }
+        else {
+            $jwks = false;
+        }
+        $keys_bundle_url = 'https://agaton-sax.com:8080/bundle';
+        $sigkey_url      = 'https://agaton-sax.com:8080/bundle/sigkey';
+        $verify_cert     = $oidcFedRp->verify_cert;
+        $keys_bundle     = \oidcfed\configure::getUrlContent($keys_bundle_url,
+                                                             false);
+        $sigkey_bundle   = \oidcfed\configure::getUrlContent($sigkey_url, false);
+        $jwks_bundle     = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
+                                                                        true);
+        $jwks = $jwks_bundle;
+
+//        $lcobucciToken = \oidcfed\oidcfedClient::lcobucci_parseJwtString($keys_bundle);
+        if (is_array($oidcFedRp->wellKnown)) {
+            foreach ($oidcFedRp->wellKnown['metadata_statements'] as $ms_key =>
+                        $ms_value) {
+                $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,
+                                                                                          $ms_key,
+                                                                                          $jwks);
+                echo "";
+            }
+        }
     }
 }
 
