@@ -70,6 +70,12 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     switch ($useAuthType) {
         case "static":
             //Static registration TEST
+            if(!$client_id){
+                $client_id = \oidcfed\configure::client_id();
+            }
+            if(!$client_secret){
+//                $client_secret = \oidcfed\configure::
+            }
 //    if ($check03 && $check04 && $check05) {
 //        $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url,
 //                                                $post_in["client_id"],
