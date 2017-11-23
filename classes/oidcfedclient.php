@@ -69,6 +69,15 @@ class oidcfedClient extends \OpenIDConnectClient {
     public $verify_cert = true;
 
     /**
+     * Used for arbitrary value generation for nonces and state
+     *
+     * @return string
+     */
+    public static function generateRandString_static() {
+        return md5(uniqid(rand(), TRUE));
+    }
+
+    /**
      * (static) This static function can help with getting and saving oidc config (or other json files)
      * @param string $url_oidc_config
      * @param bool $show_config
@@ -407,5 +416,9 @@ class oidcfedClient extends \OpenIDConnectClient {
 //        $result            = $this->fetchURL($url_string);
         $result            = \oidcfed\configure::getUrlContent($url_string,$cert_verify);
         return $result;
+    }
+
+    public function implicit_flow(){
+        
     }
 }

@@ -70,34 +70,67 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     switch ($useAuthType) {
         case "static":
             //Static registration TEST
-            if(!$client_id){
+            if (!$client_id) {
                 $client_id = \oidcfed\configure::client_id();
             }
-            if(!$client_secret){
-//                $client_secret = \oidcfed\configure::
+            if (!$client_secret) {
+                $client_secret = \oidcfed\oidcfedClient::generateRandString_static();
             }
 //    if ($check03 && $check04 && $check05) {
-//        $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url,
-//                                                $post_in["client_id"],
-//                                                $post_in["client_secret"]);
-//        try {
-////            $oidcFedRp->setCertPath('/path/to/my.cert');
-//            $oidcFedRp->setCertPath($certificateLocal_path);
+            $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url, $client_id,
+                                                    $client_secret);
+            try {
+                $oidcFedRp->setCertPath($certificateLocal_path);
 //            $responseTypes = $oidcFedRp->getResponseTypes();
-//            $openid_known  = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
-//                                                                                       null,
-//                                                                                       null,
-//                                                                                       false);
-////            $oidcFedRp->authenticate();
-////            $oidcFedRp->getAuthParams();
-////            $client_id     = $oidcFedRp->getClientID();
-////            $client_secret = $oidcFedRp->getClientSecret();
-//        }
-//        catch (Exception $exc) {
-//            echo "<pre>";
-//            echo $exc->getTraceAsString();
-//            echo "</pre>";
-//        }
+                $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
+                                                                                                  null,
+                                                                                                  null,
+                                                                                                  false);
+            }
+            catch (Exception $exc) {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("authorization_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['authorization_endpoint' => $oidcFedRp->wellKnown["authorization_endpoint"]]);
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("token_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['token_endpoint' => $oidcFedRp->wellKnown["token_endpoint"]]);
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("userinfo_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['userinfo_endpoint' => $oidcFedRp->wellKnown["userinfo_endpoint"]]);
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("registration_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['registration_endpoint' => $oidcFedRp->wellKnown["registration_endpoint"]]);
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("end_session_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['end_session_endpoint' => $oidcFedRp->wellKnown["end_session_endpoint"]]);
+            }
+//            $oidcFedRp->addScope('profile');
+//            $oidcFedRp->addScope('openid');
+            try {
+                $oidcFedRp->authenticate();
+            }
+            catch (Exception $exc) {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+            }
+
+//            $oidcFedRp->authenticate();
+            // this assumes success (to validate check if the access_token property is there and a valid JWT) :
+            $clientCredentialsToken = $oidc->requestClientCredentialsToken()->access_token;
+            echo "";
+//            $oidcFedRp->authenticate();
+//            $oidcFedRp->getAuthParams();
+//            $client_id     = $oidcFedRp->getClientID();
+//            $client_secret = $oidcFedRp->getClientSecret();
 //        if(is_array($openid_known)){
 //            foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
 //                $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value, $ms_key, $jwks->getPayload()["bundle"]);
@@ -108,7 +141,7 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
             break;
         case "dynamic":
             //Dynamic registration TEST
-            $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
+            $oidcFedRp              = new \oidcfed\oidcfedClient($oidc_site_url);
 //    $oidcFedRp->setVerifyHost(false);
 //    $oidcFedRp->setVerifyPeer(false);
             $oidcFedRp->setVerifyCert(false);
