@@ -383,24 +383,29 @@ class oidcfedClient extends \OpenIDConnectClient {
         throw new Exception("Verification failed, nothing found...");
     }
 
-//    public static function lcobucci_parseJwtString($stringJwt) {
-//        if (\is_string($stringJwt)) {
-//            $token = (new Parser())->parse((string) $stringJwt);
-//            return $token;
-//        }
-//        return null;
-//    }
-//
-//    public static function lcobucci_get_parts($token){
-//        $check00 = ($token instanceof \Lcobucci\JWT\Token);
-//        if($token ){
-//            throw new Exception("Bad parameter.");
-//        }
-//        $tokenObj = new \stdClass();
-//        $tokenObj->payload = $token->getPayload();
-//        $tokenObj->claims = $token->getClaims();
-//        $tokenObj->headers = $token->getHeaders();
-//        return $tokenObj;
-//    }
+    public function get_webfinger_data($host_url=null, $resource_var=null,
+                                       $rel = "http://openid.net/specs/connect/1.0/provider",
+                                       $httpcon_type = "https://") {
+        if($host_url === null){
+            $host_url_v0 = $this->getProviderURL();
+//            $host_url = rtrim($host_url_v0);
+            $host_url = rtrim(rtrim($host_url_v0), "/");
+            $httpcon_type="";
+        }
+        if($resource_var === null){
+//            $resource_var = $this->getClientID();
+            $resource_var = \oidcfed\configure::client_id();
+        }
 
+        $url_obj           = new \stdClass();
+//        $url_obj->resource = \urlencode($resource_var);
+//        $url_obj->rel      = \urlencode($rel);
+        $url_obj->resource = $resource_var;
+        $url_obj->rel      = $rel;
+        $url_string        = $httpcon_type . $host_url . "/.well-known/webfinger?resource=" . $url_obj->resource . "&rel=" . $url_obj->rel;
+        $cert_verify = $this->verify_cert;
+//        $result            = $this->fetchURL($url_string);
+        $result            = \oidcfed\configure::getUrlContent($url_string,$cert_verify);
+        return $result;
+    }
 }

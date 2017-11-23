@@ -109,7 +109,7 @@ foreach ($openid_known['metadata_statements'] as $ms_key => $ms_value) {
     echo "MS Header <br>";
     print_r($ms_header);
     echo "</pre>";
-    $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value, $ms_key, $jwks->getPayload()["bundle"]);
+//    $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value, $ms_key, $jwks->getPayload()["bundle"]);
     $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value, null,
                                                          $jwks->getPayload()["bundle"],
                                                          false, false);

@@ -66,7 +66,7 @@ $certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path
 $check05                  = is_string($certificateLocal_path) && is_readable($certificateLocal_path);
 if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     $useAuthType = "static";
-    $useAuthType = "dynamic";
+//    $useAuthType = "dynamic";
     switch ($useAuthType) {
         case "static":
             //Static registration TEST
@@ -153,31 +153,26 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
                 else {
                     $jwks = false;
                 }
-//        $keys_bundle_url = 'https://agaton-sax.com:8080/bundle';
-//        $sigkey_url      = 'https://agaton-sax.com:8080/bundle/sigkey';
-//        $verify_cert     = $oidcFedRp->verify_cert;
-//        $keys_bundle     = \oidcfed\configure::getUrlContent($keys_bundle_url,
-//                                                             false);
-//        $sigkey_bundle   = \oidcfed\configure::getUrlContent($sigkey_url, false);
-//        $jwks_bundle     = \oidcfed\security_jose::create_jwks_from_uri($sigkey_url,
-//                                                                        true);
-//        $jwks = $jwks_bundle;
-//        $lcobucciToken = \oidcfed\oidcfedClient::lcobucci_parseJwtString($keys_bundle);
                 if (is_array($oidcFedRp->wellKnown)) {
                     foreach ($oidcFedRp->wellKnown['metadata_statements'] as
                                 $ms_key => $ms_value) {
-                        $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,
-                                                                                                  $ms_key,
-                                                                                                  $jwks);
+//                        $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,$ms_key,$jwks);
+                        $result_MS_Verify = \oidcfed\metadata_statements::unpack_MS($ms_value,
+                                                                                    null,
+                                                                                    $jwks,
+                                                                                    false,
+                                                                                    true);
                         echo "";
                     }
                 }
             }
             break;
-
         default:
             break;
     }
+    echo "";
+    $webfinger_data = $oidcFedRp->get_webfinger_data();
+    echo "";
 }
 
 
