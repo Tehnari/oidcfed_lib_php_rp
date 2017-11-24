@@ -57,7 +57,7 @@ require_once(__ROOT__ . '/parameters.php');
  *
  * @author constantin
  */
-class oidcfedClient extends \OpenIDConnectClient {
+class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
 //class oidcfedClient {
 
     /**
@@ -392,16 +392,16 @@ class oidcfedClient extends \OpenIDConnectClient {
         throw new Exception("Verification failed, nothing found...");
     }
 
-    public function get_webfinger_data($host_url=null, $resource_var=null,
+    public function get_webfinger_data($host_url = null, $resource_var = null,
                                        $rel = "http://openid.net/specs/connect/1.0/provider",
                                        $httpcon_type = "https://") {
-        if($host_url === null){
-            $host_url_v0 = $this->getProviderURL();
+        if ($host_url === null) {
+            $host_url_v0  = $this->getProviderURL();
 //            $host_url = rtrim($host_url_v0);
-            $host_url = rtrim(rtrim($host_url_v0), "/");
-            $httpcon_type="";
+            $host_url     = rtrim(rtrim($host_url_v0), "/");
+            $httpcon_type = "";
         }
-        if($resource_var === null){
+        if ($resource_var === null) {
 //            $resource_var = $this->getClientID();
             $resource_var = \oidcfed\configure::client_id();
         }
@@ -412,13 +412,146 @@ class oidcfedClient extends \OpenIDConnectClient {
         $url_obj->resource = $resource_var;
         $url_obj->rel      = $rel;
         $url_string        = $httpcon_type . $host_url . "/.well-known/webfinger?resource=" . $url_obj->resource . "&rel=" . $url_obj->rel;
-        $cert_verify = $this->verify_cert;
+        $cert_verify       = $this->verify_cert;
 //        $result            = $this->fetchURL($url_string);
-        $result            = \oidcfed\configure::getUrlContent($url_string,$cert_verify);
+        $result            = \oidcfed\configure::getUrlContent($url_string,
+                                                               $cert_verify);
         return $result;
     }
 
-    public function implicit_flow(){
-        
+    public function implicit_flow() {
+        // Do a preemptive check to see if the provider has thrown an error from a previous redirect
+        if (isset($_REQUEST['error'])) {
+            $desc = isset($_REQUEST['error_description']) ? " Description: " . $_REQUEST['error_description']
+                        : "";
+            throw new Exception("Error: " . $_REQUEST['error'] . $desc);
+        }
+        // Throw an error if the server returns one
+        if (isset($token_json->error)) {
+            if (isset($token_json->error_description)) {
+                throw new OpenIDConnectClientException($token_json->error_description);
+            }
+            throw new Exception('Got response: ' . $token_json->error);
+        }
+
+        // Do an OpenID Connect session check
+        if (isset($_REQUEST['state']) && $_REQUEST['state'] != $this->getState()) {
+            throw new Exception("Unable to determine state");
+        }
+        // Do an OpenID Connect session check
+        if (isset($_REQUEST['nonce']) && $_REQUEST['nonce'] != $this->getNonce()) {
+            throw new Exception("Unable to determine nonce");
+        }
+
+        // Cleanup state
+        $this->unsetState();
+        $this->unsetNonce();
+
+        // Generate and store a nonce in the session
+        // The nonce is an arbitrary value
+        $nonce = $this->setNonce($this->generateRandString());
+
+        // State essentially acts as a session key for OIDC
+        $state = $this->setState($this->generateRandString());
+
+        if (!\property_exists($token_json, 'id_token')) {
+            throw new Exception("User did not authorize openid scope.");
+        }
+        $claims = $this->decodeJWT($token_json->id_token, 1);
+
+        // Verify the signature
+        if ($this->canVerifySignatures()) {
+            if (!$this->getProviderConfigValue('jwks_uri')) {
+                throw new Exception("Unable to verify signature due to no jwks_uri being defined");
+            }
+            if (!$this->verifyJWTsignature($token_json->id_token)) {
+                throw new Exception("Unable to verify signature");
+            }
+        }
+        else {
+            user_error("Warning: JWT signature verification unavailable.");
+        }
+
+        // If this is a valid claim
+        if ($this->verifyJWTclaims($claims, $token_json->access_token)) {
+
+            // Clean up the session a little
+            $this->unsetNonce();
+
+            // Save the full response
+            $this->tokenResponse = $token_json;
+
+            // Save the id token
+            $this->idToken = $token_json->id_token;
+
+            // Save the access token
+            $this->accessToken = $token_json->access_token;
+
+            // Save the refresh token, if we got one
+            if (isset($token_json->refresh_token)) {
+                $this->refreshToken = $token_json->refresh_token;
+            }
+
+            // Success!
+            return true;
+        }
+        else {
+            throw new OpenIDConnectClientException("Unable to verify JWT claims");
+        }
     }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //  From OpenDConnectClient
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    /**
+     * @param $jwt string encoded JWT
+     * @param int $section the section we would like to decode
+     * @return object
+     */
+    protected function decodeJWT($jwt, $section = 0) {
+
+        $parts = explode(".", $jwt);
+        return json_decode(base64url_decode($parts[$section]));
+    }
+
+    /**
+     * Get's anything that we need configuration wise including endpoints, and other values
+     *
+     * @param $param
+     * @param string $default optional
+     * @throws OpenIDConnectClientException
+     * @return string
+     *
+     */
+    protected function getProviderConfigValue($param, $default = null) {
+
+        // If the configuration value is not available, attempt to fetch it from a well known config endpoint
+        // This is also known as auto "discovery"
+        if (!isset($this->providerConfig[$param])) {
+            if (!$this->wellKnown) {
+                $well_known_config_url = rtrim($this->getProviderURL(), "/") . "/.well-known/openid-configuration";
+                $this->wellKnown       = json_decode($this->fetchURL($well_known_config_url));
+            }
+
+            $value = false;
+            if (isset($this->wellKnown->{$param})) {
+                $value = $this->wellKnown->{$param};
+            }
+
+            if ($value) {
+                $this->providerConfig[$param] = $value;
+            }
+            elseif (isset($default)) {
+                // Uses default value if provided
+                $this->providerConfig[$param] = $default;
+            }
+            else {
+                throw new OpenIDConnectClientException("The provider {$param} has not been set. Make sure your provider has a well known configuration available.");
+            }
+        }
+
+        return $this->providerConfig[$param];
+    }
+
 }
