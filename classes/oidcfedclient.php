@@ -40,7 +40,7 @@ namespace oidcfed;
 require_once 'autoloader.php';
 \oidcfed\autoloader::init();
 
-use Lcobucci\Jose\Parsing\Parser;
+//use Lcobucci\Jose\Parsing\Parser;
 
 //use Lcobucci\JWT\Parser;
 //use Lcobucci\JWT\Signature;
@@ -49,8 +49,9 @@ use Lcobucci\Jose\Parsing\Parser;
 //use Lcobucci\JWT\ValidationData;
 
 define('__ROOT__', dirname(dirname(__FILE__)));
-require_once(__ROOT__ . '/parameters.php');
+//require_once(__ROOT__ . '/parameters.php');
 //require '../parameters.php';
+require_once (dirname(dirname(__FILE__)) . '/parameters.php');
 
 /**
  * Description of oidcfed
@@ -464,20 +465,26 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         if ($this->getProviderConfigValue("authorization_endpoint")) {
             $authorization_endpoint = $this->getProviderConfigValue("authorization_endpoint");
         }else{
-            throw new Exception("Authorization Endpoint Not Allowed");
+            throw new Exception("Authorization Endpoint Not Found");
         }
 
+
+        //Create redirect URI for implicit flow
+
+//        $redirect_uri = \rtrim($this->getRedirectURL(), '/')."&scope=openid%20profile&state=".$state;
+        $redirect_uri = \rtrim($this->getRedirectURL(), '/');
+
         $auth_params = array(
-            'response_type' => 'id_token token',
-            'redirect_uri' => $this->getRedirectURL(),
             'client_id' => $this->getClientID(),
-            'nonce' => $nonce,
+            'response_type' => 'id_token token',
+            'scope' => 'openid profile',
+            'redirect_uri' => $redirect_uri,
             'state' => $state,
-            'scope' => 'openid profile'
+            'nonce' => $nonce
         );
 
 
-        $authorization_endpoint .= (strpos($authorization_endpoint, '?') === false ? '?' : '&') . http_build_query($auth_params, null, '&');
+        $authorization_endpoint .= (\strpos($authorization_endpoint, '?') === false ? '?' : '&') . \http_build_query($auth_params, null, '&');
 
         session_commit();
         $this->redirect($authorization_endpoint);
