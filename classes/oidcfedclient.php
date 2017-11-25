@@ -41,7 +41,6 @@ require_once 'autoloader.php';
 \oidcfed\autoloader::init();
 
 //use Lcobucci\Jose\Parsing\Parser;
-
 //use Lcobucci\JWT\Parser;
 //use Lcobucci\JWT\Signature;
 //use Lcobucci\JWT\Claim;
@@ -68,6 +67,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
     public $verify_host = false;
     public $verify_peer = false;
     public $verify_cert = true;
+
 //    /**
 //     * @var array holds authentication parameters
 //     */
@@ -464,27 +464,28 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
 
         if ($this->getProviderConfigValue("authorization_endpoint")) {
             $authorization_endpoint = $this->getProviderConfigValue("authorization_endpoint");
-        }else{
+        }
+        else {
             throw new Exception("Authorization Endpoint Not Found");
         }
 
 
         //Create redirect URI for implicit flow
-
 //        $redirect_uri = \rtrim($this->getRedirectURL(), '/')."&scope=openid%20profile&state=".$state;
         $redirect_uri = \rtrim($this->getRedirectURL(), '/');
 
         $auth_params = array(
-            'client_id' => $this->getClientID(),
+            'client_id'     => $this->getClientID(),
             'response_type' => 'id_token token',
-            'scope' => 'openid profile',
-            'redirect_uri' => $redirect_uri,
-            'state' => $state,
-            'nonce' => $nonce
+            'scope'         => 'openid profile',
+            'redirect_uri'  => $redirect_uri,
+            'state'         => $state,
+            'nonce'         => $nonce
         );
 
 
-        $authorization_endpoint .= (\strpos($authorization_endpoint, '?') === false ? '?' : '&') . \http_build_query($auth_params, null, '&');
+        $authorization_endpoint .= (\strpos($authorization_endpoint, '?') === false
+                    ? '?' : '&') . \http_build_query($auth_params, null, '&');
 
         session_commit();
         $this->redirect($authorization_endpoint);
@@ -533,6 +534,61 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
 //        else {
 //            throw new OpenIDConnectClientException("Unable to verify JWT claims");
 //        }
+    }
+
+    public function constructs_signing_request_registration(array $payload = null,
+                                                            $pubkey = null,
+                                                            $privkey = null,
+                                                            array $protected_headers =
+    [], array $jws_signer_alg = []) {
+        $pubKey_details = false;
+        $str_cert       = false; // Here we will save public key
+        $res_pubkey     = false;
+//        $pubKey_details       = false;
+        $check00        = (\is_array($protected_headers) && \count($protected_headers)
+                > 0);
+        $check01        = (\is_array($jws_signer_alg) && \count($jws_signer_alg)
+                > 0);
+        if (!$pubKey_details || !$privkey || !$check00 || !$check01) {
+            throw new Exception("Bad parameters received!");
+        }
+        try {
+            $additional_parameters = [
+                'kid' => $this->getClientID(),
+                "use" => "sig"
+            ];
+            $jwk_pub_json          = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array(
+                            $pubkey, null, $additional_parameters, true);
+            $pubkey_obj            = \json_decode($jwk_pub_json);
+        }
+        catch (Exception $exc) {
+//            echo $exc->getTraceAsString();
+            throw new Exception("Problems with public key: " . $exc);
+        }
+        $signing_keys = (object) ["keys" => [$pubkey_obj]];
+        if (!$payload) {
+            $payload = ["federation_usage" => "registration", "signing_keys" => $signing_keys];
+        }
+        if ($this->wellKnown["token_endpoint_auth_signing_alg_values_supported"]) {
+            $jwk_signature_key = $this->wellKnown["token_endpoint_auth_signing_alg_values_supported"];
+        }
+        else {
+            throw new Exception("ALG not found in wellknown");
+        }
+        if ($privkey instanceof \Jose\Object\JWS) {
+            $jws_signer = $privkey;
+        }
+        else if (\is_string($privkey) && \mb_strlen($privkey) > 0) {
+            $jws_signer = \oidcfed\security_jose::create_jws($privkey);
+        }
+        $ms_jws = \oidcfed\security_jose::create_jws_and_sign($payload,
+                                                              $protected_headers,
+                                                              $jwk_signature_key,
+                                                              $jws_signer);
+        if($ms_jws instanceof \Jose\Object\JWS){
+            return $ms_jws;
+        }
+        throw new Exception("Something wrong happened!!!");
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -608,7 +664,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 $this->wellKnown       = json_decode($this->fetchURL($well_known_config_url));
             }
             $wellKnown = $this->wellKnown;
-            if($wellKnown && !is_object($wellKnown)){
+            if ($wellKnown && !is_object($wellKnown)) {
                 $wellKnown = (object) $wellKnown;
             }
             $value = false;

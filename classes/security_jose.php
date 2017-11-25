@@ -261,22 +261,22 @@ class security_jose {
      * This function help to create JWT (signed JWS)
      * @param type $payload
      * @param array $protected_headers
-     * @param Object\JWKInterface $jwk_signature_key
-     * @param type $jws_signer
-     * @param type $jws_signer_alg
+     * @param \Jose\Object\JWK $jwk_signature_key
+     * @param \Jose\Object\JWS $jws_signer
+     * @param array $signer_alg_arr
      * @return type
      * @throws Exception
      */
     public static function create_jwt($payload, array $protected_headers,
-                                      $jwk_signature_key = false,
-                                      $jws_signer = false,
-                                      $jws_signer_alg = ['RS256', 'HS512']) {
+                                      \Jose\Object\JWK $jwk_signature_key = false,
+                                      \Jose\Object\JWS $jws_signer = false,
+                                      $signer_alg_arr = ['RS256', 'HS512']) {
         if ($jwk_signature_key === false) {
             throw new Exception('Failed to create JWT. Wrong parameters.');
 //                return false;
         }
         // We create a Signer object with the signature algorithms we want to use
-        $signer      = self::create_signer($jws_signer_alg, $jws_signer);
+        $signer      = self::create_signer($signer_alg_arr, $jws_signer);
         $jwt_creator = new JWTCreator($signer);
         $jwt         = $jwt_creator->sign(
                 // The payload to sign
@@ -312,28 +312,28 @@ class security_jose {
      * Returned object has methods that convert to JSON.
      * @param type $payload
      * @param array $protected_headers
-     * @param type $jwk_signature_key
-     * @param type $jws_signer
-     * @param type $jws_signer_alg
-     * @return type
+     * @param \Jose\Object\JWK $jwk_signature_key
+     * @param \Jose\Object\JWS $jws_signer
+     * @param array $jws_signer_alg
+     * @return \Jose\Object\JWS
      */
     public static function create_jws_and_sign($payload,
                                                array $protected_headers,
                                                $jwk_signature_key = false,
-                                               $jws_signer = false,
+                                               \Jose\Object\JWS $jws_signer = false,
                                                $jws_signer_alg = ['RS256', 'HS512']) {
         return self::create_jwt($payload, $protected_headers,
                                 $jwk_signature_key, $jws_signer, $jws_signer_alg);
     }
 
-    public static function create_signer($jws_signer_alg = ['RS256', 'HS512'],
+    public static function create_signer($signer_alg_arr = ['RS256', 'HS512'],
                                          $jws_signer = false) {
         if ($jws_signer === false) {
             throw new Exception('Failed to create Signer. Check JWS.');
 //                return false;
         }
         // We create a Signer object with the signature algorithms we want to use
-        $signer = Signer::createSigner($jws_signer_alg);
+        $signer = Signer::createSigner($signer_alg_arr);
         if ($jws_signer !== false) {
             try {
                 // Then we sign
