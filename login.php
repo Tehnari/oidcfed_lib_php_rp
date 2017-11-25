@@ -49,6 +49,16 @@ if (is_array($_POST) && count($_POST) > 0) {
 }
 
 
+if ($post_in !== null && is_array($post_in) && array_key_exists("useAuthType",
+                                                                $post_in)) {
+    $useAuthType = $post_in["useAuthType"];
+}
+else {
+//    $useAuthType = "authorization_code";
+    $useAuthType = "implicit_flow";
+//    $useAuthType = "hybrid_flow";
+//    $useAuthType = "dynamic";
+}
 if ($post_in !== null && is_array($post_in) && array_key_exists("provider_url",
                                                                 $post_in)) {
     $oidc_site_url = $post_in["provider_url"];
@@ -64,19 +74,66 @@ $certificateLocal_content = \oidcfed\security_keys::get_csr(false, $dn,
                                                             $path_dataDir_real);
 $certificateLocal_path    = \oidcfed\security_keys::public_certificateLocal_path();
 $check05                  = is_string($certificateLocal_path) && is_readable($certificateLocal_path);
-if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
-    $useAuthType = "static";
-//    $useAuthType = "dynamic";
-    switch ($useAuthType) {
-        case "static":
-            //Static registration TEST
-            if (!$client_id) {
-                $client_id = \oidcfed\configure::client_id();
-            }
-            if (!$client_secret) {
-                $client_secret = \oidcfed\oidcfedClient::generateRandString_static();
+if (!$client_id) {
+    $client_id = \oidcfed\configure::client_id();
+}
+if (!$client_secret) {
+    $client_secret = \oidcfed\oidcfedClient::generateRandString_static();
 //                $client_secret = md5(uniqid(rand(), TRUE));
+}
+if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
+    //TODO All Flows are rewriting know !!!
+    switch ($useAuthType) {
+        case "authorization_code":
+            $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url, $client_id,
+                                                    $client_secret);
+            $oidcFedRp->setClientID($client_id);
+            $oidcFedRp->setClientSecret($client_secret);
+            try {
+                $oidcFedRp->setCertPath($certificateLocal_path);
+//            $responseTypes = $oidcFedRp->getResponseTypes();
+                $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
+                                                                                                  null,
+                                                                                                  null,
+                                                                                                  false);
             }
+            catch (Exception $exc) {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("authorization_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['authorization_endpoint' => $oidcFedRp->wellKnown["authorization_endpoint"]]);
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("token_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['token_endpoint' => $oidcFedRp->wellKnown["token_endpoint"]]);
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("userinfo_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['userinfo_endpoint' => $oidcFedRp->wellKnown["userinfo_endpoint"]]);
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("registration_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['registration_endpoint' => $oidcFedRp->wellKnown["registration_endpoint"]]);
+            }
+            if (\is_array($oidcFedRp->wellKnown) && \array_key_exists("end_session_endpoint",
+                                                                      $oidcFedRp->wellKnown)) {
+                $oidcFedRp->providerConfigParam(['end_session_endpoint' => $oidcFedRp->wellKnown["end_session_endpoint"]]);
+            }
+            try {
+                $oidcFedRp->authenticate();
+//                $oidcFedRp->implicit_flow();
+            }
+            catch (Exception $exc) {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+            }
+            break;
+        case "implicit_flow":
+            //Static registration TEST
 //    if ($check03 && $check04 && $check05) {
             $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url, $client_id,
                                                     $client_secret);
