@@ -75,10 +75,13 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
             }
             if (!$client_secret) {
                 $client_secret = \oidcfed\oidcfedClient::generateRandString_static();
+//                $client_secret = md5(uniqid(rand(), TRUE));
             }
 //    if ($check03 && $check04 && $check05) {
             $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url, $client_id,
                                                     $client_secret);
+            $oidcFedRp->setClientID($client_id);
+            $oidcFedRp->setClientSecret($client_secret);
             try {
                 $oidcFedRp->setCertPath($certificateLocal_path);
 //            $responseTypes = $oidcFedRp->getResponseTypes();
@@ -115,7 +118,8 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
 //            $oidcFedRp->addScope('profile');
 //            $oidcFedRp->addScope('openid');
             try {
-                $oidcFedRp->authenticate();
+//                $oidcFedRp->authenticate();
+                $oidcFedRp->implicit_flow();
             }
             catch (Exception $exc) {
                 echo "<pre>";
