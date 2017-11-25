@@ -67,6 +67,10 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
     public $verify_host = false;
     public $verify_peer = false;
     public $verify_cert = true;
+//    /**
+//     * @var array holds authentication parameters
+//     */
+//    protected $authParams = array();
 
     /**
      * Used for arbitrary value generation for nonces and state
@@ -429,7 +433,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         // Throw an error if the server returns one
         if (isset($token_json->error)) {
             if (isset($token_json->error_description)) {
-                throw new OpenIDConnectClientException($token_json->error_description);
+                throw new Exception($token_json->error_description);
             }
             throw new Exception('Got response: ' . $token_json->error);
         }
@@ -454,55 +458,118 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         // State essentially acts as a session key for OIDC
         $state = $this->setState($this->generateRandString());
 
-        if (!\property_exists($token_json, 'id_token')) {
-            throw new Exception("User did not authorize openid scope.");
-        }
-        $claims = $this->decodeJWT($token_json->id_token, 1);
 
-        // Verify the signature
-        if ($this->canVerifySignatures()) {
-            if (!$this->getProviderConfigValue('jwks_uri')) {
-                throw new Exception("Unable to verify signature due to no jwks_uri being defined");
-            }
-            if (!$this->verifyJWTsignature($token_json->id_token)) {
-                throw new Exception("Unable to verify signature");
-            }
-        }
-        else {
-            user_error("Warning: JWT signature verification unavailable.");
+        $this->setRedirectURL($this->getRedirectURL());
+
+        if ($this->getProviderConfigValue("authorization_endpoint")) {
+            $authorization_endpoint = $this->getProviderConfigValue("authorization_endpoint");
+        }else{
+            throw new Exception("Authorization Endpoint Not Allowed");
         }
 
-        // If this is a valid claim
-        if ($this->verifyJWTclaims($claims, $token_json->access_token)) {
+        $auth_params = array(
+            'response_type' => 'id_token token',
+            'redirect_uri' => $this->getRedirectURL(),
+            'client_id' => $this->getClientID(),
+            'nonce' => $nonce,
+            'state' => $state,
+            'scope' => 'openid profile'
+        );
 
-            // Clean up the session a little
-            $this->unsetNonce();
 
-            // Save the full response
-            $this->tokenResponse = $token_json;
+        $authorization_endpoint .= (strpos($authorization_endpoint, '?') === false ? '?' : '&') . http_build_query($auth_params, null, '&');
 
-            // Save the id token
-            $this->idToken = $token_json->id_token;
+        session_commit();
+        $this->redirect($authorization_endpoint);
 
-            // Save the access token
-            $this->accessToken = $token_json->access_token;
-
-            // Save the refresh token, if we got one
-            if (isset($token_json->refresh_token)) {
-                $this->refreshToken = $token_json->refresh_token;
-            }
-
-            // Success!
-            return true;
-        }
-        else {
-            throw new OpenIDConnectClientException("Unable to verify JWT claims");
-        }
+//        if (!\property_exists($token_json, 'id_token')) {
+//            throw new Exception("User did not authorize openid scope.");
+//        }
+//        $claims = $this->decodeJWT($token_json->id_token, 1);
+//
+//        // Verify the signature
+//        if ($this->canVerifySignatures()) {
+//            if (!$this->getProviderConfigValue('jwks_uri')) {
+//                throw new Exception("Unable to verify signature due to no jwks_uri being defined");
+//            }
+//            if (!$this->verifyJWTsignature($token_json->id_token)) {
+//                throw new Exception("Unable to verify signature");
+//            }
+//        }
+//        else {
+//            user_error("Warning: JWT signature verification unavailable.");
+//        }
+//
+//        // If this is a valid claim
+//        if ($this->verifyJWTclaims($claims, $token_json->access_token)) {
+//
+//            // Clean up the session a little
+//            $this->unsetNonce();
+//
+//            // Save the full response
+//            $this->tokenResponse = $token_json;
+//
+//            // Save the id token
+//            $this->idToken = $token_json->id_token;
+//
+//            // Save the access token
+//            $this->accessToken = $token_json->access_token;
+//
+//            // Save the refresh token, if we got one
+//            if (isset($token_json->refresh_token)) {
+//                $this->refreshToken = $token_json->refresh_token;
+//            }
+//
+//            // Success!
+//            return true;
+//        }
+//        else {
+//            throw new OpenIDConnectClientException("Unable to verify JWT claims");
+//        }
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //  From OpenDConnectClient
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public function getRedirectURL() {
+
+        // If the redirect URL has been set then return it.
+        if (property_exists($this, 'redirectURL') && $this->redirectURL) {
+            return $this->redirectURL;
+        }
+
+        // Other-wise return the URL of the current page
+
+        /**
+         * Thank you
+         * http://stackoverflow.com/questions/189113/how-do-i-get-current-page-full-url-in-php-on-a-windows-iis-server
+         */
+        /*
+         * Compatibility with multiple host headers.
+         * The problem with SSL over port 80 is resolved and non-SSL over port 443.
+         * Support of 'ProxyReverse' configurations.
+         */
+
+        if (isset($_SERVER["HTTP_UPGRADE_INSECURE_REQUESTS"]) && ($_SERVER['HTTP_UPGRADE_INSECURE_REQUESTS'] == 1)) {
+            $protocol = 'https';
+        }
+        else {
+            $protocol = @$_SERVER['HTTP_X_FORWARDED_PROTO'] ?: @$_SERVER['REQUEST_SCHEME']
+                        ?: ((isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on")
+                        ? "https" : "http");
+        }
+
+        $port = @intval($_SERVER['HTTP_X_FORWARDED_PORT']) ?: @intval($_SERVER["SERVER_PORT"])
+                    ?: (($protocol === 'https') ? 443 : 80);
+
+        $host = @explode(":", $_SERVER['HTTP_HOST'])[0] ?: @$_SERVER['SERVER_NAME']
+                    ?: @$_SERVER['SERVER_ADDR'];
+
+        $port = (443 == $port) || (80 == $port) ? '' : ':' . $port;
+
+        return sprintf('%s://%s%s/%s', $protocol, $host, $port,
+                       @trim(reset(explode("?", $_SERVER['REQUEST_URI'])), '/'));
+    }
 
     /**
      * @param $jwt string encoded JWT
@@ -533,10 +600,13 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 $well_known_config_url = rtrim($this->getProviderURL(), "/") . "/.well-known/openid-configuration";
                 $this->wellKnown       = json_decode($this->fetchURL($well_known_config_url));
             }
-
+            $wellKnown = $this->wellKnown;
+            if($wellKnown && !is_object($wellKnown)){
+                $wellKnown = (object) $wellKnown;
+            }
             $value = false;
-            if (isset($this->wellKnown->{$param})) {
-                $value = $this->wellKnown->{$param};
+            if (isset($wellKnown->{$param})) {
+                $value = $wellKnown->{$param};
             }
 
             if ($value) {
@@ -547,7 +617,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 $this->providerConfig[$param] = $default;
             }
             else {
-                throw new OpenIDConnectClientException("The provider {$param} has not been set. Make sure your provider has a well known configuration available.");
+                throw new Exception("The provider {$param} has not been set. Make sure your provider has a well known configuration available.");
             }
         }
 
