@@ -268,10 +268,10 @@ class security_jose {
      * @throws Exception
      */
     public static function create_jwt($payload, array $protected_headers,
-                                      \Jose\Object\JWK $jwk_signature_key = false,
-                                      \Jose\Object\JWS $jws_signer = false,
+                                      \Jose\Object\JWK $jwk_signature_key = null,
+                                      \Jose\Object\JWS $jws_signer = null,
                                       $signer_alg_arr = ['RS256', 'HS512']) {
-        if ($jwk_signature_key === false) {
+        if (\is_null($jwk_signature_key)) {
             throw new Exception('Failed to create JWT. Wrong parameters.');
 //                return false;
         }
@@ -319,8 +319,8 @@ class security_jose {
      */
     public static function create_jws_and_sign($payload,
                                                array $protected_headers,
-                                               $jwk_signature_key = false,
-                                               \Jose\Object\JWS $jws_signer = false,
+                                               $jwk_signature_key = null,
+                                               \Jose\Object\JWS $jws_signer = null,
                                                $jws_signer_alg = ['RS256', 'HS512']) {
         return self::create_jwt($payload, $protected_headers,
                                 $jwk_signature_key, $jws_signer, $jws_signer_alg);
