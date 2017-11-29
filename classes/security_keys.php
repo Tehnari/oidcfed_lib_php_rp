@@ -64,18 +64,22 @@ class security_keys
             {
             $path_dataDir = self::$path_dataDir;
             }
-        $pathinfo = pathinfo($path_dataDir);
+        $pathinfo = \pathinfo($path_dataDir);
         if (\is_array($pathinfo) === true)
             {
-            $path_dataDir_real = realpath($path_dataDir);
+            $path_dataDir_real = \realpath($path_dataDir);
             }
         //=============================================================================
         //TODO Something is wrong here!!!
+
         try
             {
             if (\is_dir($path_dataDir_real) === false)
                 {
-                \mkdir($path_dataDir_real, 0777, true);
+                if (!\mkdir($path_dataDir_real, 0777, true))
+                    {
+                    die('Failed to create folders...');
+                    }
                 }
             }
         catch (Exception $exc)
@@ -86,7 +90,10 @@ class security_keys
             {
             if (\is_dir($path_dataDir_real . '/keys') === false)
                 {
-                \mkdir($path_dataDir_real . '/keys', 0777, true);
+                if (!\mkdir($path_dataDir_real . '/keys', 0777, true))
+                    {
+                    die('Failed to create folders...');
+                    }
                 }
             }
         catch (Exception $exc)
