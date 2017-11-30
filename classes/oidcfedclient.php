@@ -37,6 +37,8 @@
 
 namespace oidcfed;
 
+use Exception;
+
 require_once 'autoloader.php';
 \oidcfed\autoloader::init();
 
@@ -775,11 +777,14 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
                                                      array $data = [])
         {
         if (\is_readable($dirPath) && \rtrim($dirPath, "/") && \is_dir($dirPath)
-                && isset($data) && \is_array($data))
+                && isset($data) && \is_array($data) && \array_key_exists("client_name",
+                                                                         $data))
             {
-            reset($data);
-            $keyD = key($data);
-            $filename = $dirPath . "/" . str_replace(" ", "_", $keyD) . "json";
+//            reset($data);
+//            $keyD = key($data);
+//            $filename = $dirPath . "/" . str_replace(" ", "_", $keyD) . ".json";
+            $clientName = $data["client_name"];
+            $filename = $dirPath . "/" . str_replace(" ", "_", $clientName) . ".json";
             }
         else
             {
@@ -788,13 +793,13 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
             }
         if (isset($data) && \is_array($data) && isset($filename) && \is_readable($filename))
             {
-            $json_content = \file_exists($filename);
+            $json_content = \file_get_contents($filename);
             $json_arr = \json_decode($json_content, true);
-            if (\is_array($json_arr) && \array_key_exists("provider_url",
-                                                          $$json_arr) && isset($json_arr["provider_url"]))
+            if (\is_array($json_arr) && \array_key_exists("provider_url", $data)
+                    && isset($data["provider_url"]))
                 {
                 $client_data_arr = self::search_providerUrl_data_for_clientName(
-                                $json_arr["provider_url"], $json_content);
+                                $data["provider_url"], $json_content);
                 }
             else
                 {
@@ -802,13 +807,30 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
                 }
             if (\is_array($client_data_arr))
                 {
-                \reset($json_arr);
-                $jd_key = \key($json_arr);
-                $json_arr[$jd_key] = $client_data_arr;
+                \reset($client_data_arr);
+                $jd_key = \key($client_data_arr);
+                $json_arr[$jd_key] = $client_data_arr[$jd_key];
+                \unlink($filename);
+                \file_put_contents($filename,
+                                   \json_encode($json_arr[$jd_key],
+                                                \JSON_PARTIAL_OUTPUT_ON_ERROR));
+                return true;
                 }
+            throw new Exception("No data found in the file or file is empty!");
             }
-        else if (isset($data) && \is_array($data) && isset($filename))
+        else if (isset($data) && \is_array($data) && isset($filename) && \array_key_exists("provider_url",
+                                                                                           $data))
             {
+            \unlink($filename);
+            \file_put_contents($filename,
+                               \json_encode([$data],
+                                            \JSON_PARTIAL_OUTPUT_ON_ERROR));
+            return true;
+            }
+        else if (isset($data) && \is_array($data) && isset($filename) && \array_key_exists("provider_url",
+                                                                                           $data) === false)
+            {
+            \unlink($filename);
             \file_put_contents($filename,
                                \json_encode($data, \JSON_PARTIAL_OUTPUT_ON_ERROR));
             return true;
@@ -816,13 +838,12 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
         throw new Exception("Can't write content to file");
         }
 
-    public static function get_clientName_id_secret($dirPath = null,
-                                                    $clientName = null,
-                                                    $provider_url = null)
+    public static function get_clientName_id_secret($dirPath, $clientName,
+                                                    $provider_url)
         {
         if (\is_readable($dirPath) && \rtrim($dirPath, "/") && \is_dir($dirPath))
             {
-            $filename = $dirPath . "/" . str_replace(" ", "_", $clientName) . "json";
+            $filename = $dirPath . "/" . str_replace(" ", "_", $clientName) . ".json";
             }
         else
             {
@@ -837,10 +858,10 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
             throw new Exception("File is empty!");
             }
         $json_obj = \json_decode($file_contents, true);
-        if ($json_obj && \is_string($provider_url))
+        if (\is_array($json_obj) && \is_string($provider_url))
             {
             return self::search_providerUrl_data_for_clientName(
-                            $provider_url, $json_obj);
+                            $provider_url, $file_contents);
             }
         else if ($json_obj)
             {
@@ -858,6 +879,10 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
         if (!\is_string($jsonStr))
             {
             throw new Exception("Not a string provided!");
+            }
+        else if ((array) $json_arr["provider_url"])
+            {
+            return (array) $json_arr;
             }
         $json_arr = \json_decode($jsonStr, TRUE);
         if (!\is_array($json_arr))

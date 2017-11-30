@@ -67,17 +67,43 @@ try
     {
 
     $clientData = \oidcfed\oidcfedClient::get_clientName_id_secret($path_dataDir_real,
-                                                                   $clientName);
+                                                                   $clientName,
+                                                                   $provider_url);
+    reset($clientData);
+    $clientDataArrVal = current($clientData);
     }
 catch (Exception $exc)
     {
 //    echo $exc->getTraceAsString();
+    $clientDataArrVal = null;
+    echo "";
+    }
+if (\is_array($clientDataArrVal) && \array_key_exists("client_id",
+                                                      $clientDataArrVal) && \array_key_exists("client_secret",
+                                                                                              $clientDataArrVal))
+    {
+    $client_id = $clientDataArrVal["client_id"];
+    $client_secret = $clientDataArrVal["client_secret"];
+    }
+else
+    {
+    $client_id = null;
+    $client_secret = null;
+    }
+
+if (!(\is_string($client_secret) && \mb_strlen($client_secret)) || (!\is_string($client_id)
+        && \mb_strlen($client_id)))
+    {
 //Dynamic registration for this client
     $oidc_dyn = new \Jumbojett\OpenIDConnectClient($provider_url);
 
     $oidc_dyn->register();
     $client_id = $oidc_dyn->getClientID();
     $client_secret = $oidc_dyn->getClientSecret();
+    $dataToSave = ["provider_url" => $provider_url, "client_id" => $client_id,
+        "client_secret" => $client_secret, "client_name" => $clientName];
+    \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
+                                                      $dataToSave);
     }
 //    $GLOBALS["oidc_object"]["client_id"] = $client_id;
 //    $GLOBALS["oidc_object"]["client_secret"] = $client_secret;
@@ -107,10 +133,6 @@ try
                                                $client_secret);
 //$oidc->setCertPath('/path/to/my.cert');
     $oidc->setCertPath($certificateLocal_path);
-    $dataToSave = ["provider_url" => $provider_url, "client_id" => $client_id,
-        "client_secret" => $client_secret, "client_name" => $clientName];
-    \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
-                                                      $dataToSave);
     }
 catch (Exception $exc)
     {
@@ -132,9 +154,15 @@ catch (Exception $exc)
     }
 
 //$name = $oidc->requestUserInfo('given_name');
+//if (!$_REQUEST["code"])
+//    {
 try
     {
-    $name = $oidc->requestUserInfo('diana');
+//        $name = $oidc->requestUserInfo('diana');
+    $name = $oidc->requestUserInfo();
+    echo "<pre>";
+    var_dump($name);
+    echo "</pre>";
     }
 catch (Exception $exc)
     {
@@ -142,5 +170,6 @@ catch (Exception $exc)
     echo $exc->getTraceAsString();
     echo "</pre>";
     }
+//    }
 //    }
 echo " === == ";
