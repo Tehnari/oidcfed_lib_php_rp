@@ -43,10 +43,21 @@ require (dirname(__FILE__) . '/parameters.php');
 echo "";
 $post_in = NULL;
 
-$client_id_v2 = \oidcfed\oidcfedClient::generateRandString_static();
-$client_secret_v2 = \oidcfed\oidcfedClient::generateRandString_static();
+//$client_id_v2 = \oidcfed\oidcfedClient::generateRandString_static();
+//$client_secret_v2 = \oidcfed\oidcfedClient::generateRandString_static();
+
 
 $provider_url = "https://op1.test.inacademia.org";
+//Dynamic registration for this client
+$oidc_dyn = new \Jumbojett\OpenIDConnectClient($provider_url);
+
+$oidc_dyn->register();
+$client_id = $oidc_dyn->getClientID();
+$client_secret = $oidc_dyn->getClientSecret();
+
+$clientName = "PHP_RP_Test-OIDC_Simple";
+
+//$provider_url = "https://op1.test.inacademia.org";
 try
     {
     $certificateLocal_content = \oidcfed\security_keys::get_csr(false, $dn,
@@ -79,6 +90,8 @@ catch (Exception $exc)
     echo $exc->getTraceAsString();
     echo "</pre>";
     }
+    $oidc->setClientName($clientName);
+
 try
     {
     $oidc->authenticate();

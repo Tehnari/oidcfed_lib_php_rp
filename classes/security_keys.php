@@ -484,6 +484,7 @@ class security_keys
         if ($check01 === true && $check02 === false && $check03 === true)
             {
             self::save_filekey_contents($path_save_key, $key_contents); //TODO Check where is saved !
+            echo "";
             }
 //TODO Need to check if it's key here
         return $key_contents;

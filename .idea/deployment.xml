@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="Local_web_server">
+    <serverData>
+      <paths name="Local_web_server">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/~constantin/oidcfed/github/oidcfed_lib_php_rp/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
