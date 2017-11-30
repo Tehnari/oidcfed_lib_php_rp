@@ -48,15 +48,39 @@ $post_in = NULL;
 
 
 $provider_url = "https://op1.test.inacademia.org";
-//Dynamic registration for this client
-$oidc_dyn = new \Jumbojett\OpenIDConnectClient($provider_url);
-
-$oidc_dyn->register();
-$client_id = $oidc_dyn->getClientID();
-$client_secret = $oidc_dyn->getClientSecret();
-
 $clientName = "PHP_RP_Test-OIDC_Simple";
+//
+//  USING $path_dataDir_real from parameters
+//
+//if (isset($_REQUEST['code']) && isset($_REQUEST['state']))
+//    {
+//    echo "";
+//
+//    //Get id_token_and token
+////        $oidc = new \Jumbojett\OpenIDConnectClient($provider_url, $client_id,                                                   $client_secret);
+//
+//    echo "";
+//    }
+//else
+//    {
+try
+    {
 
+    $clientData = \oidcfed\oidcfedClient::get_clientName_id_secret($path_dataDir_real,
+                                                                   $clientName);
+    }
+catch (Exception $exc)
+    {
+//    echo $exc->getTraceAsString();
+//Dynamic registration for this client
+    $oidc_dyn = new \Jumbojett\OpenIDConnectClient($provider_url);
+
+    $oidc_dyn->register();
+    $client_id = $oidc_dyn->getClientID();
+    $client_secret = $oidc_dyn->getClientSecret();
+    }
+//    $GLOBALS["oidc_object"]["client_id"] = $client_id;
+//    $GLOBALS["oidc_object"]["client_secret"] = $client_secret;
 //$provider_url = "https://op1.test.inacademia.org";
 try
     {
@@ -83,6 +107,10 @@ try
                                                $client_secret);
 //$oidc->setCertPath('/path/to/my.cert');
     $oidc->setCertPath($certificateLocal_path);
+    $dataToSave = ["provider_url" => $provider_url, "client_id" => $client_id,
+        "client_secret" => $client_secret, "client_name" => $clientName];
+    \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
+                                                      $dataToSave);
     }
 catch (Exception $exc)
     {
@@ -90,7 +118,7 @@ catch (Exception $exc)
     echo $exc->getTraceAsString();
     echo "</pre>";
     }
-    $oidc->setClientName($clientName);
+$oidc->setClientName($clientName);
 
 try
     {
@@ -114,5 +142,5 @@ catch (Exception $exc)
     echo $exc->getTraceAsString();
     echo "</pre>";
     }
-
-echo "=====";
+//    }
+echo " === == ";
