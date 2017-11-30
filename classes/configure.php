@@ -50,6 +50,16 @@ require_once 'autoloader.php';
 class configure
     {
 
+    protected $clientName = "PHP_RP_Test-OIDC_Simple";
+
+    public static function setClientName($param){
+        $this->clientName = $param;
+    }
+
+    public static function getClientName(){
+        return $this->clientName;
+    }
+
     public static function path_dataDir()
         {
         global $path_dataDir;

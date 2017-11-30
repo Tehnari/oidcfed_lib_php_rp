@@ -5,7 +5,7 @@
  *
  * @abstract OIDCFED Library for PHP
  *
- *  PHP version 5
+ *  PHP version 7
  *
  * @category  PHP
  * @package   OIDCFED_Lib_PHP_RP
@@ -48,7 +48,7 @@ $post_in = NULL;
 
 
 $provider_url = "https://op1.test.inacademia.org";
-$clientName = "PHP_RP_Test-OIDC_Simple";
+//$clientName = "PHP_RP_Test-OIDC_Simple";
 //
 //  USING $path_dataDir_real from parameters
 //
@@ -65,7 +65,6 @@ $clientName = "PHP_RP_Test-OIDC_Simple";
 //    {
 try
     {
-
     $clientData = \oidcfed\oidcfedClient::get_clientName_id_secret($path_dataDir_real,
                                                                    $clientName,
                                                                    $provider_url);

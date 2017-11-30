@@ -26,6 +26,7 @@ $private_key_path = \oidcfed\configure::private_key_path();
 $public_key_path = \oidcfed\configure::public_key_path();
 $passphrase = \oidcfed\configure::passphrase();
 $configargs = \oidcfed\configure::configargs();
+$clientName = "PHP_RP_Test-OIDC_Simple";
 $dn = [];
 $ndays = 365;
 $oidc_object = [];

@@ -604,6 +604,39 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
 //        }
         }
 
+    public function dynamic_registration_and_auth_code()
+        {
+        $provider_url = $this->getProviderURL();
+        $path_dataDir_real = \oidcfed\configure::path_dataDir();
+        $clientName = \oidcfed\configure::getClientName();
+        try
+            {
+            $clientData = \oidcfed\oidcfedClient::get_clientName_id_secret($path_dataDir_real,
+                                                                           $clientName,
+                                                                           $provider_url);
+            reset($clientData);
+            $clientDataArrVal = current($clientData);
+            }
+        catch (Exception $exc)
+            {
+//    echo $exc->getTraceAsString();
+            $clientDataArrVal = null;
+            echo "";
+            }
+        if (\is_array($clientDataArrVal) && \array_key_exists("client_id",
+                                                              $clientDataArrVal)
+                && \array_key_exists("client_secret", $clientDataArrVal))
+            {
+            $client_id = $clientDataArrVal["client_id"];
+            $client_secret = $clientDataArrVal["client_secret"];
+            }
+        else
+            {
+            $client_id = null;
+            $client_secret = null;
+            }
+        }
+
     public function constructs_signing_request_registration(array $payload = null,
                                                             $pubkey = null,
                                                             $privkey = null,
