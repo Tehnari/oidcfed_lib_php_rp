@@ -16,7 +16,7 @@ require_once (dirname(__FILE__) . '/classes/autoloader.php');
 
 global $path_dataDir, $privateKeyName, $publicKeyName,
  $path_dataDir_real, $private_key_path, $public_key_path,
- $passphrase, $configargs, $client_id, $private_key, $public_key, $dn, $ndays;
+ $passphrase, $configargs, $client_id, $private_key, $public_key, $dn, $ndays, $oidc_object;
 
 $path_dataDir = \oidcfed\configure::path_dataDir();
 $privateKeyName = \oidcfed\configure::privateKeyName();
@@ -27,8 +27,8 @@ $public_key_path = \oidcfed\configure::public_key_path();
 $passphrase = \oidcfed\configure::passphrase();
 $configargs = \oidcfed\configure::configargs();
 $clientName = "PHP_RP_Test-OIDC_Simple";
-$dn = [];
-$ndays = 365;
+$dn = \oidcfed\configure::dn();
+$ndays = \oidcfed\configure::ndays();
 $oidc_object = [];
 // CLIENT ID is below:
 if (!$client_id || empty($client_id))

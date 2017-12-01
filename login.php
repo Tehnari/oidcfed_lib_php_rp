@@ -58,34 +58,15 @@ if ($post_in !== null && is_array($post_in) && array_key_exists("useAuthType",
 else
     {
 //    $useAuthType = "authorization_code";
-    $useAuthType = "implicit_flow";
+//    $useAuthType = "implicit_flow";
 //    $useAuthType = "hybrid_flow";
-//    $useAuthType = "dynamic";
+    $useAuthType = "dynamic";
     }
+
 if ($post_in !== null && is_array($post_in) && array_key_exists("provider_url",
                                                                 $post_in))
     {
     $oidc_site_url = $post_in["provider_url"];
-    }
-$check03 = (isset($post_in["client_id"]) && is_string($post_in["client_id"]) && mb_strlen($post_in["client_id"])
-        > 0);
-$check04 = (isset($post_in["client_secret"]) && is_string($post_in["client_secret"])
-        && mb_strlen($post_in["client_secret"]) > 0);
-//            echo "Getting or prepare certificate to use with OIDCFED Client...<br>";
-$certificateLocal_content = \oidcfed\security_keys::get_csr(false, $dn,
-                                                            $priv_key_woPass,
-                                                            $ndays,
-                                                            $path_dataDir_real);
-$certificateLocal_path = \oidcfed\security_keys::public_certificateLocal_path();
-$check05 = is_string($certificateLocal_path) && is_readable($certificateLocal_path);
-if (!$client_id)
-    {
-    $client_id = \oidcfed\configure::client_id();
-    }
-if (!$client_secret)
-    {
-    $client_secret = \oidcfed\oidcfedClient::generateRandString_static();
-//                $client_secret = md5(uniqid(rand(), TRUE));
     }
 if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0)
     {
@@ -93,6 +74,27 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0)
     switch ($useAuthType)
         {
         case "authorization_code":
+            $check03 = (isset($post_in["client_id"]) && is_string($post_in["client_id"])
+                    && mb_strlen($post_in["client_id"]) > 0);
+            $check04 = (isset($post_in["client_secret"]) && is_string($post_in["client_secret"])
+                    && mb_strlen($post_in["client_secret"]) > 0);
+//            echo "Getting or prepare certificate to use with OIDCFED Client...<br>";
+            $certificateLocal_content = \oidcfed\security_keys::get_csr(false,
+                                                                        $dn,
+                                                                        $priv_key_woPass,
+                                                                        $ndays,
+                                                                        $path_dataDir_real);
+            $certificateLocal_path = \oidcfed\security_keys::public_certificateLocal_path();
+            $check05 = is_string($certificateLocal_path) && is_readable($certificateLocal_path);
+            if (!$client_id)
+                {
+                $client_id = \oidcfed\configure::client_id();
+                }
+            if (!$client_secret)
+                {
+                $client_secret = \oidcfed\oidcfedClient::generateRandString_static();
+//                $client_secret = md5(uniqid(rand(), TRUE));
+                }
             $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url, $client_id,
                                                     $client_secret);
             $oidcFedRp->setClientID($client_id);
@@ -150,6 +152,27 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0)
                 }
             break;
         case "implicit_flow":
+            $check03 = (isset($post_in["client_id"]) && is_string($post_in["client_id"])
+                    && mb_strlen($post_in["client_id"]) > 0);
+            $check04 = (isset($post_in["client_secret"]) && is_string($post_in["client_secret"])
+                    && mb_strlen($post_in["client_secret"]) > 0);
+//            echo "Getting or prepare certificate to use with OIDCFED Client...<br>";
+            $certificateLocal_content = \oidcfed\security_keys::get_csr(false,
+                                                                        $dn,
+                                                                        $priv_key_woPass,
+                                                                        $ndays,
+                                                                        $path_dataDir_real);
+            $certificateLocal_path = \oidcfed\security_keys::public_certificateLocal_path();
+            $check05 = is_string($certificateLocal_path) && is_readable($certificateLocal_path);
+            if (!$client_id)
+                {
+                $client_id = \oidcfed\configure::client_id();
+                }
+            if (!$client_secret)
+                {
+                $client_secret = \oidcfed\oidcfedClient::generateRandString_static();
+//                $client_secret = md5(uniqid(rand(), TRUE));
+                }
             //Static registration TEST
 //    if ($check03 && $check04 && $check05) {
             $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url, $client_id,
@@ -229,81 +252,51 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0)
         case "dynamic":
             //Dynamic registration TEST
             $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
-//    $oidcFedRp->setVerifyHost(false);
-//    $oidcFedRp->setVerifyPeer(false);
-            $oidcFedRp->setVerifyCert(false);
-            try
-                {
-                $oidcFedRp->setCertPath($certificateLocal_path);
-                }
-            catch (Exception $exc)
-                {
-                echo "<pre>";
-                echo $exc->getTraceAsString();
-                echo "</pre>";
-                }
-
-            if (isset($client_id) && is_string($client_id) && \mb_strlen($client_id)
-                    > 0)
-                {
-                $oidcFedRp->setClientID($client_id);
-                }
-
-            try
-                {
-                $oidcFedRp->register();
-                $client_id = $oidcFedRp->getClientID();
-                $client_secret = $oidcFedRp->getClientSecret();
-                }
-            catch (Exception $exc)
-                {
-                echo "<pre>";
-                echo $exc->getTraceAsString();
-                echo "</pre>";
-                }
-            if ($check05)
-                {
-                try
-                    {
-                    $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
-                                                                                                      null,
-                                                                                                      null,
-                                                                                                      false);
-//            $responseTypes = $oidcFedRp->VerifySignatureAndInterpretProviderInfo($oidc_site_url);
-                    }
-                catch (Exception $exc)
-                    {
-                    echo "<pre>";
-                    echo $exc->getTraceAsString();
-                    echo "</pre>";
-                    }
-//        echo "<pre>";
-//        var_dump($oidcFedRp);
-//        echo "</pre>";
-                if (is_array($oidcFedRp->wellKnown))
-                    {
-                    $jwks = $oidcFedRp->get_jwks_from_wellKnown();
-//            echo "";
-                    }
-                else
-                    {
-                    $jwks = false;
-                    }
-                if (is_array($oidcFedRp->wellKnown))
-                    {
-                    foreach ($oidcFedRp->wellKnown['metadata_statements'] as
-                                $ms_key => $ms_value)
-                        {
-//                        $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,$ms_key,$jwks);
-                        $result_MS_Verify = \oidcfed\metadata_statements::unpack_MS($ms_value,
-                                                                                    null,
-                                                                                    $jwks,
-                                                                                    false,
-                                                                                    true);
-                        echo "";
-                        }
-                    }
-                }
+            $verifyCert = false;
+            $oidcFedRp->dynamic_registration_and_auth_code($verifyCert, $private_key, $passphrase);
+//            if ($check05)
+//                {
+//                try
+//                    {
+//                    $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
+//                                                                                                      null,
+//                                                                                                      null,
+//                                                                                                      false);
+////            $responseTypes = $oidcFedRp->VerifySignatureAndInterpretProviderInfo($oidc_site_url);
+//                    }
+//                catch (Exception $exc)
+//                    {
+//                    echo "<pre>";
+//                    echo $exc->getTraceAsString();
+//                    echo "</pre>";
+//                    }
+////        echo "<pre>";
+////        var_dump($oidcFedRp);
+////        echo "</pre>";
+//                if (is_array($oidcFedRp->wellKnown))
+//                    {
+//                    $jwks = $oidcFedRp->get_jwks_from_wellKnown();
+////            echo "";
+//                    }
+//                else
+//                    {
+//                    $jwks = false;
+//                    }
+//                if (is_array($oidcFedRp->wellKnown))
+//                    {
+//                    foreach ($oidcFedRp->wellKnown['metadata_statements'] as
+//                                $ms_key => $ms_value)
+//                        {
+////                        $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,$ms_key,$jwks);
+//                        $result_MS_Verify = \oidcfed\metadata_statements::unpack_MS($ms_value,
+//                                                                                    null,
+//                                                                                    $jwks,
+//                                                                                    false,
+//                                                                                    true);
+//                        echo "";
+//                        }
+//                    }
+//                }
             break;
         default:
             break;

@@ -52,7 +52,7 @@ require_once 'autoloader.php';
 define('__ROOT__', dirname(dirname(__FILE__)));
 //require_once(__ROOT__ . '/parameters.php');
 //require '../parameters.php';
-require_once (dirname(dirname(__FILE__)) . '/parameters.php');
+require (dirname(dirname(__FILE__)) . '/parameters.php');
 
 /**
  * Description of oidcfed
@@ -193,11 +193,11 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
             {
             return false;
             }
-        $this->verify_host = $param;
-        $this->verify_peer = $param;
         $this->verify_cert = $param;
         $this->setVerifyHost($param);
         $this->setVerifyPeer($param);
+        $this->verify_host = $this->getVerifyHost();
+        $this->verify_peer = $this->getVerifyPeer();
         }
 
     public static function fetchURL_static($url, $post_body = null,
@@ -604,18 +604,26 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
 //        }
         }
 
-    public function dynamic_registration_and_auth_code()
+    public function dynamic_registration_and_auth_code(bool $verifyCert = false, $private_key=null, $passphrase=null)
         {
         $provider_url = $this->getProviderURL();
         $path_dataDir_real = \oidcfed\configure::path_dataDir();
-        $clientName = \oidcfed\configure::getClientName();
+        try
+            {
+            $clientName = \oidcfed\configure::getClientName();
+            }
+        catch (Exception $exc)
+            {
+            echo $exc->getTraceAsString();
+            }
+
         try
             {
             $clientData = \oidcfed\oidcfedClient::get_clientName_id_secret($path_dataDir_real,
                                                                            $clientName,
                                                                            $provider_url);
             reset($clientData);
-            $clientDataArrVal = current($clientData);
+            $clientDataArrVal = \current($clientData);
             }
         catch (Exception $exc)
             {
@@ -635,6 +643,123 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
             $client_id = null;
             $client_secret = null;
             }
+        if (!(\is_string($client_secret) && \mb_strlen($client_secret)) || (!\is_string($client_id)
+                && \mb_strlen($client_id)))
+            {
+            //Dynamic registration for this client
+//            $oidc_dyn = new \oidcfed\oidcfedClient($provider_url);
+            try
+                {
+                $this->setVerifyCert($verifyCert);
+                $this->setVerifyHost($verifyCert);
+                $this->setVerifyPeer($verifyCert);
+                }
+            catch (Exception $exc)
+                {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+                }
+
+            try
+                {
+                $this->register();
+                }
+            catch (Exception $exc)
+                {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+                }
+
+//            $client_id = $oidc_dyn->getClientID();
+//            $client_secret = $oidc_dyn->getClientSecret();
+            $client_id = $this->getClientID();
+            $client_secret = $this->getClientSecret();
+            $dataToSave = ["provider_url" => $provider_url, "client_id" => $client_id,
+                "client_secret" => $client_secret, "client_name" => $clientName];
+            try
+                {
+                \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
+                                                                  $dataToSave);
+                }
+            catch (Exception $exc)
+                {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+                }
+            }
+            $dn = \oidcfed\configure::dn();
+            $ndays = \oidcfed\configure::ndays();
+            $priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
+                                                                              $passphrase);
+        try
+            {
+            $certificateLocal_content = \oidcfed\security_keys::get_csr(false,
+                                                                        $dn,
+                                                                        $priv_key_woPass,
+                                                                        $ndays,
+                                                                        $path_dataDir_real);
+            }
+        catch (Exception $exc)
+            {
+            echo $exc->getTraceAsString();
+            $certificateLocal_content = null;
+            }
+
+        try
+            {
+            $certificateLocal_path = \oidcfed\security_keys::public_certificateLocal_path();
+            }
+        catch (Exception $exc)
+            {
+            echo "<pre>";
+            echo $exc->getTraceAsString();
+            echo "</pre>";
+            }
+
+        echo "";
+        try
+            {
+            $oidc = new \oidcfed\oidcfedClient($provider_url, $client_id,
+                                               $client_secret);
+
+            $oidc->setVerifyCert(false);
+            $oidc->setCertPath($certificateLocal_path);
+            }
+        catch (Exception $exc)
+            {
+            echo "<pre>";
+            echo $exc->getTraceAsString();
+            echo "</pre>";
+            }
+        $oidc->setClientName($clientName);
+        try
+            {
+            $oidc->authenticate();
+            }
+        catch (Exception $exc)
+            {
+            echo "<pre>";
+            echo $exc->getTraceAsString();
+            echo "</pre>";
+            }
+        try
+            {
+//        $name = $oidc->requestUserInfo('diana');
+            $name = $oidc->requestUserInfo();
+            echo "<pre>";
+            var_dump($name);
+            echo "</pre>";
+            }
+        catch (Exception $exc)
+            {
+            echo "<pre>";
+            echo $exc->getTraceAsString();
+            echo "</pre>";
+            }
+        echo " === == ";
         }
 
     public function constructs_signing_request_registration(array $payload = null,
@@ -817,7 +942,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
 //            $keyD = key($data);
 //            $filename = $dirPath . "/" . str_replace(" ", "_", $keyD) . ".json";
             $clientName = $data["client_name"];
-            $filename = $dirPath . "/" . str_replace(" ", "_", $clientName) . ".json";
+            $dirPathReal = \realpath($dirPath);
+            $filename = $dirPathReal . "/" . str_replace(" ", "_", $clientName) . ".json";
             }
         else
             {
@@ -843,16 +969,17 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
                 \reset($client_data_arr);
                 $jd_key = \key($client_data_arr);
                 $json_arr[$jd_key] = $client_data_arr[$jd_key];
-                \unlink($filename);
-                \file_put_contents($filename,
-                                   \json_encode($json_arr[$jd_key],
-                                                \JSON_PARTIAL_OUTPUT_ON_ERROR));
-                return true;
+                $data = $json_arr;
+//                \unlink($filename);
+//                \file_put_contents($filename,
+//                                   \json_encode($json_arr[$jd_key],
+//                                                \JSON_PARTIAL_OUTPUT_ON_ERROR));
+//                return true;
                 }
-            throw new Exception("No data found in the file or file is empty!");
+//            throw new Exception("No data found in the file or file is empty!");
             }
-        else if (isset($data) && \is_array($data) && isset($filename) && \array_key_exists("provider_url",
-                                                                                           $data))
+        if (isset($data) && \is_array($data) && isset($filename) && \array_key_exists("provider_url",
+                                                                                      $data))
             {
             \unlink($filename);
             \file_put_contents($filename,
