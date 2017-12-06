@@ -57,7 +57,7 @@ if ($post_in !== null && is_array($post_in) && array_key_exists("useAuthType",
     }
 else
     {
-//    $useAuthType = "authorization_code";
+//    $useAuthType = "authorization_code_static";
 //    $useAuthType = "implicit_flow";
 //    $useAuthType = "hybrid_flow";
     $useAuthType = "dynamic";
@@ -73,7 +73,7 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0)
     //TODO All Flows are rewriting know !!!
     switch ($useAuthType)
         {
-        case "authorization_code":
+        case "authorization_code_static":
             $check03 = (isset($post_in["client_id"]) && is_string($post_in["client_id"])
                     && mb_strlen($post_in["client_id"]) > 0);
             $check04 = (isset($post_in["client_secret"]) && is_string($post_in["client_secret"])

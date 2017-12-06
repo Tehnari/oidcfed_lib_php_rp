@@ -604,7 +604,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient
 //        }
         }
 
-    public function dynamic_registration_and_auth_code(bool $verifyCert = false, $private_key=null, $passphrase=null)
+    public function dynamic_registration_and_auth_code($verifyCert = false, $private_key=null, $passphrase=null)
         {
         $provider_url = $this->getProviderURL();
         $path_dataDir_real = \oidcfed\configure::path_dataDir();
