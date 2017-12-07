@@ -253,6 +253,8 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0)
             //Dynamic registration TEST
             $oidcFedRp = new \oidcfed\oidcfedClient($oidc_site_url);
             $verifyCert = false;
+            $webfinger_toCheck="diana@localhost:8777";
+            $webfinger_data = $oidcFedRp->get_webfinger_data($host_url, $resource_var, $rel);
             $oidcFedRp->dynamic_registration_and_auth_code($verifyCert, $private_key, $passphrase);
 //            if ($check05)
 //                {
