@@ -399,47 +399,67 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         throw new Exception("Verification failed, nothing found...");
     }
 
-    public function get_webfinger_data($host_url = null, $resource_var = null,
-                                       $rel = "http://openid.net/specs/connect/1.0/provider",
-                                       $httpcon_type = "https://") {
-        $out_var_arr = [];
+    public function get_webfinger_data($resource_var = null, $host_url = null,
+                                       $rel = "http://openid.net/specs/connect/1.0/issuer",
+                                       $httpcon_type = "https://",
+                                       $return_var = "href") {
+        $out_var_arr  = [];
+        $host_url_arr = [];
 
         $url_obj = new \stdClass();
         if ($host_url === null) {
-            $host_url_v0  = $this->getProviderURL();
-//            $host_url = rtrim($host_url_v0);
-            $host_url     = \rtrim(\rtrim($host_url_v0), "/");
-            $httpcon_type = "";
+            $host_url_v0 = $this->getProviderURL();
+            $host_url    = \rtrim(\rtrim($host_url_v0), "/");
+//            $httpcon_type = "";
         }
         if ($resource_var === null) {
-//            $resource_var = $this->getClientID();
             $resource_var = \oidcfed\configure::client_id();
         }
-        if (\is_string($resource_var) && \mb_strlen($resource_var) > 0 && \preg_match("/([http|https|ftp]+[:\/\/]+)([\w:]+)/",
+        if (\preg_match("/(http|https|ftp)[:\/\/]+([\w:]+)/", $resource_var,
+                        $host_url_arr) && (empty($httpcon_type) || \is_null($httpcon_type))) {
+            $httpcon_type = "https://";
+            unset($host_url_arr);
+        }
+        if (\is_string($resource_var) && \mb_strlen($resource_var) > 0 && \preg_match("/(http|https|ftp)[:\/\/]+([\w:]+)/",
                                                                                       $resource_var,
                                                                                       $out_var_arr)) {
-//        $url_obj->resource = \urlencode($resource_var);
-//        $url_obj->rel      = \urlencode($rel);
-            $url_obj->resource = $resource_var;
-            $url_obj->rel      = $rel;
-            $url_string        = $httpcon_type . $host_url . "/.well-known/webfinger?resource=" . $url_obj->resource . "&rel=" . $url_obj->rel;
+            $url_obj->resource = $httpcon_type . $out_var_arr[2];
+            $url_obj->rel      = "http://openid.net/specs/connect/1.0/provider";
+            $url_string        = $host_url . "/.well-known/webfinger?resource=" . urlencode($url_obj->resource) . "&rel=" . \urlencode($url_obj->rel);
+//            $url_string        = $host_url . "/.well-known/webfinger?resource=" . \urlencode($url_obj->resource) . "&rel=" . \urlencode($url_obj->rel);
+//            $url_string        = $httpcon_type . $host_url . "/.well-known/webfinger?resource=" . $url_obj->resource . "&rel=" . $url_obj->rel;
+//
+            //just returning HREF
+            return $url_obj->resource;
         }
         else if (\is_string($resource_var) && \mb_strlen($resource_var) > 0 && \preg_match("/([\w\.-]+)[@]+([\w:]+)/",
                                                                                            $resource_var,
                                                                                            $out_var_arr)
                 && \is_array($out_var_arr) && \count($out_var_arr) > 1) {
             $url_obj->resource = "acct:" . $out_var_arr[0];
-            $url_obj->rel      = "http://openid.net/specs/connect/1.0/issuer";
-            $url_string        = $httpcon_type . $host_url . "/.well-known/webfinger?resource=" . $url_obj->resource . "&rel=" . $url_obj->rel;
+            $url_obj->rel      = $rel;
+            $url_string        = $host_url . "/.well-known/webfinger?resource=" . \urlencode($url_obj->resource) . "&rel=" . \urlencode($url_obj->rel);
+//            $url_string        = $httpcon_type . $host_url . "/.well-known/webfinger?resource=" . urlencode($url_obj->resource) . "&rel=" . $url_obj->rel;
         }
         else {
             throw new Exception("Webfinger: nothing found...");
         }
-//        $result            = $this->fetchURL($url_string);
         $cert_verify = $this->verify_cert;
+        $this->setVerifyCert($cert_verify);
         $result      = \oidcfed\configure::getUrlContent($url_string,
                                                          $cert_verify);
-        return $result;
+        $json_arr    = \json_decode($result, true);
+        $check00     = (\is_string($return_var) && \mb_strlen($return_var) > 0 && (\mb_strrpos($return_var,
+                                                                                               "href") !== false));
+        $check01     = (\is_string($result) && \mb_strlen($result) > 0);
+        $check02     = ( \is_array($json_arr) && \count($json_arr) > 0 && \array_key_exists("href",
+                                                                                            $json_arr["links"][0]));
+        if ($check00 && $check01 && $check02) {
+            return $json_arr["links"][0]["href"];
+        }
+        else {
+            return $result;
+        }
     }
 
     public function implicit_flow() {
