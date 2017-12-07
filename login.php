@@ -256,12 +256,8 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0)
             $oidcFedRp->setVerifyCert($verifyCert);
 //            $oidcFedRp->setVerifyHost($verifyCert);
 //            $oidcFedRp->setVerifyPeer($verifyCert);
-//            $webfinger_toCheck="diana@localhost:8777";
             $webfinger_data = $oidcFedRp->get_webfinger_data($oidc_site_url);
             $oidcFedRp->setProviderURL($webfinger_data);
-
-//            $webfinger_toCheck1="https://localhost:8777";
-//            $webfinger_data1 = $oidcFedRp->get_webfinger_data($webfinger_toCheck1);
             $oidcFedRp->dynamic_registration_and_auth_code($verifyCert, $private_key, $passphrase);
 //            if ($check05)
 //                {

@@ -622,7 +622,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo $exc->getTraceAsString();
                 echo "</pre>";
             }
-
+            //TODO Add here MS as auth parameter
             try {
                 $this->register();
             }
@@ -638,6 +638,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $client_secret = $this->getClientSecret();
             $dataToSave    = ["provider_url"  => $provider_url, "client_id"     => $client_id,
                 "client_secret" => $client_secret, "client_name"   => $clientName];
+            
             try {
                 \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
                                                                   $dataToSave);
