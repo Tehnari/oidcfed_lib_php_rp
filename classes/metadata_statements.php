@@ -69,7 +69,7 @@ class metadata_statements {
     public static function create_MS(array $param_payload,
                                      array $protected_headers = ["alg" => "", "kid" => ""],
                                      \Jose\Object\JWK $jwk_signature_key = null,
-                                     \Jose\Object\JWS $jws_signer = false,
+                                     \Jose\Object\JWS $jws_signer = null,
                                      array $jws_signer_alg = ['RS256', 'HS512']) {
         foreach ($param_payload as $pkey => $pvalue) {
             $check00 = (\is_string($pvalue) && \mb_strlen($pvalue) > 0);

@@ -652,7 +652,11 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         ];
         //Key is allready without passphrase (!)
         $crt                   = \oidcfed\security_keys::get_filekey_contents($certificateLocal_path);
-        $privkey_pem           = \openssl_pkey_get_private($certificateLocal_path);
+        $pathLocal_content     = \pathinfo($certificateLocal_path);
+        $pathPrivateKey        = \rtrim($pathLocal_content['dirname'], '/') . "/" . "privateKey.pem";
+//        $privkey_pem           = \openssl_pkey_get_private($pathPrivateKey, $passphrase);
+        $privkey_pem           = \oidcfed\configure::private_key($pathPrivateKey,
+                                                                 $passphrase);
         $privkey_jwt           = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privkey_pem,
                                                                                                     null,
                                                                                                     $additional_parameters,
@@ -662,7 +666,9 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                                                                                                     null,
                                                                                                     $additional_parameters,
                                                                                                     false);
-        $ms_brut = \oidcfed\metadata_statements::create_MS($param_payload,["alg" => "", "kid" => ""]);
+        $ms_brut               = \oidcfed\metadata_statements::create_MS($param_payload,
+                                                                         ["alg" => "",
+                    "kid" => ""]);
 
 
         try {
