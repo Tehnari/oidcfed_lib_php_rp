@@ -527,51 +527,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
 
         session_commit();
         $this->redirect($authorization_endpoint);
-
-//        if (!\property_exists($token_json, 'id_token')) {
-//            throw new Exception("User did not authorize openid scope.");
-//        }
-//        $claims = $this->decodeJWT($token_json->id_token, 1);
-//
-//        // Verify the signature
-//        if ($this->canVerifySignatures()) {
-//            if (!$this->getProviderConfigValue('jwks_uri')) {
-//                throw new Exception("Unable to verify signature due to no jwks_uri being defined");
-//            }
-//            if (!$this->verifyJWTsignature($token_json->id_token)) {
-//                throw new Exception("Unable to verify signature");
-//            }
-//        }
-//        else {
-//            user_error("Warning: JWT signature verification unavailable.");
-//        }
-//
-//        // If this is a valid claim
-//        if ($this->verifyJWTclaims($claims, $token_json->access_token)) {
-//
-//            // Clean up the session a little
-//            $this->unsetNonce();
-//
-//            // Save the full response
-//            $this->tokenResponse = $token_json;
-//
-//            // Save the id token
-//            $this->idToken = $token_json->id_token;
-//
-//            // Save the access token
-//            $this->accessToken = $token_json->access_token;
-//
-//            // Save the refresh token, if we got one
-//            if (isset($token_json->refresh_token)) {
-//                $this->refreshToken = $token_json->refresh_token;
-//            }
-//
-//            // Success!
-//            return true;
-//        }
-//        else {
-//            throw new OpenIDConnectClientException("Unable to verify JWT claims");
-//        }
     }
 
     public function dynamic_registration_and_auth_code($verifyCert = false,
@@ -622,7 +577,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo $exc->getTraceAsString();
                 echo "</pre>";
             }
-            //TODO Add here MS as auth parameter
             try {
                 $this->register();
             }
@@ -636,9 +590,10 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
 //            $client_secret = $oidc_dyn->getClientSecret();
             $client_id     = $this->getClientID();
             $client_secret = $this->getClientSecret();
-            $dataToSave    = ["provider_url"  => $provider_url, "client_id"     => $client_id,
+
+            $dataToSave = ["provider_url"  => $provider_url, "client_id"     => $client_id,
                 "client_secret" => $client_secret, "client_name"   => $clientName];
-            
+
             try {
                 \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
                                                                   $dataToSave);
@@ -649,6 +604,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo "</pre>";
             }
         }
+        //Certificate generation (!)
+        //In this case is only one (just for signing (!)
         $dn              = \oidcfed\configure::dn();
         $ndays           = \oidcfed\configure::ndays();
         $priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
@@ -688,6 +645,26 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             echo "</pre>";
         }
         $oidc->setClientName($clientName);
+        //TODO Here MS should be added !!!
+        $additional_parameters = [
+            'kid' => $this->getClientID(),
+            "use" => "sig"
+        ];
+        //Key is allready without passphrase (!)
+        $crt                   = \oidcfed\security_keys::get_filekey_contents($certificateLocal_path);
+        $privkey_pem           = \openssl_pkey_get_private($certificateLocal_path);
+        $privkey_jwt           = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privkey_pem,
+                                                                                                    null,
+                                                                                                    $additional_parameters,
+                                                                                                    false);
+        $pubkey_pem            = \oidcfed\configure::public_key($privkey_pem);
+        $pubkey_jwt            = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubkey_pem,
+                                                                                                    null,
+                                                                                                    $additional_parameters,
+                                                                                                    false);
+        $ms_brut = \oidcfed\metadata_statements::create_MS($param_payload,["alg" => "", "kid" => ""]);
+
+
         try {
             $oidc->authenticate();
         }
@@ -711,6 +688,17 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         echo " === == ";
     }
 
+    /**
+     *
+     * @param array $payload
+     * @param type $pubkey
+     * @param \Jose\Object\JWS $privkey
+     * @param array $protected_headers
+     * @param array $jws_signer_alg
+     * @return \Jose\Object\JWS
+     * @throws Exception
+     * @deprecated since version 0.0.1
+     */
     public function constructs_signing_request_registration(array $payload = null,
                                                             $pubkey = null,
                                                             $privkey = null,
@@ -733,8 +721,10 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 'kid' => $this->getClientID(),
                 "use" => "sig"
             ];
-            $jwk_pub_json          = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array(
-                            $pubkey, null, $additional_parameters, true);
+            $jwk_pub_json          = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubkey,
+                                                                                                        null,
+                                                                                                        $additional_parameters,
+                                                                                                        true);
             $pubkey_obj            = \json_decode($jwk_pub_json);
         }
         catch (Exception $exc) {

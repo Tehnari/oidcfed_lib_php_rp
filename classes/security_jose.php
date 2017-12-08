@@ -310,18 +310,18 @@ class security_jose {
     /**
      * This function create an object of JWSFactoryInterface and signed.
      * Returned object has methods that convert to JSON.
-     * @param type $payload
+     * @param array $payload
      * @param array $protected_headers
      * @param \Jose\Object\JWK $jwk_signature_key
      * @param \Jose\Object\JWS $jws_signer
      * @param array $jws_signer_alg
      * @return \Jose\Object\JWS
      */
-    public static function create_jws_and_sign($payload,
+    public static function create_jws_and_sign(array$payload,
                                                array $protected_headers,
                                                $jwk_signature_key = null,
                                                \Jose\Object\JWS $jws_signer = null,
-                                               $jws_signer_alg = ['RS256', 'HS512']) {
+                                               array $jws_signer_alg = ['RS256', 'HS512']) {
         return self::create_jwt($payload, $protected_headers,
                                 $jwk_signature_key, $jws_signer, $jws_signer_alg);
     }
@@ -334,7 +334,7 @@ class security_jose {
         }
         // We create a Signer object with the signature algorithms we want to use
         $signer = Signer::createSigner($signer_alg_arr);
-        if ($jws_signer !== false) {
+        if ($jws_signer !== false || !\is_null($jws_signer)) {
             try {
                 // Then we sign
                 $signer->sign($jws_signer);

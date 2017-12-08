@@ -66,8 +66,101 @@ class metadata_statements {
 
     }
 
-    public static function create_MS($param) {
-
+    public static function create_MS(array $param_payload,
+                                     array $protected_headers = ["alg" => "", "kid" => ""],
+                                     \Jose\Object\JWK $jwk_signature_key = null,
+                                     \Jose\Object\JWS $jws_signer = false,
+                                     array $jws_signer_alg = ['RS256', 'HS512']) {
+        foreach ($param_payload as $pkey => $pvalue) {
+            $check00 = (\is_string($pvalue) && \mb_strlen($pvalue) > 0);
+            $check01 = (\is_array($pvalue));
+            $check02 = (\is_object($pvalue) || \is_array($pvalue));
+            switch ($pkey) {
+                case "client_id":
+                    if (!$check00) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "client_secret":
+                    if (!$check00) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "scope":
+                    if (!$check00) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "client_id_issued_at":
+                    break;
+                case "client_secret_expires_at":
+                    break;
+                case "redirect_uris":
+                    if (!$check01) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "metadata_statement_uris":
+                    if (!$check02) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "metadata_statement":
+                    if (!$check02) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "signing_keys":
+                    if (!$check02) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "signing_keys_uri":
+                    break;
+                case "signed_jwks_uri":
+                    break;
+                case "federation_usage":
+                    break;
+                case "issuer":
+                    if (!$check00) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "response_types":
+                    if (!$check01) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "response_types_supported":
+                    if (!$check01) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "subject_types_supported":
+                    if (!$check01) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                case "grant_types_supported":
+                    if (!$check01) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                case "id_token_signing_alg_values_supported":
+                    if (!$check01) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        $ms_ = \oidcfed\security_jose::create_jws_and_sign($param_payload,
+                                                           $protected_headers,
+                                                           $jwk_signature_key,
+                                                           $jws_signer,
+                                                           $jws_signer_alg);
+        echo "";
+        return $ms_;
     }
 
     public static function flattening_MS($param) {
