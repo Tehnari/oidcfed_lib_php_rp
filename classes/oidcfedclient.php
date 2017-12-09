@@ -672,6 +672,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         }
         $oidc->setClientName($clientName);
         $pubKeyArr     = $pubkey_jwt->jsonSerialize();
+        $redirect_url = $this->getRedirectURL();
         $param_payload = [
             "signing_keys"                          => ["keys" => [(object) $pubKeyArr]],
             "id_token_signing_alg_values_supported" => [
@@ -686,7 +687,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 "picture"
             ],
             "federation_usage"                      => "registration",
-            "redirect_uris"                         => $this->getRedirectURL()
+            "redirect_uris"                         => [$redirect_url]
         ];
         $well_known    = $this->wellKnown;
         if (\is_array($well_known) && \array_key_exists("metadata_statements",
