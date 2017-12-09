@@ -685,7 +685,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 "email",
                 "picture"
             ],
-            "federation_usage"                      => "registration"
+            "federation_usage"                      => "registration",
+            "redirect_uris"                         => $this->getRedirectURL()
         ];
         $well_known    = $this->wellKnown;
         if (\is_array($well_known) && \array_key_exists("metadata_statements",

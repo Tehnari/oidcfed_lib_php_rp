@@ -67,6 +67,7 @@ if ($post_in !== null && is_array($post_in) && array_key_exists("provider_url",
 if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     //TODO All Flows are rewriting know !!!
     switch ($useAuthType) {
+        /*
         case "authorization_code_static":
             $check03                  = (isset($post_in["client_id"]) && is_string($post_in["client_id"])
                     && mb_strlen($post_in["client_id"]) > 0);
@@ -221,6 +222,7 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
 //        }
 //    }
             break;
+            */
         case "dynamic":
             //Dynamic registration TEST
             $oidcFedRp              = new \oidcfed\oidcfedClient($oidc_site_url);
