@@ -334,7 +334,7 @@ class security_jose {
         }
         // We create a Signer object with the signature algorithms we want to use
         $signer = Signer::createSigner($signer_alg_arr);
-        if ($jws_signer !== false || !\is_null($jws_signer)) {
+        if ($jws_signer !== false && !\is_null($jws_signer)) {
             try {
                 // Then we sign
                 $signer->sign($jws_signer);

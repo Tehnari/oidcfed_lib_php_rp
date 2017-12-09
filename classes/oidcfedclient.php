@@ -563,6 +563,43 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $client_id     = null;
             $client_secret = null;
         }
+        //---===---
+        //Certificate generation (!)
+        //In this case is only one (just for signing (!)
+        $dn              = \oidcfed\configure::dn();
+        $ndays           = \oidcfed\configure::ndays();
+        $priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
+                                                                                      $passphrase);
+        try {
+            $certificateLocal_content = \oidcfed\security_keys::get_csr(false,
+                                                                        $dn,
+                                                                        $priv_key_woPass,
+                                                                        $ndays,
+                                                                        $path_dataDir_real);
+        }
+        catch (Exception $exc) {
+            echo $exc->getTraceAsString();
+            $certificateLocal_content = null;
+        }
+
+        try {
+            $certificateLocal_path = \oidcfed\security_keys::public_certificateLocal_path();
+        }
+        catch (Exception $exc) {
+            echo "<pre>";
+            echo $exc->getTraceAsString();
+            echo "</pre>";
+        }
+        //Key is allready without passphrase (!)
+        $csr               = \oidcfed\security_keys::get_filekey_contents($certificateLocal_path);
+        $pathLocal_content = \pathinfo($certificateLocal_path);
+        $pathPrivateKey    = \rtrim($pathLocal_content['dirname'], '/') . "/" . "privateKey.pem";
+//        $privkey_pem           = \openssl_pkey_get_private($pathPrivateKey, $passphrase);
+        $privkey_pem       = \oidcfed\configure::private_key($pathPrivateKey,
+                                                             $passphrase);
+        $pubkey_pem        = \oidcfed\configure::public_key($privkey_pem);
+        //---===---
+
         if (!(\is_string($client_secret) && \mb_strlen($client_secret)) || (!\is_string($client_id)
                 && \mb_strlen($client_id))) {
             //Dynamic registration for this client
@@ -604,32 +641,21 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo "</pre>";
             }
         }
-        //Certificate generation (!)
-        //In this case is only one (just for signing (!)
-        $dn              = \oidcfed\configure::dn();
-        $ndays           = \oidcfed\configure::ndays();
-        $priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
-                                                                                      $passphrase);
-        try {
-            $certificateLocal_content = \oidcfed\security_keys::get_csr(false,
-                                                                        $dn,
-                                                                        $priv_key_woPass,
-                                                                        $ndays,
-                                                                        $path_dataDir_real);
-        }
-        catch (Exception $exc) {
-            echo $exc->getTraceAsString();
-            $certificateLocal_content = null;
-        }
 
-        try {
-            $certificateLocal_path = \oidcfed\security_keys::public_certificateLocal_path();
-        }
-        catch (Exception $exc) {
-            echo "<pre>";
-            echo $exc->getTraceAsString();
-            echo "</pre>";
-        }
+        //TODO Here MS should be added !!!
+        $additional_parameters = [
+//            'kid' => $this->getClientID(),
+            'kid' => $client_id,
+            "use" => "sig"
+        ];
+        $privkey_jwt           = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privkey_pem,
+                                                                                                    null,
+                                                                                                    $additional_parameters,
+                                                                                                    false);
+        $pubkey_jwt            = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubkey_pem,
+                                                                                                    null,
+                                                                                                    $additional_parameters,
+                                                                                                    false);
 
         echo "";
         try {
@@ -645,32 +671,34 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             echo "</pre>";
         }
         $oidc->setClientName($clientName);
-        //TODO Here MS should be added !!!
-        $additional_parameters = [
-            'kid' => $this->getClientID(),
-            "use" => "sig"
+        $pubKeyArr     = $pubkey_jwt->jsonSerialize();
+        $param_payload = [
+            "signing_keys"                          => ["keys" => [(object) $pubKeyArr]],
+            "id_token_signing_alg_values_supported" => [
+                "RS256",
+                "RS512"
+            ],
+            "scope"                                 => ["openid", "profile"],
+            "claims"                                => [
+                "sub",
+                "name",
+                "email",
+                "picture"
+            ],
+            "federation_usage"                      => "registration"
         ];
-        //Key is allready without passphrase (!)
-        $crt                   = \oidcfed\security_keys::get_filekey_contents($certificateLocal_path);
-        $pathLocal_content     = \pathinfo($certificateLocal_path);
-        $pathPrivateKey        = \rtrim($pathLocal_content['dirname'], '/') . "/" . "privateKey.pem";
-//        $privkey_pem           = \openssl_pkey_get_private($pathPrivateKey, $passphrase);
-        $privkey_pem           = \oidcfed\configure::private_key($pathPrivateKey,
-                                                                 $passphrase);
-        $privkey_jwt           = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privkey_pem,
-                                                                                                    null,
-                                                                                                    $additional_parameters,
-                                                                                                    false);
-        $pubkey_pem            = \oidcfed\configure::public_key($privkey_pem);
-        $pubkey_jwt            = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubkey_pem,
-                                                                                                    null,
-                                                                                                    $additional_parameters,
-                                                                                                    false);
-        $ms_brut               = \oidcfed\metadata_statements::create_MS($param_payload,
-                                                                         ["alg" => "",
-                    "kid" => ""]);
-
-
+        $well_known    = $this->wellKnown;
+        if (\is_array($well_known) && \array_key_exists("metadata_statements",
+                                                        $well_known) && \count($well_known["metadata_statements"])
+                > 0) {
+            $param_payload["metadata_statements"] = $well_known["metadata_statements"];
+        }
+        $ms_brut = \oidcfed\metadata_statements::create_MS($param_payload,
+                                                           ["alg" => "RS256",
+                    "kid" => ""], $privkey_jwt);
+        if (\is_string($ms_brut) && \mb_strlen($ms_brut) > 0) {
+            $oidc->addAuthParam(["metadata_statements" => $ms_brut]);
+        }
         try {
             $oidc->authenticate();
         }

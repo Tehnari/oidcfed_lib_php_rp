@@ -87,7 +87,11 @@ class metadata_statements {
                     }
                     break;
                 case "scope":
-                    if (!$check00) {
+                    if (!$check01) {
+                        throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
+                    }
+                case "claims":
+                    if (!$check01) {
                         throw new Exception("Bad parameters for MS, please check: " . $pkey . " :: " . $pvalue);
                     }
                     break;
