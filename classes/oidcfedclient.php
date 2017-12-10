@@ -563,6 +563,15 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $client_id     = null;
             $client_secret = null;
         }
+        $check00 = (\is_array($clientDataArrVal));
+        $check01 = ($check00 && \array_key_exists("client_secret_expires_at",
+                                                  $clientDataArrVal));
+        $check02 = ($check01 && isset($clientDataArrVal["client_secret_expires_at"])
+                && \is_numeric($clientDataArrVal["client_secret_expires_at"]) && ($clientDataArrVal["client_secret_expires_at"] <= (time()
+                + 120)));
+        if ($check02) {
+            $client_secret = null;
+        }
         //---===---
         //Certificate generation (!)
         //In this case is only one (just for signing (!)
@@ -714,36 +723,38 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             echo "</pre>";
         }
         $oidc->setClientName($clientName);
-//        $pubKeyArr     = $pubkey_jwt->jsonSerialize();
-//        $redirect_url  = $this->getRedirectURL();
-//        $param_payload = [
-//            "signing_keys"                          => ["keys" => [(object) $pubKeyArr]],
-//            "id_token_signing_alg_values_supported" => [
-//                "RS256",
-//                "RS512"
-//            ],
-//            "scope"                                 => ["openid", "profile"],
-//            "claims"                                => [
-//                "sub",
-//                "name",
-//                "email",
-//                "picture"
-//            ],
-//            "federation_usage"                      => "registration",
-//            "redirect_uris"                         => [$redirect_url]
-//        ];
-//        $well_known    = $this->wellKnown;
-//        if (\is_array($well_known) && \array_key_exists("metadata_statements",
-//                                                        $well_known) && \count($well_known["metadata_statements"])
-//                > 0) {
-//            $param_payload["metadata_statements"] = $well_known["metadata_statements"];
-//        }
-//        $ms_brut = \oidcfed\metadata_statements::create_MS($param_payload,
-//                                                           ["alg" => "RS256",
-//                    "kid" => ""], $privkey_jwt);
-//        if (\is_string($ms_brut) && \mb_strlen($ms_brut) > 0) {
-//            $oidc->addAuthParam(["metadata_statements" => $ms_brut]);
-//        }
+        /*
+          $pubKeyArr     = $pubkey_jwt->jsonSerialize();
+          $redirect_url  = $this->getRedirectURL();
+          $param_payload = [
+          "signing_keys"                          => ["keys" => [(object) $pubKeyArr]],
+          "id_token_signing_alg_values_supported" => [
+          "RS256",
+          "RS512"
+          ],
+          "scope"                                 => ["openid", "profile"],
+          "claims"                                => [
+          "sub",
+          "name",
+          "email",
+          "picture"
+          ],
+          "federation_usage"                      => "registration",
+          "redirect_uris"                         => [$redirect_url]
+          ];
+          $well_known    = $this->wellKnown;
+          if (\is_array($well_known) && \array_key_exists("metadata_statements",
+          $well_known) && \count($well_known["metadata_statements"])
+          > 0) {
+          $param_payload["metadata_statements"] = $well_known["metadata_statements"];
+          }
+          $ms_brut = \oidcfed\metadata_statements::create_MS($param_payload,
+          ["alg" => "RS256",
+          "kid" => ""], $privkey_jwt);
+          if (\is_string($ms_brut) && \mb_strlen($ms_brut) > 0) {
+          $oidc->addAuthParam(["metadata_statements" => $ms_brut]);
+          }
+         */
         try {
             $oidc->authenticate();
         }
@@ -788,10 +799,10 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
 
         // Throw some errors if we encounter them
         if ($json_response === false) {
-            throw new OpenIDConnectClientException("Error registering: JSON response received from the server was invalid.");
+            throw new Exception("Error registering: JSON response received from the server was invalid.");
         }
         elseif (isset($json_response->{'error_description'})) {
-            throw new OpenIDConnectClientException($json_response->{'error_description'});
+            throw new Exception($json_response->{'error_description'});
         }
 
         $this->setClientID($json_response->{'client_id'});
@@ -802,7 +813,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $this->setClientSecret($json_response->{'client_secret'});
         }
         else {
-            throw new OpenIDConnectClientException("Error registering:
+            throw new Exception("Error registering:
                                                     Please contact the OpenID Connect provider and obtain a Client ID and Secret directly from them");
         }
 
@@ -813,12 +824,17 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $clientName        = $json_response->{'client_name'};
             $provider_url      = $this->getProviderURL();
             $path_dataDir_real = \oidcfed\configure::path_dataDir_real();
-            $json_response_arr = \json_decode($json_response, true);
-            $dataToSave        = ["provider_url"  => $provider_url, "client_id"     => $client_id,
+            if (\is_string($json_response)) {
+                $json_response_arr = \json_decode($json_response, true);
+            }
+            else {
+                $json_response_arr = (array) $json_response;
+            }
+            $dataToSave     = ["provider_url"  => $provider_url, "client_id"     => $client_id,
                 "client_secret" => $client_secret, "client_name"   => $clientName,
                 "iat"           => \time(), "exp"           => (\time() + 3600)];
-            $dataToSave_fin    = \array_merge_recursive($dataToSave,
-                                                        $json_response_arr);
+//            $dataToSave_fin = \array_merge_recursive($dataToSave,$json_response_arr);
+            $dataToSave_fin = \array_merge($dataToSave, $json_response_arr);
 
             try {
                 \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
@@ -1065,7 +1081,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             throw new Exception("dirPath doesn't exists or not readable");
         }
         if (\is_readable($filename)) {
-            $file_contents = \file_get_contents($filename);
+            $file_path_real = \realpath($filename);
+            $file_contents  = \file_get_contents($file_path_real);
         }
         else {
             throw new Exception("File is empty!");

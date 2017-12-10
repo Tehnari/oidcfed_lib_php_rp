@@ -47,7 +47,9 @@ $oidc_site_url = null;
 if (is_array($_POST) && count($_POST) > 0) {
     $post_in = filter_input_array(INPUT_POST);
 }
-
+if (is_array($_REQUEST) && count($_REQUEST) > 0) {
+    $request_in = $_REQUEST;
+}
 
 if ($post_in !== null && is_array($post_in) && array_key_exists("useAuthType",
                                                                 $post_in)) {
@@ -63,6 +65,9 @@ else {
 if ($post_in !== null && is_array($post_in) && array_key_exists("provider_url",
                                                                 $post_in)) {
     $oidc_site_url = $post_in["provider_url"];
+} else if($request_in !== null && is_array($request_in) && array_key_exists("iss",
+                                                                $request_in)){
+   $oidc_site_url = $request_in["iss"];
 }
 if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     //TODO All Flows are rewriting know !!!
