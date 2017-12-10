@@ -600,8 +600,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         $pubkey_pem        = \oidcfed\configure::public_key($privkey_pem);
         //---===---
 
-        if (!(\is_string($client_secret) && \mb_strlen($client_secret)) || (!\is_string($client_id)
-                && \mb_strlen($client_id))) {
+        if (!(\is_string($client_secret) && \mb_strlen($client_secret) > 0) || !(\is_string($client_id)
+                && \mb_strlen($client_id) > 0)) {
             //Dynamic registration for this client
 //            $oidc_dyn = new \oidcfed\oidcfedClient($provider_url);
             try {
@@ -614,31 +614,74 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo $exc->getTraceAsString();
                 echo "</pre>";
             }
-            try {
-                $this->register();
-            }
-            catch (Exception $exc) {
-                echo "<pre>";
-                echo $exc->getTraceAsString();
-                echo "</pre>";
-            }
+            $this->setClientName($clientName);
 
-//            $client_id = $oidc_dyn->getClientID();
-//            $client_secret = $oidc_dyn->getClientSecret();
-            $client_id     = $this->getClientID();
-            $client_secret = $this->getClientSecret();
 
-            $dataToSave = ["provider_url"  => $provider_url, "client_id"     => $client_id,
-                "client_secret" => $client_secret, "client_name"   => $clientName];
+            //TODO Here MS should be added !!!
+            $additional_parameters = [
+//            'kid' => $this->getClientID(),
+//                'kid' => $client_id,
+                "use" => "sig"
+            ];
+            $privkey_jwt           = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($privkey_pem,
+                                                                                                        null,
+                                                                                                        $additional_parameters,
+                                                                                                        false);
+            $pubkey_jwt            = \oidcfed\security_jose::generate_jwk_from_key_with_parameter_array($pubkey_pem,
+                                                                                                        null,
+                                                                                                        $additional_parameters,
+                                                                                                        false);
 
-            try {
-                \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
-                                                                  $dataToSave);
+            $pubKeyArr     = $pubkey_jwt->jsonSerialize();
+            $param_payload = [
+                "signing_keys"     => ["keys" => [(object) $pubKeyArr]],
+                "federation_usage" => "registration"
+            ];
+
+            $ms_brut0 = \oidcfed\metadata_statements::create_MS($param_payload,
+                                                                ["alg" => "RS256",
+                        "kid" => ""], $privkey_jwt);
+            if (\is_string($ms_brut0) && \mb_strlen($ms_brut0) > 0) {
+                $this->addAuthParam(["metadata_statements" => $ms_brut0]);
             }
-            catch (Exception $exc) {
-                echo "<pre>";
-                echo $exc->getTraceAsString();
-                echo "</pre>";
+            $well_known = $this->wellKnown;
+            if (\is_array($well_known) && \array_key_exists("metadata_statements",
+                                                            $well_known)) {
+                try {
+                    $this->registerOIDCfed_OP();
+                }
+                catch (Exception $exc) {
+                    echo "<pre>";
+                    echo $exc->getTraceAsString();
+                    echo "</pre>";
+                }
+                $client_id     = $this->getClientID();
+                $client_secret = $this->getClientSecret();
+            }
+            else {
+                try {
+                    $this->register();
+                }
+                catch (Exception $exc) {
+                    echo "<pre>";
+                    echo $exc->getTraceAsString();
+                    echo "</pre>";
+                }
+                $client_id     = $this->getClientID();
+                $client_secret = $this->getClientSecret();
+                $dataToSave    = ["provider_url"  => $provider_url, "client_id"     => $client_id,
+                    "client_secret" => $client_secret, "client_name"   => $clientName,
+                    "iat"           => \time(), "exp"           => (\time() + 3600)];
+
+                try {
+                    \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
+                                                                      $dataToSave);
+                }
+                catch (Exception $exc) {
+                    echo "<pre>";
+                    echo $exc->getTraceAsString();
+                    echo "</pre>";
+                }
             }
         }
 
@@ -671,36 +714,36 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             echo "</pre>";
         }
         $oidc->setClientName($clientName);
-        $pubKeyArr     = $pubkey_jwt->jsonSerialize();
-        $redirect_url = $this->getRedirectURL();
-        $param_payload = [
-            "signing_keys"                          => ["keys" => [(object) $pubKeyArr]],
-            "id_token_signing_alg_values_supported" => [
-                "RS256",
-                "RS512"
-            ],
-            "scope"                                 => ["openid", "profile"],
-            "claims"                                => [
-                "sub",
-                "name",
-                "email",
-                "picture"
-            ],
-            "federation_usage"                      => "registration",
-            "redirect_uris"                         => [$redirect_url]
-        ];
-        $well_known    = $this->wellKnown;
-        if (\is_array($well_known) && \array_key_exists("metadata_statements",
-                                                        $well_known) && \count($well_known["metadata_statements"])
-                > 0) {
-            $param_payload["metadata_statements"] = $well_known["metadata_statements"];
-        }
-        $ms_brut = \oidcfed\metadata_statements::create_MS($param_payload,
-                                                           ["alg" => "RS256",
-                    "kid" => ""], $privkey_jwt);
-        if (\is_string($ms_brut) && \mb_strlen($ms_brut) > 0) {
-            $oidc->addAuthParam(["metadata_statements" => $ms_brut]);
-        }
+//        $pubKeyArr     = $pubkey_jwt->jsonSerialize();
+//        $redirect_url  = $this->getRedirectURL();
+//        $param_payload = [
+//            "signing_keys"                          => ["keys" => [(object) $pubKeyArr]],
+//            "id_token_signing_alg_values_supported" => [
+//                "RS256",
+//                "RS512"
+//            ],
+//            "scope"                                 => ["openid", "profile"],
+//            "claims"                                => [
+//                "sub",
+//                "name",
+//                "email",
+//                "picture"
+//            ],
+//            "federation_usage"                      => "registration",
+//            "redirect_uris"                         => [$redirect_url]
+//        ];
+//        $well_known    = $this->wellKnown;
+//        if (\is_array($well_known) && \array_key_exists("metadata_statements",
+//                                                        $well_known) && \count($well_known["metadata_statements"])
+//                > 0) {
+//            $param_payload["metadata_statements"] = $well_known["metadata_statements"];
+//        }
+//        $ms_brut = \oidcfed\metadata_statements::create_MS($param_payload,
+//                                                           ["alg" => "RS256",
+//                    "kid" => ""], $privkey_jwt);
+//        if (\is_string($ms_brut) && \mb_strlen($ms_brut) > 0) {
+//            $oidc->addAuthParam(["metadata_statements" => $ms_brut]);
+//        }
         try {
             $oidc->authenticate();
         }
@@ -722,6 +765,71 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             echo "</pre>";
         }
         echo " === == ";
+    }
+
+    /**
+     * Dynamic registration
+     *
+     * @throws OpenIDConnectClientException
+     */
+    public function registerOIDCfed_OP() {
+
+        $registration_endpoint = $this->getProviderConfigValue('registration_endpoint');
+
+        $send_object = (object) array(
+                    'redirect_uris' => array($this->getRedirectURL()),
+                    'client_name'   => $this->getClientName()
+        );
+
+        $response = $this->fetchURL($registration_endpoint,
+                                    json_encode($send_object));
+
+        $json_response = json_decode($response);
+
+        // Throw some errors if we encounter them
+        if ($json_response === false) {
+            throw new OpenIDConnectClientException("Error registering: JSON response received from the server was invalid.");
+        }
+        elseif (isset($json_response->{'error_description'})) {
+            throw new OpenIDConnectClientException($json_response->{'error_description'});
+        }
+
+        $this->setClientID($json_response->{'client_id'});
+
+        // The OpenID Connect Dynamic registration protocol makes the client secret optional
+        // and provides a registration access token and URI endpoint if it is not present
+        if (isset($json_response->{'client_secret'})) {
+            $this->setClientSecret($json_response->{'client_secret'});
+        }
+        else {
+            throw new OpenIDConnectClientException("Error registering:
+                                                    Please contact the OpenID Connect provider and obtain a Client ID and Secret directly from them");
+        }
+
+        if (isset($json_response->{'client_name'})) {
+            //Save registration data
+            $client_id         = $this->getClientID();
+            $client_secret     = $this->getClientSecret();
+            $clientName        = $json_response->{'client_name'};
+            $provider_url      = $this->getProviderURL();
+            $path_dataDir_real = \oidcfed\configure::path_dataDir_real();
+            $json_response_arr = \json_decode($json_response, true);
+            $dataToSave        = ["provider_url"  => $provider_url, "client_id"     => $client_id,
+                "client_secret" => $client_secret, "client_name"   => $clientName,
+                "iat"           => \time(), "exp"           => (\time() + 3600)];
+            $dataToSave_fin    = \array_merge_recursive($dataToSave,
+                                                        $json_response_arr);
+
+            try {
+                \oidcfed\oidcfedClient::save_clientName_id_secret($path_dataDir_real,
+                                                                  $dataToSave_fin);
+            }
+            catch (Exception $exc) {
+                echo "<pre>";
+                echo $exc->getTraceAsString();
+                echo "</pre>";
+            }
+        }
     }
 
     /**
