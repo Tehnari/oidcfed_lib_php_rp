@@ -807,9 +807,9 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         );
 
         $response = $this->fetchURL($registration_endpoint,
-                                    json_encode($send_object));
+                                    \json_encode($send_object));
 
-        $json_response = json_decode($response);
+        $json_response = \json_decode($response);
 
         // Throw some errors if we encounter them
         if ($json_response === false) {
