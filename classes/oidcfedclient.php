@@ -655,6 +655,12 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             }
             $well_known = $this->wellKnown;
             if (\is_array($well_known) && \array_key_exists("metadata_statements",
+                                                            $well_known) && \count($well_known["metadata_statements"])
+                    > 0) {
+                $param_payload["metadata_statements"] = $well_known["metadata_statements"];
+            }
+
+            if (\is_array($well_known) && \array_key_exists("metadata_statements",
                                                             $well_known)) {
                 try {
                     $this->registerOIDCfed_OP();
