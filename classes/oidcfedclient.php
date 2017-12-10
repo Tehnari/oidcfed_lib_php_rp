@@ -730,8 +730,13 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         }
         $oidc->setClientName($clientName);
         if (isset($_REQUEST["code"])) {
-            $oidc->addAuthParam(["issuer" => $provider_url]);
+            $req_code = $_REQUEST["code"];
+            $oidc->addAuthParam(["issuer" => $provider_url, "at_hash" => $req_code]);
         }
+        if (\is_array($clientDataArrVal) && \count($clientDataArrVal) > 0) {
+            $oidc->addAuthParam(["nbf" => $clientDataArrVal["exp"]]);
+        }
+
         /*
           $pubKeyArr     = $pubkey_jwt->jsonSerialize();
           $redirect_url  = $this->getRedirectURL();
