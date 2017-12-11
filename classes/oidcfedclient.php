@@ -768,16 +768,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $req_code = $_REQUEST["code"];
 //            $oidc->addAuthParam(["issuer" => $provider_url, "at_hash" => $req_code]);
             $oidc->addAuthParam(["issuer" => $provider_url]);
-//            try {
-//                $oidc->authenticateOIDCfed();
-//            }
-//            catch (Exception $exc) {
-//                echo "<pre>";
-//                echo $exc->getTraceAsString();
-//                echo "</pre>";
-//            }
         }
-//        else {
             try {
                 $oidc->authenticate();
             }
@@ -786,7 +777,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo $exc->getTraceAsString();
                 echo "</pre>";
             }
-//        }
         try {
 //        $name = $oidc->requestUserInfo('diana');
             $name = $oidc->requestUserInfo();
@@ -802,126 +792,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         echo " === == ";
     }
 
-    // Clonned some functions from jumbojett/openid-connect-php
-    // Because some data wasn't correctly provided/passed to this library
-    /**
-     * @return bool
-     * @throws OpenIDConnectClientException
-     */
-    public function authenticateOIDCfed() {
-
-        // Do a preemptive check to see if the provider has thrown an error from a previous redirect
-        if (isset($_REQUEST['error'])) {
-            $desc = isset($_REQUEST['error_description']) ? " Description: " . $_REQUEST['error_description']
-                        : "";
-            throw new Exception("Error: " . $_REQUEST['error'] . $desc);
-        }
-
-        // If we have an authorization code then proceed to request a token
-        if (isset($_REQUEST["code"])) {
-
-            $code       = $_REQUEST["code"];
-            $token_json = $this->requestTokens($code);
-
-            // Throw an error if the server returns one
-            if (isset($token_json->error)) {
-                if (isset($token_json->error_description)) {
-                    throw new Exception($token_json->error_description);
-                }
-                throw new Exception('Got response: ' . $token_json->error);
-            }
-
-            // Do an OpenID Connect session check
-            if ($_REQUEST['state'] != $this->getState()) {
-                throw new Exception("Unable to determine state");
-            }
-
-            // Cleanup state
-            $this->unsetState();
-
-            if (!property_exists($token_json, 'id_token')) {
-                throw new Exception("User did not authorize openid scope.");
-            }
-
-            $claims = $this->decodeJWT($token_json->id_token, 1);
-
-            // Verify the signature
-            if ($this->canVerifySignatures()) {
-                if (!$this->getProviderConfigValue('jwks_uri')) {
-                    throw new Exception("Unable to verify signature due to no jwks_uri being defined");
-                }
-                if (!$this->verifyJWTsignature($token_json->id_token)) {
-                    throw new Exception("Unable to verify signature");
-                }
-            }
-            else {
-                user_error("Warning: JWT signature verification unavailable.");
-            }
-
-            // If this is a valid claim
-            if ($this->verifyJWTclaims($claims, $token_json->access_token)) {
-
-                // Clean up the session a little
-                $this->unsetNonce();
-
-                // Save the full response
-                $this->tokenResponse = $token_json;
-
-                // Save the id token
-                $this->idToken = $token_json->id_token;
-
-                // Save the access token
-                $this->accessToken = $token_json->access_token;
-
-                // Save the refresh token, if we got one
-                if (isset($token_json->refresh_token)) {
-                    $this->refreshToken = $token_json->refresh_token;
-                }
-
-                // Success!
-                return true;
-            }
-            else {
-                throw new OpenIDConnectClientException("Unable to verify JWT claims");
-            }
-        }
-        else {
-
-            $this->requestAuthorization();
-            return false;
-        }
-    }
-
-    /**
-     * @param object $claims
-     * @return bool
-     */
-    private function verifyJWTclaims($claims, $accessToken = null) {
-        if (isset($claims->at_hash) && isset($accessToken)) {
-            if (isset($this->getAccessTokenHeader()->alg) && $this->getAccessTokenHeader()->alg != 'none') {
-                $bit = substr($this->getAccessTokenHeader()->alg, 2, 3);
-            }
-            else {
-                // TODO: Error case. throw exception???
-                $bit = '256';
-            }
-            $len             = ((int) $bit) / 16;
-            $expecte_at_hash = $this->urlEncode(substr(hash('sha' . $bit,
-                                                            $accessToken, true),
-                                                            0, $len));
-        }
-        $nonce    = $this->getNonce();
-        $issuer   = $this->getProviderURL();
-        $check00  = ($claims->iss == $this->getProviderURL());
-        $check01a = ($claims->aud == $this->clientID);
-        $check01b = (in_array($this->clientID, $claims->aud));
-        $check01  = ($check01a || $check01b);
-        $check02  = ($claims->nonce == $this->getNonce());
-        $check03  = (!isset($claims->exp) || $claims->exp >= time());
-        $check04  = (!isset($claims->nbf) || $claims->nbf <= time());
-        $check05  = (!isset($claims->at_hash) || $claims->at_hash == $expecte_at_hash );
-        return ($check00 && $check01 && $check02 && $check03 && $check04 && $check05 );
-    }
 
     /**
      * Dynamic registration

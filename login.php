@@ -233,9 +233,6 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
             $oidcFedRp              = new \oidcfed\oidcfedClient($oidc_site_url);
             $verifyCert             = false;
             $oidcFedRp->setVerifyCert($verifyCert);
-//            $oidcFedRp->setVerifyHost($verifyCert);
-//            $oidcFedRp->setVerifyPeer($verifyCert);
-//            $webfinger_data         = $oidcFedRp->get_webfinger_data($oidc_site_url);
             $webfinger_data = rtrim(rtrim($oidcFedRp->get_webfinger_data($oidc_site_url)),'/').'/';
             $oidcFedRp->setProviderURL($webfinger_data);
             $oidcFedRp->wellKnown   = \oidcfed\oidcfedClient::get_well_known_openid_config_data($webfinger_data,
@@ -245,49 +242,6 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
             $oidcFedRp->dynamic_registration_and_auth_code($verifyCert,
                                                            $private_key,
                                                            $passphrase);
-//            if ($check05)
-//                {
-//                try
-//                    {
-//                    $oidcFedRp->wellKnown = \oidcfed\oidcfedClient::get_well_known_openid_config_data($oidc_site_url,
-//                                                                                                      null,
-//                                                                                                      null,
-//                                                                                                      false);
-////            $responseTypes = $oidcFedRp->VerifySignatureAndInterpretProviderInfo($oidc_site_url);
-//                    }
-//                catch (Exception $exc)
-//                    {
-//                    echo "<pre>";
-//                    echo $exc->getTraceAsString();
-//                    echo "</pre>";
-//                    }
-////        echo "<pre>";
-////        var_dump($oidcFedRp);
-////        echo "</pre>";
-//                if (is_array($oidcFedRp->wellKnown))
-//                    {
-//                    $jwks = $oidcFedRp->get_jwks_from_wellKnown();
-////            echo "";
-//                    }
-//                else
-//                    {
-//                    $jwks = false;
-//                    }
-//                if (is_array($oidcFedRp->wellKnown))
-//                    {
-//                    foreach ($oidcFedRp->wellKnown['metadata_statements'] as
-//                                $ms_key => $ms_value)
-//                        {
-////                        $result_MS_Verify = \oidcfed\metadata_statements::verifyMetadataStatement($ms_value,$ms_key,$jwks);
-//                        $result_MS_Verify = \oidcfed\metadata_statements::unpack_MS($ms_value,
-//                                                                                    null,
-//                                                                                    $jwks,
-//                                                                                    false,
-//                                                                                    true);
-//                        echo "";
-//                        }
-//                    }
-//                }
             break;
         default:
             break;
@@ -296,12 +250,3 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
     $webfinger_data = $oidcFedRp->get_webfinger_data();
     echo "";
 }
-
-
-
-//$oidc = new OpenIDConnectClient('https://rp.certification.openid.net:8080',
-//                                $client_id,
-//                                'ClientSecretHere');
-//$oidc->setCertPath('/path/to/my.cert');
-//$oidc->authenticate();
-//$name = $oidc->requestUserInfo('given_name');
