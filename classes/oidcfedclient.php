@@ -623,8 +623,15 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo "</pre>";
             }
             $this->setClientName($clientName);
+            $well_known = $this->wellKnown;
             // ---===---
             //TODO Here MS CHECK/Verify should be added !!!
+
+            if (\is_array($well_known) && \array_key_exists("metadata_statements",
+                                                            $well_known) && \count($well_known["metadata_statements"])
+                    > 0) {
+                
+            }
             // ---===---
             $additional_parameters = [
 //            'kid' => $this->getClientID(),
@@ -650,7 +657,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             if (\is_string($ms_brut0) && \mb_strlen($ms_brut0) > 0) {
                 $this->addAuthParam(["metadata_statements" => $ms_brut0]);
             }
-            $well_known = $this->wellKnown;
             if (\is_array($well_known) && \array_key_exists("metadata_statements",
                                                             $well_known) && \count($well_known["metadata_statements"])
                     > 0) {
@@ -771,14 +777,14 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
 //            $oidc->addAuthParam(["issuer" => $provider_url, "at_hash" => $req_code]);
             $oidc->addAuthParam(["issuer" => $provider_url]);
         }
-            try {
-                $oidc->authenticate();
-            }
-            catch (Exception $exc) {
-                echo "<pre>";
-                echo $exc->getTraceAsString();
-                echo "</pre>";
-            }
+        try {
+            $oidc->authenticate();
+        }
+        catch (Exception $exc) {
+            echo "<pre>";
+            echo $exc->getTraceAsString();
+            echo "</pre>";
+        }
         try {
 //        $name = $oidc->requestUserInfo('diana');
             $name = $oidc->requestUserInfo();
@@ -793,7 +799,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         }
         echo " === == ";
     }
-
 
     /**
      * Dynamic registration
