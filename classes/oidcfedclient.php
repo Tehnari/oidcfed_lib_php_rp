@@ -545,8 +545,9 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $clientData       = \oidcfed\oidcfedClient::get_clientName_id_secret($path_dataDir_real,
                                                                                  $clientName,
                                                                                  $provider_url);
-            reset($clientData);
+            \reset($clientData);
             $clientDataArrVal = \current($clientData);
+//            $clientDataArrVal = $clientData;
         }
         catch (Exception $exc) {
 //    echo $exc->getTraceAsString();
@@ -573,8 +574,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $client_secret = null;
         }
         //---===---
-        //Certificate generation (!)
-        //In this case is only one (just for signing (!)
+        //Certificate generation (!) In this case is only one (just for signing (!)
         $dn              = \oidcfed\configure::dn();
         $ndays           = \oidcfed\configure::ndays();
         $priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
@@ -608,7 +608,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                                                              $passphrase);
         $pubkey_pem        = \oidcfed\configure::public_key($privkey_pem);
         //---===---
-
         if (!(\is_string($client_secret) && \mb_strlen($client_secret) > 0) || !(\is_string($client_id)
                 && \mb_strlen($client_id) > 0)) {
             //Dynamic registration for this client
@@ -624,8 +623,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo "</pre>";
             }
             $this->setClientName($clientName);
-
-
             //TODO Here MS should be added !!!
             $additional_parameters = [
 //            'kid' => $this->getClientID(),
@@ -640,15 +637,13 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                                                                                                         null,
                                                                                                         $additional_parameters,
                                                                                                         false);
-
-            $pubKeyArr     = $pubkey_jwt->jsonSerialize();
-            $param_payload = [
+            $pubKeyArr             = $pubkey_jwt->jsonSerialize();
+            $param_payload         = [
                 "signing_keys"     => ["keys" => [(object) $pubKeyArr]],
                 "federation_usage" => "registration"
             ];
-
-            $ms_brut0 = \oidcfed\metadata_statements::create_MS($param_payload,
-                                                                ["alg" => "RS256",
+            $ms_brut0              = \oidcfed\metadata_statements::create_MS($param_payload,
+                                                                             ["alg" => "RS256",
                         "kid" => ""], $privkey_jwt);
             if (\is_string($ms_brut0) && \mb_strlen($ms_brut0) > 0) {
                 $this->addAuthParam(["metadata_statements" => $ms_brut0]);
@@ -659,7 +654,6 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                     > 0) {
                 $param_payload["metadata_statements"] = $well_known["metadata_statements"];
             }
-
             if (\is_array($well_known) && \array_key_exists("metadata_statements",
                                                             $well_known)) {
                 try {
@@ -772,17 +766,18 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
          */
         if (isset($_REQUEST["code"])) {
             $req_code = $_REQUEST["code"];
-            $oidc->addAuthParam(["issuer" => $provider_url, "at_hash" => $req_code]);
-            try {
-                $oidc->authenticateOIDCfed();
-            }
-            catch (Exception $exc) {
-                echo "<pre>";
-                echo $exc->getTraceAsString();
-                echo "</pre>";
-            }
+//            $oidc->addAuthParam(["issuer" => $provider_url, "at_hash" => $req_code]);
+            $oidc->addAuthParam(["issuer" => $provider_url]);
+//            try {
+//                $oidc->authenticateOIDCfed();
+//            }
+//            catch (Exception $exc) {
+//                echo "<pre>";
+//                echo $exc->getTraceAsString();
+//                echo "</pre>";
+//            }
         }
-        else {
+//        else {
             try {
                 $oidc->authenticate();
             }
@@ -791,7 +786,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo $exc->getTraceAsString();
                 echo "</pre>";
             }
-        }
+//        }
         try {
 //        $name = $oidc->requestUserInfo('diana');
             $name = $oidc->requestUserInfo();
@@ -1245,9 +1240,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         else if ($json_obj) {
             return $json_obj;
         }
-        else {
-            throw new Exception("Bad json content in the file.");
-        }
+        throw new Exception("Bad json content in the file.");
     }
 
     public static function search_providerUrl_data_for_clientName(
@@ -1255,10 +1248,11 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         if (!\is_string($jsonStr)) {
             throw new Exception("Not a string provided!");
         }
-        else if ((array) $json_arr["provider_url"]) {
-            return (array) $json_arr;
-        }
         $json_arr = \json_decode($jsonStr, TRUE);
+        if (\is_array($json_arr) && \array_key_exists("provider_url", $json_arr)
+                && isset($json_arr["provider_url"])) {
+            return $json_arr;
+        }
         if (!\is_array($json_arr)) {
             throw new Exception("Json structure not found!");
         }
@@ -1267,7 +1261,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 continue;
             }
             if (\array_key_exists("provider_url", $javal) && isset($javal["provider_url"])
-                    && $javal["provider_url"] === $provider_url
+                    && rtrim(rtrim($javal["provider_url"]), '/') === rtrim(rtrim($provider_url),
+                                                                                 '/')
             ) {
                 return [$jakey => $javal];
             }

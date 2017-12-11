@@ -235,7 +235,8 @@ if (is_string($oidc_site_url) && mb_strlen($oidc_site_url) > 0) {
             $oidcFedRp->setVerifyCert($verifyCert);
 //            $oidcFedRp->setVerifyHost($verifyCert);
 //            $oidcFedRp->setVerifyPeer($verifyCert);
-            $webfinger_data         = $oidcFedRp->get_webfinger_data($oidc_site_url);
+//            $webfinger_data         = $oidcFedRp->get_webfinger_data($oidc_site_url);
+            $webfinger_data = rtrim(rtrim($oidcFedRp->get_webfinger_data($oidc_site_url)),'/').'/';
             $oidcFedRp->setProviderURL($webfinger_data);
             $oidcFedRp->wellKnown   = \oidcfed\oidcfedClient::get_well_known_openid_config_data($webfinger_data,
                                                                                                 null,
