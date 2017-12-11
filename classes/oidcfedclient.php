@@ -623,7 +623,9 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 echo "</pre>";
             }
             $this->setClientName($clientName);
-            //TODO Here MS should be added !!!
+            // ---===---
+            //TODO Here MS CHECK/Verify should be added !!!
+            // ---===---
             $additional_parameters = [
 //            'kid' => $this->getClientID(),
 //                'kid' => $client_id,
