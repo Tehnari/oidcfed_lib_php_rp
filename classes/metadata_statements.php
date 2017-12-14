@@ -468,6 +468,17 @@ class metadata_statements {
         }
     }
 
+    /**
+     * Function can help with unpacking MS.
+     * @param type $jwt_string
+     * @param type $signing_keys
+     * @param type $signing_keys_bundle
+     * @param type $claim_iss
+     * @param type $cert_verify
+     * @return type
+     * @throws Exception
+     * @deprecated since version v0.0.2
+     */
     public static function unpack_MS($jwt_string, $signing_keys,
                                      $signing_keys_bundle = [],
                                      $claim_iss = false, $cert_verify = true) {
@@ -635,6 +646,42 @@ class metadata_statements {
         if ($verify_sign_result !== false) {
             return $claims;
         }
+    }
+
+    public static function unpack($jwt_string, $signing_keys,
+                                  $cert_verify = false) {
+        //By default allowing connecting to unsecure connection.
+        //Because of self signed certificates/keys...
+        $check00 = (\is_string($jwt_string) && \mb_strlen($jwt_string) > 0);
+        if (!$check00) {
+            throw new Exception("Bad parameters recieved. Check JWT string.");
+        }
+        $ms_str    = false;
+        $ms_arr    = [];
+        $claim_kid = false;
+        $claims    = \oidcfed\security_jose::get_jwt_claims_from_string($jwt_string);
+        $check01   = (\is_array($claims) === true && \count($claims) > 0);
+        $check02   = ($check01 && \array_key_exists('metadata_statements',
+                                                    $claims) === true && \is_array($claims["metadata_statements"])
+                && \count($claims["metadata_statements"]) > 0);
+        $check03   = ($check01 && \array_key_exists('metadata_statements_uris',
+                                                    $claims) === true && \is_array($claims["metadata_statements_uris"])
+                && \count($claims["metadata_statements_uris"]) > 0);
+        $check04   = ($check01 && \array_key_exists('iss', $claims) === true && \is_string($claims["iss"])
+                && \mb_strlen($claims["iss"]));
+        if ($check02) {
+            // ==> Here should be some processing <==
+        }
+        else if ($check03) {
+            // ==> Here should be some processing <==
+        }
+        else if ($check04) {
+            // ==> Here  MS should be verified <==
+        }
+
+        // ==> Here  MS should be verified <==
+        
+        return false;
     }
 
     public static function verify_signature_keys_from_MS($ms = false,

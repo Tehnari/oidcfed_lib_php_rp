@@ -626,11 +626,24 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $well_known = $this->wellKnown;
             // ---===---
             //TODO Here MS CHECK/Verify should be added !!!
-
             if (\is_array($well_known) && \array_key_exists("metadata_statements",
                                                             $well_known) && \count($well_known["metadata_statements"])
                     > 0) {
-                
+
+                $ms_arr      = [];
+                $ms_compound = [];
+                foreach ($well_known['metadata_statements'] as $ms_key =>
+                            $ms_value) {
+                    try {
+                        $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value,
+                                                                             null);
+                    }
+                    catch (Exception $exc) {
+                        echo "<pre>";
+                        echo $exc->getTraceAsString();
+                        echo "</pre>";
+                    }
+                }
             }
             // ---===---
             $additional_parameters = [
