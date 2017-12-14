@@ -680,8 +680,31 @@ class metadata_statements {
         }
 
         // ==> Here  MS should be verified <==
-        
+
         return false;
+    }
+
+    public static function get_signing_keys_as_jwks_from_ms($jwt_string,
+                                                            $cert_verify = false) {
+        $check00 = (\is_string($jwt_string) && \mb_strlen($jwt_string) > 0);
+        if (!$check00) {
+            throw new Exception("Bad parameters recieved. Check JWT string.");
+        }
+        $claims  = \oidcfed\security_jose::get_jwt_claims_from_string($jwt_string);
+        $check01 = (\is_array($claims) === true && \count($claims) > 0);
+        $check02 = ($check01 && \array_key_exists('signing_keys', $claims) === true
+                && \is_array($claims["signing_keys"]) && \count($claims["signing_keys"])
+                > 0);
+        $check03 = ($check01 && \array_key_exists('signing_keys_uris', $claims) === true
+                && \is_array($claims["signing_keys_uris"]) && \count($claims["signing_keys_uris"])
+                > 0);
+        if ($check02) {
+            // ==> Here  MS should be verified <==
+        }
+        else if ($check03) {
+            // ==> Here  MS should be verified <==
+        }
+        throw new Exception("Signing keys not found!");
     }
 
     public static function verify_signature_keys_from_MS($ms = false,
