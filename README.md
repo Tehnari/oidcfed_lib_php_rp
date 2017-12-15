@@ -6,15 +6,15 @@
 
 This project is an attempt to create Relying Party (RP) using the OIDCFED (OpenID Connect Federation)
  specification, developed as a PHP language / platform library.
-It is in development and is currently not recommended for use in production
-OR in other words do if you know what yu do.
+It is in development and is currently not recommended for use in production.
+But you can try this project (source code) and send patch here, or change it for your needs.
 
 --- ROMANIAN ---
 
 Acest proiect reprezintă o tentativă de creare a Relying Party (RP) cu utilizarea specificației
 OIDCFED (OpenID Connect Federation), elaborată ca librărie pentru limbajul/platforma PHP.
-Este în elaborare și la moment nu este recomandat pentru a fi utilizat în producție
-Sau cu alte cuvinte utilizați numai dacă cunoașteți ce faceți.
+Este în elaborare și la moment nu este recomandat pentru a fi utilizat în producție.
+Dar puteți să încercați acest proiect (cod sursă) și să transmite-ți patch-uri cu modificările dorite, sau pentru înlătrurarea erorilor depistate. Da și desigur puteți să utilizați ca bază pentru proiectele dvoastră.
 
 
 ---
@@ -55,3 +55,39 @@ openssl rsa -pubout -in foo.key -out foo.pem
 
 openssl genrsa -out bar.key 2048
 openssl rsa -pubout -in bar.key -out bar.pem
+
+---
+Installing / Using ...
+
+Before using you should know that this project can serve as a base for
+further development (or changing) for your needs.
+Is done without using a Database, and if you needed please do it,
+as is requirements for your projects.
+
+1) Check structure of folders:
+
+    |
+    |
+    |-> oidcfed_data
+    |   |-> keys
+    |
+    |->oidcfed_lib_php_rp (web root, cloned from github)
+    |   |-> here is source code from github.
+
+Folders oidcfed_data and oidcfed_data/keys should be created at first
+start/access of the project. But if you see some questions from web
+server or acl problems just create them manually.
+
+2) Check requirements:
+ - install openssl (should be form the start, but who knows ... :) )
+ - start composer to add dependencies
+ - read/change variables at parameters.php and classes/configure.php
+ (at this moment is better to check both files).
+
+3) Known issues...
+
+ - Unpacking Metadata Statements (MS) is rewrited at this moment.
+ - Scope, claims and time parameters should be checked after unpacking of the MS
+is done.
+
+Patch/commits with fix for this should be uploaded in first part of January 2018.

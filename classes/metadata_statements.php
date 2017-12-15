@@ -680,8 +680,21 @@ class metadata_statements {
         }
 
         // ==> Here  MS should be verified <==
-
-        return false;
+        try {
+            $jws_checked = self::verify_signature_keys_from_MS($jwt_string,
+                                                               $claims["iss"],
+                                                               $signing_keys);
+        }
+        catch (Exception $exc) {
+            echo $exc->getTraceAsString();
+        }
+        if ($jws_checked) {
+            return $claims;
+        }
+        else {
+//            return false;
+            throw new Exception("No claims found or signature verification failed.");
+        }
     }
 
     public static function get_signing_keys_as_jwks_from_ms($jwt_string,
