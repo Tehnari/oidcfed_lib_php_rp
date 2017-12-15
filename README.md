@@ -90,4 +90,4 @@ server or acl problems just create them manually.
  - Scope, claims and time parameters should be checked after unpacking of the MS
 is done.
 
-Patch/commits with fix for this should be uploaded in first part of January 2018.
+Patch/commits with fix for this should be uploaded at first part of January 2018.
