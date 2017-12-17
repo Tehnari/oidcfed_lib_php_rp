@@ -658,6 +658,7 @@ class metadata_statements {
         }
         $ms_str    = false;
         $ms_arr    = [];
+        $keys      = [];
         $claim_kid = false;
         $claims    = \oidcfed\security_jose::get_jwt_claims_from_string($jwt_string);
         $check01   = (\is_array($claims) === true && \count($claims) > 0);
@@ -671,9 +672,20 @@ class metadata_statements {
                 && \mb_strlen($claims["iss"]));
         if ($check02) {
             // ==> Here should be some processing <==
+            $ms1 = [];
+            foreach ($claims["metadata_statements"] as $cmkey => $cmvalue) {
+                $check05=(\is_string($cmvalue) && \mb_strlen($cmvalue)>0);
+                if(!$check05){
+                    continue;
+                }
+                $_ms = self::unpack($cmvalue, $signing_keys);
+                //Something should be added to keys and MS
+            }
         }
         else if ($check03) {
             // ==> Here should be some processing <==
+            $tmp_ms = $claims['metadata_statement_uris'];
+            $ms_str = \oidcfed\configure::getUrlContent($tmp_ms, $cert_verify);
         }
         else if ($check04) {
             // ==> Here  MS should be verified <==
