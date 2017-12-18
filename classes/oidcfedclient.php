@@ -635,8 +635,16 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                 foreach ($well_known['metadata_statements'] as $ms_key =>
                             $ms_value) {
                     try {
-                        $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value,
-                                                                             null);
+//                        $jws_struc = \oidcfed\metadata_statements::unpack_MS($ms_value,                                                                             null);
+                    }
+                    catch (Exception $exc) {
+                        echo "<pre>";
+                        echo $exc->getTraceAsString();
+                        echo "</pre>";
+                    }
+                    echo "";
+                    try {
+//                        $jws_struc = \oidcfed\metadata_statements::unpack($ms_value,                                                                             null);
                     }
                     catch (Exception $exc) {
                         echo "<pre>";

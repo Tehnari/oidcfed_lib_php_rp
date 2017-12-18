@@ -96,6 +96,7 @@ server or acl problems just create them manually.
 3) Known issues...
 
  - Unpacking Metadata Statements (MS) is rewrited at this moment.
+ - Token saved session should be checked better (!). 
  - Scope, claims and time parameters should be checked after unpacking of the MS
 is done.
 

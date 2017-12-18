@@ -686,6 +686,15 @@ class metadata_statements {
             // ==> Here should be some processing <==
             $tmp_ms = $claims['metadata_statement_uris'];
             $ms_str = \oidcfed\configure::getUrlContent($tmp_ms, $cert_verify);
+            $ms1 = [];
+            foreach ($claims["metadata_statements"] as $cmkey => $cmvalue) {
+                $check05=(\is_string($cmvalue) && \mb_strlen($cmvalue)>0);
+                if(!$check05){
+                    continue;
+                }
+                $_ms = self::unpack($cmvalue, $signing_keys);
+                //Something should be added to keys and MS
+            }
         }
         else if ($check04) {
             // ==> Here  MS should be verified <==
