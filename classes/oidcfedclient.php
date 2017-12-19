@@ -644,7 +644,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                     }
                     echo "";
                     try {
-//                        $jws_struc = \oidcfed\metadata_statements::unpack($ms_value,                                                                             null);
+                        $jws_struc = \oidcfed\metadata_statements::unpack($ms_value,                                                                             null);
                     }
                     catch (Exception $exc) {
                         echo "<pre>";
