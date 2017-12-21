@@ -702,7 +702,8 @@ class metadata_statements {
                     continue;
                 }
                 try {
-                    $_keys = self::get_signing_keys_as_jwks_from_ms($cmvalue, $cert_verify);
+                    $_keys = self::get_signing_keys_as_jwks_from_ms($cmvalue,
+                                                                    $cert_verify);
                 }
                 catch (Exception $exc) {
 //                    echo $exc->getTraceAsString();
@@ -715,6 +716,18 @@ class metadata_statements {
         }
         else if ($check04) {
             // ==> Here  MS should be verified <==
+            try {
+                $_keys = self::get_signing_keys_as_jwks_from_ms($jwt_string,
+                                                                $cert_verify);
+            }
+            catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                echo "";
+            }
+            
+            $jws_checked = self::verify_signature_keys_from_MS($jwt_string,
+                                                               $claims["iss"],
+                                                               $keys);
         }
 
         // ==> Here  MS should be verified <==
@@ -758,7 +771,8 @@ class metadata_statements {
         else if ($check03) {
             // ==> Here  MS should be verified <==
             echo "";
-            $signing_keys = \oidcfed\configure::getUrlContent($claims["signing_keys_uris"], $cert_verify);
+            $signing_keys = \oidcfed\configure::getUrlContent($claims["signing_keys_uris"],
+                                                              $cert_verify);
             return $signing_keys;
         }
         throw new Exception("Signing keys not found!");

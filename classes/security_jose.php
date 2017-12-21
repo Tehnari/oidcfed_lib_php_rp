@@ -257,6 +257,17 @@ class security_jose {
         return $jwks;
     }
 
+    public static function merge_jwks(\Jose\Object\JWKSet $jwks1,
+                                      \Jose\Object\JWKSet $jwks2) {
+        $check00 = ($jwks1 instanceof \Jose\Object\JWKSet);
+        $check01 = ($jwks2 instanceof \Jose\Object\JWKSet);
+        if (!$check00 || !$check01) {
+            throw new Exception("Bad parameters!");
+        }
+        $keys = $jwks2->getKeys();
+        //TODO Need to finish here...
+    }
+
     /**
      * This function help to create JWT (signed JWS)
      * @param type $payload
@@ -321,7 +332,8 @@ class security_jose {
                                                array $protected_headers,
                                                $jwk_signature_key = null,
                                                \Jose\Object\JWS $jws_signer = null,
-                                               array $jws_signer_alg = ['RS256', 'HS512']) {
+                                               array $jws_signer_alg = ['RS256',
+        'HS512']) {
         return self::create_jwt($payload, $protected_headers,
                                 $jwk_signature_key, $jws_signer, $jws_signer_alg);
     }
@@ -471,25 +483,25 @@ class security_jose {
         }
         //TODO Need to search clientid in claims from jwt signatures
         $result = false;
-            try {
+        try {
 //                echo "<br>****************************<br>";
-                if ($check00b) {
-                    $result = $loader->loadAndVerifySignatureUsingKey($jose_string,
-                                                                      $jwk_pubKey,
-                                                                      [$jwt_header->alg]);
-                }
-                else if ($check00c) {
-                    $result = $loader->loadAndVerifySignatureUsingKeySet($jose_string,
-                                                                         $jwk_pubKey,
-                                                                         [$jwt_header->alg]);
-                };
+            if ($check00b) {
+                $result = $loader->loadAndVerifySignatureUsingKey($jose_string,
+                                                                  $jwk_pubKey,
+                                                                  [$jwt_header->alg]);
             }
-            catch (Exception $exc) {
+            else if ($check00c) {
+                $result = $loader->loadAndVerifySignatureUsingKeySet($jose_string,
+                                                                     $jwk_pubKey,
+                                                                     [$jwt_header->alg]);
+            };
+        }
+        catch (Exception $exc) {
 //                $result = false;
 //                echo $exc->getTraceAsString();
 //                echo "<br>";
-            }
-            return $result;
+        }
+        return $result;
     }
 
     public static function jwt_sync_decrypt_from_string_base64enc(
