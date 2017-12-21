@@ -656,9 +656,18 @@ class metadata_statements {
         if (!$check00) {
             throw new Exception("Bad parameters recieved. Check JWT string.");
         }
-        $ms_str    = false;
-        $ms_arr    = [];
-        $keys      = [];
+        $ms_str   = false;
+        $ms_arr   = [];
+        $check00a = ($signing_keys instanceof \Jose\Object\JWK);
+        $check00b = ($signing_keys instanceof \Jose\Object\JWKSet);
+        $check00c = ((!$check00a && !$check00b) && \is_array($signing_keys) && \count($ms_arr)
+                > 0);
+        if ($check00a || $check00b || $check00c) {
+            $keys = $signing_keys;
+        }
+        else {
+            $keys = [];
+        }
         $claim_kid = false;
         $claims    = \oidcfed\security_jose::get_jwt_claims_from_string($jwt_string);
         $check01   = (\is_array($claims) === true && \count($claims) > 0);
@@ -674,11 +683,11 @@ class metadata_statements {
             // ==> Here should be some processing <==
             $ms1 = [];
             foreach ($claims["metadata_statements"] as $cmkey => $cmvalue) {
-                $check05=(\is_string($cmvalue) && \mb_strlen($cmvalue)>0);
-                if(!$check05){
+                $check05 = (\is_string($cmvalue) && \mb_strlen($cmvalue) > 0);
+                if (!$check05) {
                     continue;
                 }
-                $_ms = self::unpack($cmvalue, $signing_keys);
+                $_ms = self::unpack($cmvalue, $keys);
                 //Something should be added to keys and MS
             }
         }
@@ -686,13 +695,21 @@ class metadata_statements {
             // ==> Here should be some processing <==
             $tmp_ms = $claims['metadata_statement_uris'];
             $ms_str = \oidcfed\configure::getUrlContent($tmp_ms, $cert_verify);
-            $ms1 = [];
+            $ms1    = [];
             foreach ($claims["metadata_statements"] as $cmkey => $cmvalue) {
-                $check05=(\is_string($cmvalue) && \mb_strlen($cmvalue)>0);
-                if(!$check05){
+                $check05 = (\is_string($cmvalue) && \mb_strlen($cmvalue) > 0);
+                if (!$check05) {
                     continue;
                 }
-                $_ms = self::unpack($cmvalue, $signing_keys);
+                try {
+                    $_keys = self::get_signing_keys_as_jwks_from_ms($cmvalue, $cert_verify);
+                }
+                catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                    echo "";
+                }
+
+                $_ms = self::unpack($cmvalue, $keys);
                 //Something should be added to keys and MS
             }
         }
@@ -704,7 +721,7 @@ class metadata_statements {
         try {
             $jws_checked = self::verify_signature_keys_from_MS($jwt_string,
                                                                $claims["iss"],
-                                                               $signing_keys);
+                                                               $keys);
         }
         catch (Exception $exc) {
             echo $exc->getTraceAsString();
@@ -734,9 +751,15 @@ class metadata_statements {
                 > 0);
         if ($check02) {
             // ==> Here  MS should be verified <==
+            echo "";
+            $signing_keys = $claims["signing_keys"];
+            return $signing_keys;
         }
         else if ($check03) {
             // ==> Here  MS should be verified <==
+            echo "";
+            $signing_keys = \oidcfed\configure::getUrlContent($claims["signing_keys_uris"], $cert_verify);
+            return $signing_keys;
         }
         throw new Exception("Signing keys not found!");
     }
