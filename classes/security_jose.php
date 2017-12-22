@@ -257,6 +257,41 @@ class security_jose {
         return $jwks;
     }
 
+    public static function add_keys_to_jwks(\Jose\Object\JWKSet $jwks1, $keys) {
+        $check00 = ($jwks1 instanceof \Jose\Object\JWKSet);
+        $check01 = ($keys instanceof \Jose\Object\JWK);
+        $check02 = (\is_array($keys) && \count($keys) > 0);
+        $check03 = ($check02 && \array_key_exists("keys", $keys));
+        $check04 = ($check02 && \is_array($keys) && \count($keys) > 0 && \array_key_exists("keys",
+                                                                                           $keys[0]));
+        $check05 = (!$check01 && !$check03 && !$check04);
+        if (!$check00 && !$check05) {
+            throw new Exception("Bad parameters!");
+        }
+        if ($check02) {
+//            $keyArr = $keys->getAll();
+            $jwks1->addKey($keys);
+        }
+        else if ($check03) {
+            $jwk_tmp = self::create_jwk_from_values($keys);
+            $jwks1->addKey($jwk_tmp);
+            unset($jwk_tmp);
+        }
+        else if ($check04) {
+            foreach ($keys as $kvalue) {
+                $check06 = (\is_array($kvalue) && \count($kvalue) > 0);
+                $check07 = ($check06 && \array_key_exists("keys", $kvalue));
+                if (!$check07) {
+                    continue;
+                }
+                $jwk_tmp = self::create_jwk_from_values($kvalue);
+                $jwks1->addKey($jwk_tmp);
+                unset($jwk_tmp);
+            }
+        }
+        return $jwks1;
+    }
+
     public static function merge_jwks(\Jose\Object\JWKSet $jwks1,
                                       \Jose\Object\JWKSet $jwks2) {
         $check00 = ($jwks1 instanceof \Jose\Object\JWKSet);
@@ -266,6 +301,20 @@ class security_jose {
         }
         $keys = $jwks2->getKeys();
         //TODO Need to finish here...
+        foreach ($keys as $kvalue) {
+            $check02 = (\is_array($kvalue) && \count($kvalue) > 0 && \array_key_exists("keys",
+                                                                                       $kvalue));
+            if (!$check02) {
+                continue;
+            }
+            try {
+                $jwks1->addKey($kvalue);
+            }
+            catch (Exception $exc) {
+//                echo $exc->getTraceAsString();
+            }
+        }
+        return $jwks1;
     }
 
     /**
