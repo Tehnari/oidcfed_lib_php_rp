@@ -662,7 +662,9 @@ class metadata_statements {
         $check00b = ($signing_keys instanceof \Jose\Object\JWKSet);
         $check00c = ((!$check00a && !$check00b) && \is_array($signing_keys) && \count($ms_arr)
                 > 0);
-        if ($check00a || $check00b || $check00c) {
+        $check00d = (\is_array($signing_keys) && \count($signing_keys) > 0 && \array_key_exists("keys",
+                                                                                                $signing_keys));
+        if ($check00a || $check00b || $check00c || $check00d) {
             $keys = $signing_keys;
         }
         else {
@@ -687,8 +689,34 @@ class metadata_statements {
                 if (!$check05) {
                     continue;
                 }
+                try {
+                    $_keys = self::get_signing_keys_from_ms($cmvalue,
+                                                            $cert_verify);
+                }
+                catch (Exception $exc) {
+//                    echo $exc->getTraceAsString();
+                    $_keys = null;
+                    echo "";
+                }
+                $check05a = (\is_array($keys) && \count($keys) > 0 && \array_key_exists("keys",
+                                                                                        $keys));
+                $check05b = (\is_array($_keys) && \count($_keys) > 0 && \array_key_exists("keys",
+                                                                                          $_keys));
+                if (!$check05a && $check05b) {
+                    $keys = $_keys;
+                }
+                else if ($check05a && $check05b) {
+                    foreach ($_keys["keys"] as $_kkval) {
+                        $check05c = (\is_array($_kkval) && \count($_kkval) > 0);
+                        if (!$check05c) {
+                            continue;
+                        }
+                        $keys["keys"][] = $_kkval;
+                    }
+                }
                 $_ms = self::unpack($cmvalue, $keys);
                 //Something should be added to keys and MS
+                echo "";
             }
         }
         else if ($check03) {
@@ -702,14 +730,30 @@ class metadata_statements {
                     continue;
                 }
                 try {
-                    $_keys = self::get_signing_keys_as_jwks_from_ms($cmvalue,
-                                                                    $cert_verify);
+                    $_keys = self::get_signing_keys_from_ms($cmvalue,
+                                                            $cert_verify);
                 }
                 catch (Exception $exc) {
 //                    echo $exc->getTraceAsString();
+                    $_keys = null;
                     echo "";
                 }
-
+                $check05a = (\is_array($keys) && \count($keys) > 0 && \array_key_exists("keys",
+                                                                                        $keys));
+                $check05b = (\is_array($_keys) && \count($_keys) > 0 && \array_key_exists("keys",
+                                                                                          $_keys));
+                if (!$check05a && $check05b) {
+                    $keys = $_keys;
+                }
+                else if ($check05a && $check05b) {
+                    foreach ($_keys["keys"] as $_kkval) {
+                        $check05c = (\is_array($_kkval) && \count($_kkval) > 0);
+                        if ($check05c) {
+                            continue;
+                        }
+                        $keys["keys"][] = $_kkval;
+                    }
+                }
                 $_ms = self::unpack($cmvalue, $keys);
                 //Something should be added to keys and MS
             }
@@ -717,14 +761,31 @@ class metadata_statements {
         else if ($check04) {
             // ==> Here  MS should be verified <==
             try {
-                $_keys = self::get_signing_keys_as_jwks_from_ms($jwt_string,
-                                                                $cert_verify);
+                $_keys = self::get_signing_keys_from_ms($jwt_string,
+                                                        $cert_verify);
             }
             catch (Exception $exc) {
 //                    echo $exc->getTraceAsString();
+                $_keys = null;
                 echo "";
             }
-            
+            $check05a = (\is_array($keys) && \count($keys) > 0 && \array_key_exists("keys",
+                                                                                    $keys));
+            $check05b = (\is_array($_keys) && \count($_keys) > 0 && \array_key_exists("keys",
+                                                                                      $_keys));
+            if (!$check05a && $check05b) {
+                $keys = $_keys;
+            }
+            else if ($check05a && $check05b) {
+                foreach ($_keys["keys"] as $_kkval) {
+                    $check05c = (\is_array($_kkval) && \count($_kkval) > 0);
+                    if ($check05c) {
+                        continue;
+                    }
+                    $keys["keys"][] = $_kkval;
+                }
+            }
+
             $jws_checked = self::verify_signature_keys_from_MS($jwt_string,
                                                                $claims["iss"],
                                                                $keys);
@@ -748,8 +809,8 @@ class metadata_statements {
         }
     }
 
-    public static function get_signing_keys_as_jwks_from_ms($jwt_string,
-                                                            $cert_verify = false) {
+    public static function get_signing_keys_from_ms($jwt_string,
+                                                    $cert_verify = false) {
         $check00 = (\is_string($jwt_string) && \mb_strlen($jwt_string) > 0);
         if (!$check00) {
             throw new Exception("Bad parameters recieved. Check JWT string.");
@@ -804,11 +865,26 @@ class metadata_statements {
         if ($check02a === true && \array_key_exists('keys', $sign_keys) === true
                 && (\is_array($sign_keys['keys']) === true) && \count($sign_keys['keys'])
                 > 0) {
-            $sign_keys_tmp = [];
-            foreach ($sign_keys['keys'] as $sks_value) {
-                $sign_keys_tmp[] = $sks_value;
+            $jwks = \oidcfed\security_jose::create_jwks_from_values($sign_keys);
+
+
+            try {
+                $result = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms,
+                                                                                              $jwks);
             }
-            $sign_keys = $sign_keys_tmp;
+            catch (Exception $exc) {
+                echo $exc->getTraceAsString();
+//                continue;
+            }
+            if (\is_object($result) === true) {
+                return $result;
+            }
+
+//            $sign_keys_tmp = [];
+//            foreach ($sign_keys['keys'] as $sks_value) {
+//                $sign_keys_tmp[] = $sks_value;
+//            }
+//            $sign_keys = $sign_keys_tmp;
         }
         else if ($check02b === true && (\is_array($keys) === true) && \count($keys)
                 > 0) {
