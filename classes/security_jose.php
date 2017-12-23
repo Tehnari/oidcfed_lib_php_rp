@@ -543,7 +543,7 @@ class security_jose {
                 $result = $loader->loadAndVerifySignatureUsingKeySet($jose_string,
                                                                      $jwk_pubKey,
                                                                      [$jwt_header->alg]);
-            };
+            }
         }
         catch (Exception $exc) {
 //                $result = false;

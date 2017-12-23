@@ -866,8 +866,10 @@ class metadata_statements {
                 && (\is_array($sign_keys['keys']) === true) && \count($sign_keys['keys'])
                 > 0) {
             $jwks = \oidcfed\security_jose::create_jwks_from_values($sign_keys);
-
-
+            if ($jwks instanceof \Jose\Object\JWKSet) {
+                $_keys = $jwks->getKeys();
+                echo "";
+            }
             try {
                 $result = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms,
                                                                                               $jwks);
@@ -898,7 +900,8 @@ class metadata_statements {
             $sign_keys_tmp = [$sign_keys];
             $sign_keys     = $sign_keys_tmp;
         }
-        $ms_header = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms);
+//        $ms_header      = \oidcfed\security_jose::get_jose_jwt_header_to_object($ms);
+        $sign_keys_jwks = null;
         foreach ($sign_keys as $skkey => $skval) {
             $check05a = ($skval instanceof \Jose\Object\JWK);
             if ($check05a === true) {
@@ -915,21 +918,27 @@ class metadata_statements {
             if ($check05b === false) {
                 continue;
             }
-            $ms_header_kid = $ms_header->kid;
-            $jwk_all_val   = $jwk->getAll();
-            if ($ms_header_kid !== $jwk_all_val["kid"]) {
-                continue;
+            else if ($sign_keys_jwks instanceof \Jose\Object\JWKSet) {
+                $sign_keys_jwks = \oidcfed\security_jose::create_jwks_from_values($jwk);
             }
+            else {
+                $sign_keys_jwks = \oidcfed\security_jose::add_keys_to_jwks($sign_keys_jwks,
+                                                                           $jwk);
+            }
+        }
+        if($sign_keys_jwks instanceof \Jose\Object\JWKSet){
             try {
                 $result = \oidcfed\security_jose::jwt_async_verify_sign_from_string_base64enc($ms,
-                                                                                              $jwk);
+                                                                                              $sign_keys_jwks);
             }
             catch (Exception $exc) {
 //                echo $exc->getTraceAsString();
-                continue;
+                throw new Exception("Signature couldn't be verified...");
             }
             if (\is_object($result) === true) {
                 return $result;
+            } else {
+                throw new Exception("Signature couldn't be verified (No an object received.)...");
             }
         }
         throw new Exception("Bad Metadata Statement...");
