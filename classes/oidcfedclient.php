@@ -545,6 +545,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $clientData       = \oidcfed\oidcfedClient::get_clientName_id_secret($path_dataDir_real,
                                                                                  $clientName,
                                                                                  $provider_url);
+            //TODO Need check for old id secret
             \reset($clientData);
             $clientDataArrVal = \current($clientData);
 //            $clientDataArrVal = $clientData;

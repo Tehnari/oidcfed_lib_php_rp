@@ -65,27 +65,5 @@ echo "</datalist>";
 //echo "Client Secret: <input type=\"password\" name=\"client_secret\"><br>";
 echo "<input type=\"submit\">";
 echo "</form>";
-//use \OpenIdConnectClient\OpenIdConnectClient;
-//
-//$oidc_site_url = "https://rp.certification.openid.net:8080/$client_id/rp-response_type-code";
-//$oidc = new OpenIDConnectClient($oidc_site_url);
-//
-//try {
-//    $oidc->register();
-//    $client_id     = $oidc->getClientID();
-//    $client_secret = $oidc->getClientSecret();
-//}
-//catch (Exception $exc) {
-//    echo "<pre>";
-//    echo $exc->getTraceAsString();
-//    echo "</pre>";
-//}
 
 
-
-//$oidc = new OpenIDConnectClient('https://rp.certification.openid.net:8080',
-//                                $client_id,
-//                                'ClientSecretHere');
-//$oidc->setCertPath('/path/to/my.cert');
-//$oidc->authenticate();
-//$name = $oidc->requestUserInfo('given_name');
