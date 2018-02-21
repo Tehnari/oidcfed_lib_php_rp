@@ -100,7 +100,7 @@ server or acl problems just create them manually.
  - Scope, claims and time parameters should be checked after unpacking of the MS
 is done.
 
-Patch/commits with fix for this should be uploaded at first part of January 2018.
+(Done partially) Patch/commits with fix for this should be uploaded at first part of January 2018.
 
 4) starting index.php will work as OIDCfed RP (should work as simple OIDC
 client too, but...). If you want too check simple OIDC RP you can
