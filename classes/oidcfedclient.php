@@ -529,6 +529,59 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         $this->redirect($authorization_endpoint);
     }
 
+    /**
+     * Generate Public and Private keys (self signed) for our needs.
+     * @param type $private_key
+     * @param type $passphrase
+     * @return type
+     */
+    protected static function generate_keys_for_signing($private_key = null,
+                                                 $passphrase = null) {
+
+        $path_dataDir_real = \oidcfed\configure::path_dataDir();
+        //Certificate generation (!) In this case is only one (just for signing (!)
+        $dn                = \oidcfed\configure::dn();
+        $ndays             = \oidcfed\configure::ndays();
+        $priv_key_woPass   = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
+                                                                                        $passphrase);
+        try {
+            $certificateLocal_content = \oidcfed\security_keys::get_csr(false,
+                                                                        $dn,
+                                                                        $priv_key_woPass,
+                                                                        $ndays,
+                                                                        $path_dataDir_real);
+        }
+        catch (Exception $exc) {
+            echo $exc->getTraceAsString();
+            $certificateLocal_content = null;
+        }
+
+        try {
+            $certificateLocal_path = \oidcfed\security_keys::public_certificateLocal_path();
+        }
+        catch (Exception $exc) {
+            echo "<pre>";
+            echo $exc->getTraceAsString();
+            echo "</pre>";
+        }
+        //Key is allready without passphrase (!)
+        $csr               = \oidcfed\security_keys::get_filekey_contents($certificateLocal_path);
+        $pathLocal_content = \pathinfo($certificateLocal_path);
+        $pathPrivateKey    = \rtrim($pathLocal_content['dirname'], '/') . "/" . "privateKey.pem";
+//        $privkey_pem           = \openssl_pkey_get_private($pathPrivateKey, $passphrase);
+        $privkey_pem       = \oidcfed\configure::private_key($pathPrivateKey,
+                                                             $passphrase);
+        $pubkey_pem        = \oidcfed\configure::public_key($privkey_pem);
+        return [
+            "pubkey_pem"                => $pubkey_pem,
+            "privkey_pem"               => $privkey_pem,
+            "passphrase"                => $passphrase,
+            "csr"                       => $csr,
+            "certificate_local_content" => $certificateLocal_content,
+            "priv_key_woPass"           => $priv_key_woPass
+        ];
+    }
+
     public function dynamic_registration_and_auth_code($verifyCert = false,
                                                        $private_key = null,
                                                        $passphrase = null) {
@@ -570,46 +623,28 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                                                   $clientDataArrVal));
         $check02 = ($check01 && isset($clientDataArrVal["client_secret_expires_at"])
                 && \is_numeric($clientDataArrVal["client_secret_expires_at"]) && ($clientDataArrVal["client_secret_expires_at"] <= (time()
-                + 120)));
-        if ($check02) {
+                + 100)));
+        $check03 = ($clientDataArrVal["provider_url"] === $provider_url);
+        if ($check02 && $check03) {
             $client_secret = null;
         }
         //---===---
         //Certificate generation (!) In this case is only one (just for signing (!)
-        $dn              = \oidcfed\configure::dn();
-        $ndays           = \oidcfed\configure::ndays();
-        $priv_key_woPass = \oidcfed\security_keys::get_private_key_without_passphrase($private_key,
-                                                                                      $passphrase);
         try {
-            $certificateLocal_content = \oidcfed\security_keys::get_csr(false,
-                                                                        $dn,
-                                                                        $priv_key_woPass,
-                                                                        $ndays,
-                                                                        $path_dataDir_real);
+//            $key_generation_result_arr = generate_keys_for_signing($private_key,$passphrase);
+            $key_generation_result_arr = self::generate_keys_for_signing($private_key,$passphrase);
         }
         catch (Exception $exc) {
             echo $exc->getTraceAsString();
-            $certificateLocal_content = null;
         }
 
-        try {
-            $certificateLocal_path = \oidcfed\security_keys::public_certificateLocal_path();
-        }
-        catch (Exception $exc) {
-            echo "<pre>";
-            echo $exc->getTraceAsString();
-            echo "</pre>";
-        }
-        //Key is allready without passphrase (!)
-        $csr               = \oidcfed\security_keys::get_filekey_contents($certificateLocal_path);
-        $pathLocal_content = \pathinfo($certificateLocal_path);
-        $pathPrivateKey    = \rtrim($pathLocal_content['dirname'], '/') . "/" . "privateKey.pem";
-//        $privkey_pem           = \openssl_pkey_get_private($pathPrivateKey, $passphrase);
-        $privkey_pem       = \oidcfed\configure::private_key($pathPrivateKey,
-                                                             $passphrase);
-        $pubkey_pem        = \oidcfed\configure::public_key($privkey_pem);
+        $pubkey_pem               = $key_generation_result_arr["pubkey_pem"];
+        $privkey_pem              = $key_generation_result_arr["privkey_pem"];
+        $csr                      = $key_generation_result_arr["csr"];
+        $certificateLocal_content = $key_generation_result_arr["certificate_local_content"];
+        $priv_key_woPass          = $key_generation_result_arr["certificate_local_content"];
         //---===---
-        if (!(\is_string($client_secret) && \mb_strlen($client_secret) > 0) || !(\is_string($client_id)
+        if (is_null($client_secret) || !(\is_string($client_secret) && \mb_strlen($client_secret) > 0) || !(\is_string($client_id)
                 && \mb_strlen($client_id) > 0)) {
             //Dynamic registration for this client
 //            $oidc_dyn = new \oidcfed\oidcfedClient($provider_url);
@@ -645,7 +680,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                     }
                     echo "";
                     try {
-                        $jws_struc = \oidcfed\metadata_statements::unpack($ms_value,                                                                             null);
+                        $jws_struc = \oidcfed\metadata_statements::unpack($ms_value,
+                                                                          null);
                     }
                     catch (Exception $exc) {
                         echo "<pre>";
@@ -739,11 +775,11 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
                                                                                                     $additional_parameters,
                                                                                                     false);
 
-        echo "";
+//        echo "";
         try {
             $oidc = new \oidcfed\oidcfedClient($provider_url, $client_id,
                                                $client_secret);
-
+//  Set FALSE for certificate verification (is needed to use self signed certificates)
             $oidc->setVerifyCert(false);
             $oidc->setCertPath($certificateLocal_path);
         }
