@@ -84,6 +84,11 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         return md5(uniqid(rand(), TRUE));
     }
 
+    protected function clearCookiesFromProvider($provider_url){
+        $url_info = parse_url($provider_url);
+        setcookie($url_info["scheme"]."://".$url_info["host"],'');
+    }
+
     /**
      * (static) This static function can help with getting and saving oidc config (or other json files)
      * @param string $url_oidc_config
@@ -629,6 +634,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         $check03  = ($clientDataArrVal["provider_url"] === $provider_url);
         if (!$check02 || !$check02a || !$check03) {
             $client_secret = null;
+            //Testing if token should expirer then we should clear cookies too (in theory)...
+            $this->clearCookiesFromProvider($provider_url);
             //Clearing cookies...
         }
         //---===---
