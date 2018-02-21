@@ -536,7 +536,7 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
      * @return type
      */
     protected static function generate_keys_for_signing($private_key = null,
-                                                 $passphrase = null) {
+                                                        $passphrase = null) {
 
         $path_dataDir_real = \oidcfed\configure::path_dataDir();
         //Certificate generation (!) In this case is only one (just for signing (!)
@@ -618,21 +618,25 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
             $client_id     = null;
             $client_secret = null;
         }
-        $check00 = (\is_array($clientDataArrVal));
-        $check01 = ($check00 && \array_key_exists("client_secret_expires_at",
-                                                  $clientDataArrVal));
-        $check02 = ($check01 && isset($clientDataArrVal["client_secret_expires_at"])
-                && \is_numeric($clientDataArrVal["client_secret_expires_at"]) && ($clientDataArrVal["client_secret_expires_at"] <= (time()
-                + 100)));
-        $check03 = ($clientDataArrVal["provider_url"] === $provider_url);
-        if ($check02 && $check03) {
+        $check00  = (\is_array($clientDataArrVal));
+        $check01  = ($check00 && \array_key_exists("client_secret_expires_at",
+                                                   $clientDataArrVal));
+        $check02  = ($check01 && isset($clientDataArrVal["client_secret_expires_at"])
+                && \is_numeric($clientDataArrVal["client_secret_expires_at"]) && ($clientDataArrVal["client_secret_expires_at"]
+                > time()));
+        $check02a = ($check01 && isset($clientDataArrVal["exp"]) && \is_numeric($clientDataArrVal["exp"])
+                && ($clientDataArrVal["exp"] > time()));
+        $check03  = ($clientDataArrVal["provider_url"] === $provider_url);
+        if (!$check02 || !$check02a || !$check03) {
             $client_secret = null;
+            //Clearing cookies...
         }
         //---===---
         //Certificate generation (!) In this case is only one (just for signing (!)
         try {
 //            $key_generation_result_arr = generate_keys_for_signing($private_key,$passphrase);
-            $key_generation_result_arr = self::generate_keys_for_signing($private_key,$passphrase);
+            $key_generation_result_arr = self::generate_keys_for_signing($private_key,
+                                                                         $passphrase);
         }
         catch (Exception $exc) {
             echo $exc->getTraceAsString();
@@ -644,8 +648,8 @@ class oidcfedClient extends \Jumbojett\OpenIDConnectClient {
         $certificateLocal_content = $key_generation_result_arr["certificate_local_content"];
         $priv_key_woPass          = $key_generation_result_arr["certificate_local_content"];
         //---===---
-        if (is_null($client_secret) || !(\is_string($client_secret) && \mb_strlen($client_secret) > 0) || !(\is_string($client_id)
-                && \mb_strlen($client_id) > 0)) {
+        if (!(\is_string($client_secret) && \mb_strlen($client_secret)
+                > 0) || !(\is_string($client_id) && \mb_strlen($client_id) > 0)) {
             //Dynamic registration for this client
 //            $oidc_dyn = new \oidcfed\oidcfedClient($provider_url);
             try {

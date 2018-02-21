@@ -767,7 +767,7 @@ class metadata_statements {
             catch (Exception $exc) {
 //                    echo $exc->getTraceAsString();
                 $_keys = null;
-                echo "";
+//                echo "";
             }
             $check05a = (\is_array($keys) && \count($keys) > 0 && \array_key_exists("keys",
                                                                                     $keys));
