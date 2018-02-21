@@ -85,11 +85,14 @@ class configure {
         return $publicKeyName;
     }
 
-    public static function path_dataDir_real() {
+    public static function path_dataDir_real($path_dataDir_local = false) {
         global $path_dataDir_real;
 //        $path_dataDir = self::path_dataDir();
+        if(!$path_dataDir_local){
+            $path_dataDir_local = self::path_dataDir();
+        }
         try {
-            $path_dataDir_real = \oidcfed\security_keys::path_dataDir_real(self::path_dataDir());
+            $path_dataDir_real = \oidcfed\security_keys::path_dataDir_real($path_dataDir_local);
         }
         catch (Exception $exc) {
             echo $exc->getTraceAsString();
